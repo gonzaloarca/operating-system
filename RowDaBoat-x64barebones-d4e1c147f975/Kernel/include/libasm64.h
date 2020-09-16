@@ -30,6 +30,6 @@ typedef struct memType {
 	uint64_t mem4;
 } memType;
 
-void sys_getMemory(memType* answer, uint64_t address);
+void sys_getMemory(memType* answer, char * address);
 
 #endif
