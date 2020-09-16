@@ -168,7 +168,7 @@ void printmem(char* address){
 	}
 
 	if(flag){
-		getMemory(&memory, decimalAddress);
+		getMemory(&memory, (char *) decimalAddress);
 
 		changeWindowColor(0xa4de02);
 		printf("%p", decimalAddress);
