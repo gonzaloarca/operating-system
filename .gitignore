@@ -1,0 +1,17 @@
+#Binary Files
+*.bin
+*.sys
+
+#The images
+*.img
+*.qcow2
+*.vmdk
+
+#Object files
+*.o
+
+*.bash_history
+
+*.out
+
+RowDaBoat-x64barebones-d4e1c147f975/run2.sh
