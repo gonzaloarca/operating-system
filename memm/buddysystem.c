@@ -28,6 +28,7 @@ void *malloc(size_t size){
         createHeader(mem, FREE, MEM_SIZE_POW);
         //addFreeList en vez de hacerlo a mano?
         freeLists[LIST_QTY - 1][0] = mem;
+        initMem = 1;
     }
 
     //revisa la lista de bloques libres para ver si hay alguno que le sirva
@@ -38,20 +39,22 @@ void *malloc(size_t size){
         //si la lista esta vacia se garantiza que su primer elemento es NULL
         if(PWRTWO(sizePow) - 8 >= size && freeLists[i][0] != NULL){ 
             //ahora debo encontrar el ultimo bloque libre en la lista
-            int j;
+            int j, partition = 0;
             for(j = 0; j < LIST_SIZE && freeLists[i][j + 1] != NULL; j++);
             
             ret = freeLists[i][j];
-            //quedaria mejor si se llama a removeFreeList aca? se rompe todo?
-            freeLists[i][j] = NULL;
 
             //hay que ver si algun bloque con menor tamano podria acomodarlo 
-            while(PWRTWO(sizePow-1) - 8 >= size){
+            while(PWRTWO(sizePow-1) - 8 >= size && sizePow > MIN_SIZE_POW){
+                partition = 1;
                 sizePow--;
-                printf("sizePow = %d\n", sizePow);
+
+                removeFreeList(ret);
                 partitionMem(ret);
             }
-            
+            if(partition == 0)
+                removeFreeList(ret);
+
             createHeader(ret, OCCUPIED, sizePow);
 
             ret += 8; //apunta despues del header
@@ -74,13 +77,9 @@ static void createHeader(unsigned char *blockBase, unsigned char occupied, unsig
 static void partitionMem(unsigned char *blockBase){
     unsigned int currSizePow = blockBase[0];
 
-    removeFreeList(blockBase);
-
     blockBase[0] = --currSizePow;
-    printf("blockBase = %p, currSizePow = %d ", blockBase, currSizePow);
     unsigned char *buddyBase = GET_BUDDY(blockBase, currSizePow, mem); //aprovechando los tomanos de potencias de base 2, accedemos a la direccion del buddy
                                                                     //utilizando operaciones de bits
-    printf("buddyBase = %p\n", buddyBase);
     createHeader(buddyBase, FREE, currSizePow);
     
     addFreeList(buddyBase);
@@ -93,7 +92,7 @@ static void addFreeList(unsigned char *blockBase){
     //busca la primer posicion vacia en la lista de su tamano y la asigna
     for(i = 0; freeLists[sizePow - MIN_SIZE_POW][i] == NULL && i < LIST_SIZE; i++);
     
-    freeLists[sizePow][i] = blockBase;
+    freeLists[sizePow - MIN_SIZE_POW][i] = blockBase;
 }
 
 static void removeFreeList(unsigned char *blockBase){
@@ -133,6 +132,9 @@ void free(void *ptr){
         mergeBlocks(&blockBase);
 
         currSizePow++;
+        if(currSizePow == MEM_SIZE_POW)
+            break;
+            
         blockBase = GET_BUDDY(blockBase, currSizePow, mem);
     }
 
@@ -157,15 +159,26 @@ static void mergeBlocks(unsigned char **blockBase){
 }
 
 int main(){
-    unsigned char *array = malloc(128);
-    // array -= 8;
-
-    
-    // for(int i = 0; i < 128; i++){
-    //     printf("%d ", (int)array[i]);
-    // }
-    // fflush(stdout);
-    
+    unsigned char *array = malloc(2039);
+	if(array == NULL)
+	{
+		printf("F el primer if\n");
+		return 0;
+	}
+    // unsigned char *array2 = malloc(239);
+	// if(array == NULL)
+	// {
+	// 	printf("F el primer if\n");
+	// 	return 0;
+	// }
+    // unsigned char *array3 = malloc(1000);
+	// if(array == NULL)
+	// {
+	// 	printf("F el primer if\n");
+	// 	return 0;
+	// }
+	// free(array);
+    // free(array2);
     int j = 0;
     for(int i = 0; i < 4096; i++){
         if( i % 8 == 0 ){
@@ -178,16 +191,11 @@ int main(){
 
         printf("%d ", mem[i]);
     }
-	if(array == NULL)
-	{
-		printf("F el primer if\n");
-		return 0;
-	}
+    // fflush(stdout);
+    // free(array3);
 
-	free(array);
-
-	if (malloc(1) == NULL)
-		printf("LA CAGAMOS\n");
+	// if(malloc(1) == NULL)
+	// 	printf("LA CAGAMOS\n");
 
 	return 0;
 }
