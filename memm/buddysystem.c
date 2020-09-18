@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #define PWRTWO(x) (1 << (x))
-#define GET_BUDDY(base, size) ( (unsigned char *)((long) base ^ (1 << size)) )
+#define GET_BUDDY(base, size, offset) ((unsigned char *)(((long)(base - offset) ^ (1 << size)) + (long)offset))
 #define FREE 0
 #define OCCUPIED 1
 #define MEM_SIZE_POW 12 //2^12 bytes
@@ -26,6 +26,7 @@ void *malloc(size_t size){
 
     if(initMem == 0){
         createHeader(mem, FREE, MEM_SIZE_POW);
+        //addFreeList en vez de hacerlo a mano?
         freeLists[LIST_QTY - 1][0] = mem;
     }
 
@@ -76,10 +77,10 @@ static void partitionMem(unsigned char *blockBase){
     removeFreeList(blockBase);
 
     blockBase[0] = --currSizePow;
-
-    unsigned char *buddyBase = GET_BUDDY(blockBase, currSizePow); //aprovechando los tomanos de potencias de base 2, accedemos a la direccion del buddy
+    printf("blockBase = %p, currSizePow = %d ", blockBase, currSizePow);
+    unsigned char *buddyBase = GET_BUDDY(blockBase, currSizePow, mem); //aprovechando los tomanos de potencias de base 2, accedemos a la direccion del buddy
                                                                     //utilizando operaciones de bits
-    printf("currSizePow = %d\n", currSizePow);
+    printf("buddyBase = %p\n", buddyBase);
     createHeader(buddyBase, FREE, currSizePow);
     
     addFreeList(buddyBase);
@@ -126,13 +127,13 @@ void free(void *ptr){
     addFreeList(blockBase);
 
     //hay que ver si puede mergear con su buddy
-    blockBase = GET_BUDDY(blockBase, currSizePow);
+    blockBase = GET_BUDDY(blockBase, currSizePow, mem);
 
     while((blockBase[0] & 0x80) == 0){
         mergeBlocks(&blockBase);
 
         currSizePow++;
-        blockBase = GET_BUDDY(blockBase, currSizePow);
+        blockBase = GET_BUDDY(blockBase, currSizePow, mem);
     }
 
 }
@@ -143,11 +144,11 @@ static void mergeBlocks(unsigned char **blockBase){
     unsigned int sizePow = (*blockBase)[0];
     
     removeFreeList(*blockBase);
-    removeFreeList(GET_BUDDY(*blockBase, sizePow));
+    removeFreeList(GET_BUDDY(*blockBase, sizePow, mem));
     
     //verifica si el bloque se corresponde al buddy de direcciones mas bajas
     if(((long)*blockBase & (1 << sizePow)) != 0){
-        *blockBase = GET_BUDDY(*blockBase, sizePow);
+        *blockBase = GET_BUDDY(*blockBase, sizePow, mem);
     }
     
     (*blockBase)[0]++; 
