@@ -22,6 +22,9 @@ static unsigned char *freeLists[LIST_QTY][LIST_SIZE] = {{0}};
 static int initMem = 0;
 
 void *malloc(size_t size){
+    if(size == 0)
+        return NULL;
+
     unsigned char *ret = NULL;
 
     if(initMem == 0){
@@ -123,16 +126,17 @@ void free(void *ptr){
     addFreeList(blockBase);
 
     //hay que ver si puede mergear con su buddy
-    blockBase = GET_BUDDY(blockBase, currSizePow, mem);
+    unsigned char* buddyBase = GET_BUDDY(blockBase, currSizePow, mem);
 
-    while((blockBase[0] & 0x80) == 0){
+    //reviso que el buddy este libre y sea del mismo size para que puedan ser mergeados
+    while((buddyBase[0] & 0x80) == 0 && buddyBase[0] == blockBase[0] ){
         mergeBlocks(&blockBase);
 
         currSizePow++;
         if(currSizePow == MEM_SIZE_POW)
             break;
             
-        blockBase = GET_BUDDY(blockBase, currSizePow, mem);
+        buddyBase = GET_BUDDY(blockBase, currSizePow, mem);
     }
 
 }
@@ -156,6 +160,8 @@ static void mergeBlocks(unsigned char **blockBase){
 }
 
 int main(){
+
+    
     unsigned char *array = malloc(24);
 	if(array == NULL)
 	{
@@ -174,23 +180,25 @@ int main(){
 		printf("F el primer if\n");
 		return 0;
 	}
+    for(int i = 0; i <10000 ; i++)
+        malloc(i);
 	free(array);
-    // int j = 0;
-    // for(int i = 0; i < 4096; i++){
-    //     if( i % 8 == 0 ){
-    //         printf("\n");
-    //     }
-    //     if(i % 128 == 0){
-    //         printf("nuevo bloque de 128, j = %d, i = %d\n", j, i);
-    //         j++;
-    //     }
-
-    //     printf("%d ", mem[i]);
-    // }
-    // fflush(stdout);
     free(array2);
     free(array3);
     
+    int j = 0;
+    for(int i = 0; i < 4096; i++){
+        if( i % 8 == 0 ){
+            printf("\n");
+        }
+        if(i % 128 == 0){
+            printf("nuevo bloque de 128, j = %d, i = %d\n", j, i);
+            j++;
+        }
+
+        printf("%d ", mem[i]);
+    }
+    fflush(stdout);
 
 	if(malloc(1) == NULL)
 		printf("LA CAGAMOS\n");
