@@ -4,12 +4,10 @@
 #include <string.h>
 
 #define sizeof(type) ((char *)(&type+1)-(char*)(&type))
-#define MIN_UNITS 128 
+
 #define MEM_SIZE 4096
 
-char mem[MEM_SIZE];
-char *baseMem = mem;
-char *heapPtr = mem;
+char mem[MEM_SIZE];			//AUXILIAR PARA TESTEAR: cambiar por el inicio de la memoria
 
 union header {
     struct {
@@ -22,23 +20,26 @@ union header {
 
 typedef union header Header;
 
-static Header *morecore(size_t nunits);
-
 static Header base = {{0}};
 static Header *freep = NULL;
 
+//	malloc adaptado del K&R
 void *malloc(size_t nbytes){
 	Header *currp, *prevp;
 	size_t nunits;
-
-	nunits = (nbytes+sizeof(base)-1)/sizeof(base) + 1;
 	
-	if (freep == NULL){ //No hay lista todavia
-		base.s.next = &base;
+	if (freep == NULL){ //No hay lista todavia, creo el bloque de toda la memoria
+		Header *new = (Header *) mem;
+
+		new->s.size = MEM_SIZE/sizeof(base);		//Recordar que el size es en cantidad de Headers
+		new->s.next = &base;						//Vuelve a la base de la lista
+
+		base.s.next = new;							//Apunta al bloque de toda la memoria
 		freep = &base;
 		base.s.size = 0;
 	}
 
+	nunits = (nbytes+sizeof(base)-1)/sizeof(base) + 1;
 	prevp = freep;
 
 	for(currp = freep->s.next; ;prevp = currp, currp = currp->s.next){
@@ -55,36 +56,14 @@ void *malloc(size_t nbytes){
 		}
 
 		if(currp == freep){ //Si dio toda la vuelta a la lista
-			//Solicitar espacio
-			Header *aux = morecore(nunits);
-			if(aux != NULL){
-				aux->s.next = currp->s.next;
-				currp->s.next = aux;
-			} else
-				return NULL;
+			return NULL;
 		}
 	}
 
 	return (void *)(currp + 1);
 }
 
-static Header *morecore(size_t nunits){
-	Header *new;
-
-	if(nunits < MIN_UNITS)
-		nunits = MIN_UNITS;
-
-	if(heapPtr + nunits*sizeof(base) > baseMem + MEM_SIZE)	//Si no hay más memoria fisica
-		return NULL;
-
-	new = (Header *) heapPtr;
-	heapPtr += nunits*sizeof(base);
-
-	new->s.size = nunits;
-
-	return new;
-}
-
+//	free copiado textual del K&R
 void free(void *ap){
 	Header *bp, *p;
 
@@ -109,6 +88,7 @@ void free(void *ap){
 	freep = p;
 }
 
+//	PROGRAMA DE TESTEO BORRAR
 int main(int argc, char const *argv[]){
 	char *array = malloc(MEM_SIZE-16);
 
@@ -121,7 +101,7 @@ int main(int argc, char const *argv[]){
 	free(array);
 
 	if (malloc(1) == NULL)
-		printf("LA CAGAMOS\n");
+		printf("No pude alocar más\n");
 
 	return 0;
 }
