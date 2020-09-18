@@ -46,7 +46,7 @@ void *malloc(size_t size){
             removeFreeList(ret);
 
             //hay que ver si algun bloque con menor tamano podria acomodarlo 
-            while(PWRTWO(sizePow-1) - 8 >= size && sizePow >= MIN_SIZE_POW){
+            while(PWRTWO(sizePow-1) - 8 >= size && sizePow > MIN_SIZE_POW){
                 sizePow--;
 
                 partitionMem(ret);
@@ -146,7 +146,7 @@ static void mergeBlocks(unsigned char **blockBase){
     removeFreeList(GET_BUDDY(*blockBase, sizePow, mem));
     
     //verifica si el bloque se corresponde al buddy de direcciones mas bajas
-    if(((long)*blockBase & (1 << sizePow)) != 0){
+    if(((long)(*blockBase - mem) & (1 << sizePow)) != 0){
         *blockBase = GET_BUDDY(*blockBase, sizePow, mem);
     }
     
@@ -156,43 +156,44 @@ static void mergeBlocks(unsigned char **blockBase){
 }
 
 int main(){
-    unsigned char *array = malloc(2039);
+    unsigned char *array = malloc(24);
 	if(array == NULL)
 	{
 		printf("F el primer if\n");
 		return 0;
 	}
     unsigned char *array2 = malloc(45);
-	if(array == NULL)
+	if(array2 == NULL)
 	{
 		printf("F el primer if\n");
 		return 0;
 	}
-    // unsigned char *array3 = malloc(1000);
-	// if(array == NULL)
-	// {
-	// 	printf("F el primer if\n");
-	// 	return 0;
-	// }
-	// free(array);
-    // free(array2);
-    int j = 0;
-    for(int i = 0; i < 4096; i++){
-        if( i % 8 == 0 ){
-            printf("\n");
-        }
-        if(i % 128 == 0){
-            printf("nuevo bloque de 128, j = %d, i = %d\n", j, i);
-            j++;
-        }
+    unsigned char *array3 = malloc(1000);
+	if(array3 == NULL)  
+	{
+		printf("F el primer if\n");
+		return 0;
+	}
+	free(array);
+    // int j = 0;
+    // for(int i = 0; i < 4096; i++){
+    //     if( i % 8 == 0 ){
+    //         printf("\n");
+    //     }
+    //     if(i % 128 == 0){
+    //         printf("nuevo bloque de 128, j = %d, i = %d\n", j, i);
+    //         j++;
+    //     }
 
-        printf("%d ", mem[i]);
-    }
+    //     printf("%d ", mem[i]);
+    // }
     // fflush(stdout);
-    // free(array3);
+    free(array2);
+    free(array3);
+    
 
-	// if(malloc(1) == NULL)
-	// 	printf("LA CAGAMOS\n");
+	if(malloc(1) == NULL)
+		printf("LA CAGAMOS\n");
 
 	return 0;
 }
