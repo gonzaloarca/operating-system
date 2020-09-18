@@ -39,21 +39,18 @@ void *malloc(size_t size){
         //si la lista esta vacia se garantiza que su primer elemento es NULL
         if(PWRTWO(sizePow) - 8 >= size && freeLists[i][0] != NULL){ 
             //ahora debo encontrar el ultimo bloque libre en la lista
-            int j, partition = 0;
+            int j;
             for(j = 0; j < LIST_SIZE && freeLists[i][j + 1] != NULL; j++);
             
             ret = freeLists[i][j];
+            removeFreeList(ret);
 
             //hay que ver si algun bloque con menor tamano podria acomodarlo 
-            while(PWRTWO(sizePow-1) - 8 >= size && sizePow > MIN_SIZE_POW){
-                partition = 1;
+            while(PWRTWO(sizePow-1) - 8 >= size && sizePow >= MIN_SIZE_POW){
                 sizePow--;
 
-                removeFreeList(ret);
                 partitionMem(ret);
             }
-            if(partition == 0)
-                removeFreeList(ret);
 
             createHeader(ret, OCCUPIED, sizePow);
 
@@ -90,9 +87,9 @@ static void addFreeList(unsigned char *blockBase){
     int i;
 
     //busca la primer posicion vacia en la lista de su tamano y la asigna
-    for(i = 0; freeLists[sizePow - MIN_SIZE_POW][i] == NULL && i < LIST_SIZE; i++);
+    for(i = 0; freeLists[sizePow - MIN_SIZE_POW][i] != NULL && i < LIST_SIZE; i++);
     
-    freeLists[sizePow - MIN_SIZE_POW][i] = blockBase;
+    freeLists[sizePow - MIN_SIZE_POW ][i] = blockBase;
 }
 
 static void removeFreeList(unsigned char *blockBase){
@@ -165,12 +162,12 @@ int main(){
 		printf("F el primer if\n");
 		return 0;
 	}
-    // unsigned char *array2 = malloc(239);
-	// if(array == NULL)
-	// {
-	// 	printf("F el primer if\n");
-	// 	return 0;
-	// }
+    unsigned char *array2 = malloc(45);
+	if(array == NULL)
+	{
+		printf("F el primer if\n");
+		return 0;
+	}
     // unsigned char *array3 = malloc(1000);
 	// if(array == NULL)
 	// {
