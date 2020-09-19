@@ -1,6 +1,5 @@
 
 #include <memManager.h>
-#include <stdio.h>
 
 #define GET_BUDDY(base, size, offset) ((unsigned char *)(((long)(base - offset) ^ (1 << size)) + (long)offset))
 
@@ -156,4 +155,22 @@ static void mergeBlocks(unsigned char **blockBase){
     (*blockBase)[0]++; 
 
     addFreeList(*blockBase);
+}
+
+void getMemStatus(MemStatus *stat){
+    stat->totalMem = PWRTWO(MEM_SIZE_POW);
+    size_t freeCount = 0;
+    
+    if(initMem == 0){
+        stat->freeMem = stat->totalMem;
+        stat->occMem = 0;  
+    }else{
+        for(int i = 0; i < LIST_QTY ; i++){
+            for(int j = 0; j < LIST_SIZE && freeLists[i][j] != NULL; j++){
+                freeCount += PWRTWO(i+MIN_SIZE_POW);
+            }
+        }
+        stat->freeMem = freeCount;
+        stat->occMem = stat->totalMem - stat->freeMem;
+    }
 }
