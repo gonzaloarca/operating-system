@@ -10,4 +10,12 @@
 void *malloc(size_t size);
 void free(void *ptr);
 
+typedef struct{
+    size_t totalMem;
+    size_t occMem;
+    size_t freeMem;
+} MemStatus;
+
+void getMemStatus(MemStatus *stat);
+
 #endif

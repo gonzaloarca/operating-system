@@ -82,3 +82,18 @@ void free(void *ptr){
 
 	freep = p;
 }
+
+void getMemStatus(MemStatus *stat){
+	int freeCount = 0;
+	int totalCount = PWRTWO(MEM_SIZE_POW);
+	Header *curr = base.s.next;
+
+	while(curr != &base){
+		freeCount += curr->s.size * sizeof(base);
+		curr = curr->s.next;
+	}
+	
+	stat->totalMem = totalCount;
+	stat->occMem = totalCount - freeCount;
+	stat->freeMem = freeCount;
+}
