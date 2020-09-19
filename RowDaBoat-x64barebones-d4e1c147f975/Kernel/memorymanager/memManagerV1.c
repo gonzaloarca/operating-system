@@ -19,7 +19,7 @@ static Header base = {{0}};
 static Header *freep = NULL;
 
 //	malloc adaptado del K&R
-void *malloc(size_t size){
+void *sys_malloc(size_t size){
 	Header *currp, *prevp;
 	size_t nunits;
 	
@@ -59,7 +59,7 @@ void *malloc(size_t size){
 }
 
 //	free copiado textual del K&R
-void free(void *ptr){
+void sys_free(void *ptr){
 	Header *bp, *p;
 
 	bp = (Header *)ptr - 1; /* point to block header */
@@ -83,7 +83,7 @@ void free(void *ptr){
 	freep = p;
 }
 
-void getMemStatus(MemStatus *stat){
+void sys_getMemStatus(MemStatus *stat){
 	int freeCount = 0;
 	int totalCount = PWRTWO(MEM_SIZE_POW);
 	Header *curr = base.s.next;

@@ -9,13 +9,16 @@ GLOBAL clrScreen
 GLOBAL initProcess
 GLOBAL runFirstProcess
 GLOBAL getMemory
+GLOBAL malloc
+GLOBAL free
+GLOBAL getMemStatus
 
 section .text
 
 ; Estas aclaraciones sobre las funciones tambien se encuentran en "syscalls.h"
 
 ;-------------------------------------------------------
-;	SYSCALL WRITE: RAX = 4
+;	SYSCALL write: RAX = 4
 ;			Imprime en la ventana actual los primeros count caracteres de buffer
 ;			si fd = 2, sera la salida de error y se imprimira en rojo, si es 1 en el color determinado por la ventana
 ;-------------------------------------------------------
@@ -43,7 +46,7 @@ write:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL READ: RAX = 3
+;	SYSCALL read: RAX = 3
 ;			Lee de entrada estandar en un buffer hasta que se llegue a "count" caracteres o se llegue al caracter "delim"
 ;-------------------------------------------------------
 ; Llamada en C:
@@ -216,7 +219,6 @@ runFirstProcess:
 ; Llamada en C:
 ;	void getMemory(memType* answer, char* address)
 ;-------------------------------------------------------
-
 getMemory:
 	push rbp
 	mov rbp, rsp
@@ -232,8 +234,80 @@ getMemory:
 	mov rcx, rsi
 	int 80h
 
-	pop rbx
 	pop rcx
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL malloc: RAX = 26
+;			Funcion que se encarga de llamar a la syscall que alloca memoria suficiente para almacenar el size indicado por parametro, 
+;		en caso de no haber memoria suficiente disponibleretorna NULL
+;-------------------------------------------------------
+; Llamada en C:
+;	void *malloc(size_t size)
+;-------------------------------------------------------
+malloc:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 26
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL free: RAX = 27
+;			Funcion que se encarga de llamar a la syscall que libera la memoria alocada que arranca en la direccion indicada por parametro, 
+;		si no existe realiza undefined behaviour
+;-------------------------------------------------------
+; Llamada en C:
+;	void free(void *ptr)
+;-------------------------------------------------------
+free:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 27
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL getMemStatus: RAX = 28
+;			Funcion que se encarga de llamar a la syscall que escribe en la estructura indicada los valores que permiten saber el estado 
+;		de la memoria disponible para alocar en dicho instante
+;-------------------------------------------------------
+; Llamada en C:
+;	void getMemStatus(MemStatus *stat)
+;-------------------------------------------------------
+getMemStatus:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 28
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
 
 	mov rsp, rbp
 	pop rbp

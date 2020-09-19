@@ -7,8 +7,8 @@
 #define MEM_SIZE_POW 23 // 2^23 B = 8 MB
 #define MEM_BASE ((unsigned char*)0x700000)
 
-void *malloc(size_t size);
-void free(void *ptr);
+void *sys_malloc(size_t size);
+void sys_free(void *ptr);
 
 typedef struct{
     size_t totalMem;
@@ -16,6 +16,6 @@ typedef struct{
     size_t freeMem;
 } MemStatus;
 
-void getMemStatus(MemStatus *stat);
+void sys_getMemStatus(MemStatus *stat);
 
 #endif

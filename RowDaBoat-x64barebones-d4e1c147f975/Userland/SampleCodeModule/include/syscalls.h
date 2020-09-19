@@ -1,6 +1,8 @@
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
+#include <stddef.h>
+
 // Estructura utilizada para manejar una copia de los registros realizada en algun momento
 typedef struct RegistersType {
 	uint64_t rax;
@@ -68,5 +70,22 @@ typedef struct memType {
 
 // Syscall para volcar en la estructura recibida los 32 bytes de informacion encontrados a partir de la direccion recibida
 void getMemory(memType* answer, char * address);
+
+// Syscall que alloca memoria suficiente para almacenar el size indicado por parametro, en caso de no haber memoria suficiente disponible
+//retorna NULL
+void *malloc(size_t size);
+
+// Syscall que libera la memoria alocada que arranca en la direccion indicada por parametro, si no existe realiza undefined behaviour
+void free(void *ptr);
+
+// Estructura utilizada para imprimir el estado de la memoria disponible para alocar
+typedef struct{
+    size_t totalMem;
+    size_t occMem;
+    size_t freeMem;
+} MemStatus;
+
+// Syscall que escribe en la estructura indicada los valores que permiten saber el estado de la memoria disponible para alocar en dicho instante
+void getMemStatus(MemStatus *stat);
 
 #endif

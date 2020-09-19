@@ -6,6 +6,7 @@
 #include <registers.h>
 #include <rtc_driver.h>
 #include <process_manager.h>
+#include <memManager.h>
 
 typedef struct{
 	uint64_t rbx;
@@ -84,6 +85,23 @@ uint64_t syscall_25(uint64_t rbx, uint64_t rcx){
 	return 0;
 }
 
+// La syscall 26 permite alocar memoria suficiente para que entre la indicada por parametro, en caso de ser posible
+uint64_t syscall_26(uint64_t rbx){
+	return (uint64_t) sys_malloc((size_t) rbx);
+}
+
+// La syscall 27 permite liberar la memoria alocada que arranca en la direccion indicada por parametro, en caso de no existir realiza undefined behaviour
+uint64_t syscall_27(uint64_t rbx){
+	sys_free((void *) rbx);
+	return 0;
+}
+
+// La syscall 28 rellena en la estructura indicada por parametro los valores del estado de la memoria disponible para alocar en dicho instante
+uint64_t syscall_28(uint64_t rbx){
+	sys_getMemStatus((MemStatus *) rbx);
+	return 0;
+}
+
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
 //	Cada syscall se encarga de interpretar a la estructura
@@ -113,6 +131,12 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 23: return syscall_23();
 
 		case 25: return syscall_25( reg->rbx, reg->rcx);
+
+		case 26: return syscall_26( reg->rbx );
+
+		case 27: return syscall_27( reg->rbx );
+
+		case 28: return syscall_28( reg->rbx );
 	}
 
 	return 1;

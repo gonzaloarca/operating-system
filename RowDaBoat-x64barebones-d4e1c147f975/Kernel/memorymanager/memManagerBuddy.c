@@ -19,7 +19,7 @@ unsigned char *mem = MEM_BASE;
 static unsigned char *freeLists[LIST_QTY][LIST_SIZE] = {{0}};
 static int initMem = 0;
 
-void *malloc(size_t size){
+void *sys_malloc(size_t size){
     if(size == 0)
         return NULL;
 
@@ -116,7 +116,7 @@ static void removeFreeList(unsigned char *blockBase){
     }
 }
 
-void free(void *ptr){
+void sys_free(void *ptr){
     unsigned char *blockBase = ((unsigned char *)ptr) - 8;
     unsigned int currSizePow = blockBase[0] ^ (1 << 7);
 
@@ -157,20 +157,19 @@ static void mergeBlocks(unsigned char **blockBase){
     addFreeList(*blockBase);
 }
 
-void getMemStatus(MemStatus *stat){
+void sys_getMemStatus(MemStatus *stat){
     stat->totalMem = PWRTWO(MEM_SIZE_POW);
-    size_t freeCount = 0;
-    
+
     if(initMem == 0){
         stat->freeMem = stat->totalMem;
-        stat->occMem = 0;  
     }else{
+        size_t freeCount = 0;
         for(int i = 0; i < LIST_QTY ; i++){
             for(int j = 0; j < LIST_SIZE && freeLists[i][j] != NULL; j++){
                 freeCount += PWRTWO(i+MIN_SIZE_POW);
             }
         }
         stat->freeMem = freeCount;
-        stat->occMem = stat->totalMem - stat->freeMem;
     }
+    stat->occMem = stat->totalMem - stat->freeMem;
 }
