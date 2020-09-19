@@ -86,6 +86,14 @@ void sys_free(void *ptr){
 void sys_getMemStatus(MemStatus *stat){
 	int freeCount = 0;
 	int totalCount = PWRTWO(MEM_SIZE_POW);
+	
+	if(freep == NULL){
+		stat->totalMem = totalCount;
+		stat->occMem = 0;
+		stat->freeMem = totalCount;
+		return;
+	}
+
 	Header *curr = base.s.next;
 
 	while(curr != &base){
