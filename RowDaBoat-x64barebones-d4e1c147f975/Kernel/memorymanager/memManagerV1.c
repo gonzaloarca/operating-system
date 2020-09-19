@@ -1,21 +1,16 @@
-#include <stddef.h>
+#include <memManager.h>
 
-#include <stdio.h>
-#include <string.h>
+#define sizeof(type) ((unsigned char *)(&type+1)-(unsigned char*)(&type))
 
-#define sizeof(type) ((char *)(&type+1)-(char*)(&type))
-
-#define MEM_SIZE 4096
-
-char mem[MEM_SIZE];			//AUXILIAR PARA TESTEAR: cambiar por el inicio de la memoria
+unsigned char *mem = MEM_BASE;
 
 union header {
     struct {
         union header *next;
-        unsigned size;
+        unsigned int size;
     } s;
 
-	char x[16];
+	unsigned char x[16];
 };
 
 typedef union header Header;
@@ -24,14 +19,14 @@ static Header base = {{0}};
 static Header *freep = NULL;
 
 //	malloc adaptado del K&R
-void *malloc(size_t nbytes){
+void *malloc(size_t size){
 	Header *currp, *prevp;
 	size_t nunits;
 	
 	if (freep == NULL){ //No hay lista todavia, creo el bloque de toda la memoria
 		Header *new = (Header *) mem;
 
-		new->s.size = MEM_SIZE/sizeof(base);		//Recordar que el size es en cantidad de Headers
+		new->s.size = PWRTWO(MEM_SIZE_POW)/sizeof(base);		//Recordar que el size es en cantidad de Headers
 		new->s.next = &base;						//Vuelve a la base de la lista
 
 		base.s.next = new;							//Apunta al bloque de toda la memoria
@@ -39,7 +34,7 @@ void *malloc(size_t nbytes){
 		base.s.size = 0;
 	}
 
-	nunits = (nbytes+sizeof(base)-1)/sizeof(base) + 1;
+	nunits = (size+sizeof(base)-1)/sizeof(base) + 1;
 	prevp = freep;
 
 	for(currp = freep->s.next; ;prevp = currp, currp = currp->s.next){
@@ -64,10 +59,10 @@ void *malloc(size_t nbytes){
 }
 
 //	free copiado textual del K&R
-void free(void *ap){
+void free(void *ptr){
 	Header *bp, *p;
 
-	bp = (Header *)ap - 1; /* point to block header */
+	bp = (Header *)ptr - 1; /* point to block header */
 
 	for(p = freep; !(bp > p && bp < p->s.next); p = p->s.next)
 		if(p >= p->s.next && (bp > p || bp < p->s.next))
@@ -86,22 +81,4 @@ void free(void *ap){
 		p->s.next = bp;
 
 	freep = p;
-}
-
-//	PROGRAMA DE TESTEO BORRAR
-int main(int argc, char const *argv[]){
-	char *array = malloc(MEM_SIZE-16);
-
-	if(array == NULL)
-	{
-		printf("F el primer if\n");
-		return 0;
-	}
-
-	free(array);
-
-	if (malloc(1) == NULL)
-		printf("No pude alocar más\n");
-
-	return 0;
 }

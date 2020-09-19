@@ -1,23 +1,22 @@
-#include <stddef.h>
+
+#include <memManager.h>
 #include <stdio.h>
-#define PWRTWO(x) (1 << (x))
+
 #define GET_BUDDY(base, size, offset) ((unsigned char *)(((long)(base - offset) ^ (1 << size)) + (long)offset))
+
 #define FREE 0
 #define OCCUPIED 1
-#define MEM_SIZE_POW 12 //2^12 bytes
-#define MIN_SIZE_POW 6  //2^6 bytes
+#define MIN_SIZE_POW 8  //2^8 = 256 bytes
 #define LIST_SIZE (PWRTWO(MEM_SIZE_POW - MIN_SIZE_POW) / 2)
 #define LIST_QTY (MEM_SIZE_POW - MIN_SIZE_POW + 1)
 
-void *malloc(size_t size);
-void free(void *ptr);
 static void createHeader(unsigned char *blockBase, unsigned char occupied, unsigned int sizePow);
 static void partitionMem(unsigned char *blockBase);
 static void addFreeList(unsigned char *blockBase);
 static void removeFreeList(unsigned char *blockBase);
 static void mergeBlocks(unsigned char **blockBase);
 
-unsigned char mem[PWRTWO(MEM_SIZE_POW)] = {0};
+unsigned char *mem = MEM_BASE;
 static unsigned char *freeLists[LIST_QTY][LIST_SIZE] = {{0}};
 static int initMem = 0;
 
@@ -157,51 +156,4 @@ static void mergeBlocks(unsigned char **blockBase){
     (*blockBase)[0]++; 
 
     addFreeList(*blockBase);
-}
-
-int main(){
-
-    
-    unsigned char *array = malloc(24);
-	if(array == NULL)
-	{
-		printf("F el primer if\n");
-		return 0;
-	}
-    unsigned char *array2 = malloc(45);
-	if(array2 == NULL)
-	{
-		printf("F el primer if\n");
-		return 0;
-	}
-    unsigned char *array3 = malloc(1000);
-	if(array3 == NULL)  
-	{
-		printf("F el primer if\n");
-		return 0;
-	}
-    for(int i = 0; i <10000 ; i++)
-        malloc(i);
-	free(array);
-    free(array2);
-    free(array3);
-    
-    int j = 0;
-    for(int i = 0; i < 4096; i++){
-        if( i % 8 == 0 ){
-            printf("\n");
-        }
-        if(i % 128 == 0){
-            printf("nuevo bloque de 128, j = %d, i = %d\n", j, i);
-            j++;
-        }
-
-        printf("%d ", mem[i]);
-    }
-    fflush(stdout);
-
-	if(malloc(1) == NULL)
-		printf("LA CAGAMOS\n");
-
-	return 0;
 }
