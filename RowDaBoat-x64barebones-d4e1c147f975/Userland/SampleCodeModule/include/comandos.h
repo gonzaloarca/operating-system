@@ -23,7 +23,7 @@ void help();
 // Programa que imprime los valores de los registros que se tenian la ultima vez que se presiono f1
 void printInforeg();
 
-//	Indica el fabricante del CPU
+// Indica el fabricante del CPU
 char *cpuVendor(char buffer[13]);
 
 //	Indica la marca del CPU
@@ -45,5 +45,8 @@ void executeZeroException();
 
 // Programa para ejecutar excepcion de instruccion indefinida
 void executeUIException();
+
+// Programa que imprime los valores sobre el estado de la memoria
+void printMemStatus();
 
 #endif

@@ -1,83 +1,5 @@
 #include <comandos.h>
 
-
-// Constantes utilizadas por el comando help
-#define CLEAR_MSG		"\tLimpia la pantalla."
-#define CPUINFO_MSG 	"\tMuestra informacion de interes sobre el cpu."
-#define CPUTEMP_MSG		"\tMuestra la temperatura del cpu."
-#define INFOREG_MSG 	"\tMuestra el estado de los registros del ultimo\n guardado(los guardados se realizan presionando F1)."
-#define PRINTMEM_MSG 	"\tMuestra los 32 bytes siguientes a partir de la\n direccion de memoria(en hexadecimal) recibida por parametro."
-#define PRINTTIME_MSG 	"\tMuestra la hora actual del dispositivo."
-#define EXCP_0_MSG		"\tComando para verificar la rutina de\n excepcion de division por cero."
-#define EXCP_6_MSG		"\tComando para verificar la rutina de\n excepcion de operacion invalida(Undefined Instruction)."
-
-#define TECLA_F1		"\tEjecuta el guardado de los registros, para que sean\n impresos con inforeg."
-#define TECLA_F2		"\tEjecuta el borrado total de la linea actual."
-#define CAMBIO			"\tEjecuta el cambio de proceso."
-
-void help(){
-	puts("---------Informacion sobre comandos disponibles----------------\n");
-	changeWindowColor(0xffd300);
-	printf("%s\t", "clear");
-	changeWindowColor(0xffffff);
-	printf("%s\n", CLEAR_MSG);
-
-	changeWindowColor(0xffd300);
-	printf("%s  ", "cpuinfo");
-	changeWindowColor(0xffffff);
-	printf("%s\n", CPUINFO_MSG);
-
-	changeWindowColor(0xffd300);
-	printf("%s  ", "cputemp");
-	changeWindowColor(0xffffff);
-	printf("%s\n", CPUTEMP_MSG);
-
-	changeWindowColor(0xffd300);
-	printf("%s  ", "inforeg");
-	changeWindowColor(0xffffff);
-	printf("%s\n", INFOREG_MSG);
-
-	changeWindowColor(0xffd300);
-	printf("%s ", "printmem");
-	changeWindowColor(0xffffff);
-	printf("%s\n", PRINTMEM_MSG);
-
-	changeWindowColor(0xffd300);
-	printf("%s", "printtime");
-	changeWindowColor(0xffffff);
-	printf("%s\n", PRINTTIME_MSG);
-
-	changeWindowColor(0xffd300);
-	printf("%s", "executeZeroException");
-	changeWindowColor(0xffffff);
-	printf("%s\n", EXCP_0_MSG);
-
-	changeWindowColor(0xffd300);
-	printf("%s", "executeUIException  ");
-	changeWindowColor(0xffffff);
-	printf("%s\n", EXCP_6_MSG);
-
-	putchar('\n');
-
-	printf("---------Informacion sobre teclas especiales disponibles-------\n");
-	changeWindowColor(0x4ad5f2);
-	printf("%s", "F1\t");
-	changeWindowColor(0xffffff);
-	printf("%s\n", TECLA_F1);
-
-	changeWindowColor(0x4ad5f2);
-	printf("%s", "F2\t");
-	changeWindowColor(0xffffff);
-	printf("%s\n", TECLA_F2);
-
-	changeWindowColor(0x4ad5f2);
-	printf("%s", "F3\t");
-	changeWindowColor(0xffffff);
-	printf("%s\n", CAMBIO);
-
-	putchar('\n');
-}
-
 void printTime(){       //se podria modularizar en una funcion para obtener el tiempo correcto, que abarcaria hasta el while, y otra para generar el string formateado del tiempo, despues juega printString
     TimeFormat time;
 	getTime( &time );
@@ -227,4 +149,93 @@ void printCPUTemp(){
 	printf("Temperatura actual del CPU: ");
 	changeWindowColor(0xffffff);
 	printf("%d C\n", temp);
+}
+
+void printMemStatus(){
+	MemStatus stat;
+	getMemStatus(&stat);
+	printf("Total = %lu\tOcupada = %lu\tLibre = %lu\n", stat.totalMem, stat.occMem, stat.freeMem);
+}
+
+// Constantes utilizadas por el comando help
+#define CLEAR_MSG		"\tLimpia la pantalla."
+#define CPUINFO_MSG 	"\tMuestra informacion de interes sobre el cpu."
+#define CPUTEMP_MSG		"\tMuestra la temperatura del cpu."
+#define INFOREG_MSG 	"\tMuestra el estado de los registros del ultimo guardado(los guardados se realizan presionando F1)."
+#define PRINTMEM_MSG 	"\tMuestra los 32 bytes siguientes a partir de la direccion de memoria(en hexadecimal) recibida por parametro."
+#define PRINTTIME_MSG 	"\tMuestra la hora actual del dispositivo."
+#define MEMSTATUS_MSG	"\tMuestra el estado de la memoria disponible para alocar."
+#define EXCP_0_MSG		"\tComando para verificar la rutina de excepcion de division por cero."
+#define EXCP_6_MSG		"\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
+
+#define TECLA_F1		"\tEjecuta el guardado de los registros, para que sean impresos con inforeg."
+#define TECLA_F2		"\tEjecuta el borrado total de la linea actual."
+#define CAMBIO			"\tEjecuta el cambio de proceso."
+
+void help(){
+	puts("---------Informacion sobre comandos disponibles----------------\n");
+	changeWindowColor(0xffd300);
+	printf("%s\t", "clear");
+	changeWindowColor(0xffffff);
+	printf("%s\n", CLEAR_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s  ", "cpuinfo");
+	changeWindowColor(0xffffff);
+	printf("%s\n", CPUINFO_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s  ", "cputemp");
+	changeWindowColor(0xffffff);
+	printf("%s\n", CPUTEMP_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s  ", "inforeg");
+	changeWindowColor(0xffffff);
+	printf("%s\n", INFOREG_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s ", "printmem");
+	changeWindowColor(0xffffff);
+	printf("%s\n", PRINTMEM_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "printtime");
+	changeWindowColor(0xffffff);
+	printf("%s\n", PRINTTIME_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "memStatus");
+	changeWindowColor(0xffffff);
+	printf("%s\n", MEMSTATUS_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "executeZeroException");
+	changeWindowColor(0xffffff);
+	printf("%s\n", EXCP_0_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "executeUIException  ");
+	changeWindowColor(0xffffff);
+	printf("%s\n", EXCP_6_MSG);
+
+	putchar('\n');
+
+	printf("---------Informacion sobre teclas especiales disponibles-------\n");
+	changeWindowColor(0x4ad5f2);
+	printf("%s", "F1\t");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TECLA_F1);
+
+	changeWindowColor(0x4ad5f2);
+	printf("%s", "F2\t");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TECLA_F2);
+
+	changeWindowColor(0x4ad5f2);
+	printf("%s", "F3\t");
+	changeWindowColor(0xffffff);
+	printf("%s\n", CAMBIO);
+
+	putchar('\n');
 }

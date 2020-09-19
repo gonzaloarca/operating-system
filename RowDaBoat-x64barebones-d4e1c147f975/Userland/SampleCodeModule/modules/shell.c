@@ -58,6 +58,9 @@ static void parse(){
         executeZeroException();
     else if(strcmp( inputBuffer, "executeUIException\n") == 0)
         executeUIException();
+    else if(strcmp( inputBuffer, "memStatus\n") == 0){
+        printMemStatus();
+    }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }
