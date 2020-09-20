@@ -1,8 +1,6 @@
 #include <scheduler.h>
 #include <memManager.h>
 
-#include <window_manager.h>
-
 typedef struct 
 {
 	unsigned int pid;				        //process ID del programa
@@ -44,9 +42,11 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     new->pcb.argc = argc;
     new->pcb.argv = (uint64_t) argv;
 
-    createStackFrame(new->pcb.rsp, mainPtr, argc, (uint64_t) argv);
+    //ALINEAR
+    new->pcb.rsp &= -8;
 
-    new->pcb.rsp -= 8*20;
+    //  Armo el stack frame del proceso nuevo
+    new->pcb.rsp = createStackFrame(new->pcb.rsp, mainPtr, argc, (uint64_t) argv);
 
     //  Si la lista está vacía
     if(lastProc == NULL){
@@ -66,12 +66,12 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
 uint64_t getNextRSP(uint64_t rsp){
     //  Si todavia no está corriendo ningún proceso
     if(currentProc == NULL){
-        if (lastProc == NULL)   //  Todavia no hay procesos
+        if (lastProc == NULL){   //  Todavia no hay procesos
             return 0;
+        }
         currentProc = lastProc->next;
-    }
-
-    currentProc->pcb.rsp = rsp;
+    } else
+        currentProc->pcb.rsp = rsp;
     
     do{
         currentProc = currentProc->next;

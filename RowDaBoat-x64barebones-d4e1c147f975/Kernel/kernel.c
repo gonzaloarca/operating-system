@@ -47,14 +47,17 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
-typedef int (*EntryPoint)();
+//typedef int (*EntryPoint)();
 
 int main()
 {
+	_cli();
+
 	setWindows();
 	load_idt();
 
 	sys_start((uint64_t) sampleCodeModuleAddress, 1, NULL);
+	_sti();
 	_hlt();
 
 //	((EntryPoint)sampleCodeModuleAddress)();

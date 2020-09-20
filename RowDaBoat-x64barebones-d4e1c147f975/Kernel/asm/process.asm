@@ -20,7 +20,7 @@ _start:
 ;--------------------------------------------------------------
 ; PREPARADO DEL STACK FRAME AL CREAR UN PROCESO
 ;--------------------------------------------------------------
-;  void createStackFrame(uint64_t frame, uint64_t mainptr, int argc, int argv);
+;  uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, int argv);
 ;--------------------------------------------------------------
 ;   rdi = *frame
 ;   rsi = mainptr
@@ -39,16 +39,18 @@ createStackFrame:
     sub rdi, 8
     mov QWORD [rdi], _start       ;   RIP
 
-    sub rdi, 8                      ;   Apunto al RAX en Stack
     mov r9, 15                      ;   Cantidad de registros backupeados en Stack
 .ciclo:
+    sub rdi, 8
+	mov QWORD[rdi], 0				;	Seteo en cero todos los registros
 	dec r9
-	mov QWORD[rdi+8*r9], 0				;	Seteo en cero todos los registros
 	cmp r9, 0
 	jnz .ciclo
 
-    mov [rdi+8*3], rcx            ;   RDX = argv
-    mov [rdi+8*5], rsi            ;   RDI = mainptr
-    mov [rdi+8*6], rdx            ;   RSI = argc
+    mov [rdi+8*11], rcx            ;   RDX = argv
+    mov [rdi+8*9], rsi            ;   RDI = mainptr
+    mov [rdi+8*8], rdx            ;   RSI = argc
+
+    mov rax, rdi
 
     ret

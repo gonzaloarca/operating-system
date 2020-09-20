@@ -7,7 +7,7 @@
 #define ACTIVE  1
 #define BLOCKED 0
 
-void createStackFrame(uint64_t frame, uint64_t mainptr, int argc, int argv);
+uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, int argv);
 
 int sys_start(uint64_t mainPtr, int argc, char const *argv[]);
 
