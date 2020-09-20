@@ -136,8 +136,11 @@ _irq00Handler:
 	;	Hago el cambio del stack frame del proceso
 	mov rdi, rsp
 	call getNextRSP
+	cmp rax, 0
+	jz .end
 	mov rsp, rax
 
+.end:
 	; signal pic EOI (End of Interrupt)
 	mov al, 20h
 	out 20h, al

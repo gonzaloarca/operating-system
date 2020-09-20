@@ -5,7 +5,6 @@
 #include <libasm64.h>
 #include <registers.h>
 #include <rtc_driver.h>
-#include <process_manager.h>
 #include <memManager.h>
 
 typedef struct{
@@ -90,8 +89,6 @@ uint64_t syscall_28(uint64_t rbx){
 	sys_getMemStatus((MemStatus *) rbx);
 	return 0;
 }
-
-//	La syscall 30 comienza un proceso
 
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall

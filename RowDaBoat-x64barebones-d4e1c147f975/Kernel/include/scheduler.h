@@ -7,9 +7,9 @@
 #define ACTIVE  1
 #define BLOCKED 0
 
-void createStackFrame(uint64_t *frame, uint64_t mainptr, uint64_t argc, uint64_t argv);
+void createStackFrame(uint64_t frame, uint64_t mainptr, int argc, int argv);
 
-int sys_start(int *(mainPtr)(int, char const **), int argc, char const *argv[]);
+int sys_start(uint64_t mainPtr, int argc, char const *argv[]);
 
 uint64_t getNextRSP(uint64_t rsp);
 

@@ -20,7 +20,7 @@ _start:
 ;--------------------------------------------------------------
 ; PREPARADO DEL STACK FRAME AL CREAR UN PROCESO
 ;--------------------------------------------------------------
-;   void createStackFrame(uint64_t *frame, uint64_t mainptr, uint64_t argc, uint64_t argv);
+;  void createStackFrame(uint64_t frame, uint64_t mainptr, int argc, int argv);
 ;--------------------------------------------------------------
 ;   rdi = *frame
 ;   rsi = mainptr
@@ -33,9 +33,9 @@ createStackFrame:
     sub rdi, 8
     mov [rdi], rdi              ;   RBP
     sub rdi, 8
-    mov [rdi], 0x202              ;   RFLAGS
+    mov QWORD [rdi], 0x202              ;   RFLAGS
     sub rdi, 8
-    mov [rdi], 0x8                ;   0x8
+    mov QWORD [rdi], 0x8                ;   0x8
     sub rdi, 8
     mov QWORD [rdi], _start       ;   RIP
 
