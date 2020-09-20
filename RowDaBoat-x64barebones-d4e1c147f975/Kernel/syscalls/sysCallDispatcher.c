@@ -68,17 +68,6 @@ uint64_t syscall_14()
 	return (uint64_t) sys_getRegisters();
 }
 
-//	La syscall 21 recibe un puntero a funcion de un proceso y lo inicializa
-uint64_t syscall_21( uint64_t rbx ){
-	return sys_initModule((void (*)()) rbx);
-}
-
-//	La syscall 23 corre el primer proceso si es que hay al menos uno cargado
-uint64_t syscall_23(){
-	sys_runFirstProcess();
-	return 0;
-}
-
 //	La syscall 25 rellena en la estructura indicada por parametro los 32 bytes de informacion que se obtienen a partir de address
 uint64_t syscall_25(uint64_t rbx, uint64_t rcx){
 	sys_getMemory((memType *) rbx, (char *) rcx);
@@ -101,6 +90,8 @@ uint64_t syscall_28(uint64_t rbx){
 	sys_getMemStatus((MemStatus *) rbx);
 	return 0;
 }
+
+//	La syscall 30 comienza un proceso
 
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
@@ -125,10 +116,6 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 13: return syscall_13();
 
 		case 14: return syscall_14();
-
-		case 21: return syscall_21( reg->rbx );
-
-		case 23: return syscall_23();
 
 		case 25: return syscall_25( reg->rbx, reg->rcx);
 

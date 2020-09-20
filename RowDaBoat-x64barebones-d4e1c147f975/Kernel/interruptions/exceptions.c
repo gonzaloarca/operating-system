@@ -1,4 +1,3 @@
-#include <process_manager.h>
 #include <registers.h>
 #include <window_manager.h>
 
@@ -14,7 +13,7 @@ static void divideByZeroException(){
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "DIVIDE BY ZERO EXCEPTION\n", 25);
 	printRegisters(&reg);
-	recoverModule();
+//	recoverModule();
 	return;
 }
 
@@ -22,7 +21,7 @@ static void undefinedInstructionException(){
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "UNDEFINED INSTRUCTION EXCEPTION\n", 32);
 	printRegisters(&reg);
-	recoverModule();
+//	recoverModule();
 	return;
 }
 
@@ -30,7 +29,7 @@ static void defaultException(){
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "UNKNOWN EXCEPTION\n", 18);
 	printRegisters(&reg);
-	recoverModule();
+//	recoverModule();
 	return;
 }
 

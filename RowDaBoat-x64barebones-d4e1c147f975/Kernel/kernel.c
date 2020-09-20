@@ -53,6 +53,8 @@ int main()
 	setWindows();
 	load_idt();
 
+	//Iniciamos shell
+	//hlt
 	((EntryPoint)sampleCodeModuleAddress)();
 
 	return 0;

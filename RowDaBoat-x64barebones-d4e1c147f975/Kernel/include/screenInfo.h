@@ -2,7 +2,7 @@
 #define _SCREEN_INFO_H
 
 // Cantidad de pantallas
-#define N 2
+#define N 1
 
 // Tamanio y color del margen entre ventanas
 #define WINDOW_MARGIN 4

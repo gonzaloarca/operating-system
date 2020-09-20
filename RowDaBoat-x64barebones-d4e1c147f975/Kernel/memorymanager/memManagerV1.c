@@ -1,7 +1,5 @@
 #include <memManager.h>
 
-#define sizeof(type) ((unsigned char *)(&type+1)-(unsigned char*)(&type))
-
 unsigned char *mem = MEM_BASE;
 
 union header {
