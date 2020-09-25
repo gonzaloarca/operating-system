@@ -47,8 +47,6 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
-//typedef int (*EntryPoint)();
-
 int main()
 {
 	_cli();
@@ -59,8 +57,6 @@ int main()
 	sys_start((uint64_t) sampleCodeModuleAddress, 1, NULL);
 	_sti();
 	_hlt();
-
-//	((EntryPoint)sampleCodeModuleAddress)();
 
 	return 0;
 }

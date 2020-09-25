@@ -17,6 +17,8 @@ _start:
     mov rax, 31     ;Llamo a la syscall exit
     int 80h
 
+    int 20h         ;Llamo a la interrupcion de Timer Tick para cambiar de proceso
+
 ;--------------------------------------------------------------
 ; PREPARADO DEL STACK FRAME AL CREAR UN PROCESO
 ;--------------------------------------------------------------

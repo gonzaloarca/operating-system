@@ -33,14 +33,6 @@ int read( char *buffer, unsigned long int count, char delim );
 //	Limpia la pantalla actual
 void clrScreen();
 
-//	Funcion para agregar un nuevo modulo a la lista de modulos
-//	Regresa 0 si pudo agregarlo (hay espacio para correr mas procesos)
-//	1 si no (no hay mas espacio)
-int initProcess( void (*program)() );
-
-// Funcion que se encarga de correr el primer proceso en la cola, en caso de existir
-void runFirstProcess();
-
 //	Cambiar el color de letra de la ventana
 int changeWindowColor(int rgb);
 
@@ -87,5 +79,8 @@ typedef struct{
 
 // Syscall que escribe en la estructura indicada los valores que permiten saber el estado de la memoria disponible para alocar en dicho instante
 void getMemStatus(MemStatus *stat);
+
+//  Iniciar un proceso
+int startProcess(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 
 #endif
