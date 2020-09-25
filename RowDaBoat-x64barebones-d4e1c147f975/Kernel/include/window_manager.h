@@ -62,4 +62,10 @@ void printRegisters(RegistersType *reg);
 // Funcion que muestra la espera de escritura en pantalla
 void idleSymbol();
 
+// Funcion que imprime en pantalla los encabezados de las columnas donde iran la informacion de los procesos
+void printProcessListHeader();
+
+// Funcion que imprime en pantalla informacion de un proceso
+void printProcess(char *name[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground);
+
 #endif

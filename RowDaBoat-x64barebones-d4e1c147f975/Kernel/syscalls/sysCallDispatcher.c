@@ -107,6 +107,13 @@ uint64_t syscall_32(){
 	return sys_getpid();
 }
 
+// La syscall 33 imprime los procesos actuales
+uint64_t syscall_33(){
+	sys_listProcess();
+	return 0;
+}
+
+
 //	La syscall 34 termina un proceso en especifico segun el pid indicado. Devuelve 1 si pudo encontrar el proceso
 uint64_t syscall_34(uint64_t rbx){
 	return sys_kill((unsigned int) rbx);
@@ -149,6 +156,8 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 31: return syscall_31();
 
 		case 32: return syscall_32();
+	
+		case 33: return syscall_33();
 
 		case 34: return syscall_34( reg->rbx );
 	}

@@ -20,9 +20,9 @@ unsigned int sys_getpid();
 
 int sys_kill(unsigned int pid);
 
-/*
-
 void sys_listProcess();
+
+/*
 
 void sys_nice();
 

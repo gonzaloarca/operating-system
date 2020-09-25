@@ -1,4 +1,7 @@
 #include <window_manager.h>
+#include <stddef.h>
+
+#define SIZECOL_PROCESSLIST 16
 
 // Funcion interna que se encarga de escribir un char en pantalla
 static int printChar( char c, int rgb );
@@ -214,9 +217,9 @@ int sys_write(unsigned int fd, const char * str, unsigned long count){
 	
 	int color = windows[activeWindow].charColor;
 
-	if (fd == 2)	//	STDERR
+	if(fd == 2)	//	STDERR
 		color = 0xFF0000;
-	else if (fd != 1)	//	Solo tenemos STDOUT y STDERR
+	else if(fd != 1)	//	Solo tenemos STDOUT y STDERR
 		return 0;
 
 	for( int i = 0; i < count; i++ ){
@@ -237,7 +240,7 @@ static int intLength(long num){
     return dig;
 }
 
-// Funcion que transforma un int en un String, retorna la longitud
+// Funcion que transforma un uint62_t en un String, retorna la longitud
 static int uint64_tToString( uint64_t num, char * str ){
 
     if( num == 0 ){
@@ -386,4 +389,53 @@ static void deleteIdleSymbol(){
 static void blockIdleSymbol(){
 	if(windows[activeWindow].currentLineSize != MAX_LINE_CHARS && windows[activeWindow].flagIdle == 1)
 		deleteIdleSymbol();
+}
+
+void printProcessListHeader(){
+	sys_write(1, "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tRBP \t\t\tFOREGROUND\n", 52);
+}
+
+// Rellena la columna actual con espacios hasta que ocupe sus SIZECOL_PROCESSLIST caracteres
+static void fillColumn(int longitud){
+	while(longitud < SIZECOL_PROCESSLIST){
+		sys_write(1, " ", 1);
+		longitud++;
+	}
+}
+
+void printProcess(char *name[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground){
+	char aux[10];	// maxima longitud de un longint
+	int longitud = 0;
+	if(name == NULL){
+		sys_write(1,"null", 4);
+		fillColumn(4);
+	}
+	else{							// si tiene nombre, imprime solo los primeros SIZECOL_PROCESSLIST-1 caracteres(es para mantener el formato de tabla)
+		char *aux2 = name[0];
+		while(*aux2 != 0 && longitud < SIZECOL_PROCESSLIST){
+			sys_write(1, aux2, 1);
+			aux2++;
+			longitud++;
+		}
+		fillColumn(longitud);
+	}
+
+	longitud = uint64_tToString((uint64_t) pid, aux);
+	sys_write(1, aux, longitud);
+	fillColumn(longitud);
+
+	longitud = uint64_tToString((uint64_t) priority, aux);
+	sys_write(1, aux, longitud);
+	fillColumn(longitud);
+	
+	longitud = uint64_tToString(rsp, aux);
+	sys_write(1, aux, longitud);
+	fillColumn(longitud);
+
+	longitud = uint64_tToString(rbp, aux);
+	sys_write(1, aux, longitud);
+	fillColumn(longitud);
+
+	sys_write(1, &foreground, 1);
+	sys_write(1, "\n", 1);
 }

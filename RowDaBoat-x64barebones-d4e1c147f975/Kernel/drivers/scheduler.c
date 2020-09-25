@@ -1,5 +1,6 @@
 #include <scheduler.h>
 #include <memManager.h>
+#include <window_manager.h>
 
 typedef struct 
 {
@@ -100,6 +101,16 @@ void sys_exit(){
 //  Syscall que retorna PID del proceso actual
 unsigned int sys_getpid(){
     return currentProc->pcb.pid;
+}
+
+// Syscall que imprime los procesos actuales
+void sys_listProcess(){
+    ProcNode *aux = lastProc->next; // Arranco desde el primero
+    printProcessListHeader();
+    do{
+        printProcess((char **)aux->pcb.argv, aux->pcb.pid, 13, aux->pcb.rsp, aux->pcb.mem[0], 7);
+        aux = aux->next;
+    }while(aux != lastProc->next);
 }
 
 // Syscall para matar un pid especificado

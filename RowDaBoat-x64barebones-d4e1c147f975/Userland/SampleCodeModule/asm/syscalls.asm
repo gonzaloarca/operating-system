@@ -12,6 +12,7 @@ GLOBAL free
 GLOBAL getMemStatus
 GLOBAL startProcess
 GLOBAL getpid
+GLOBAL listProcess
 GLOBAL kill
 
 section .text
@@ -312,6 +313,24 @@ getpid:
 	mov rbp, rsp
 
 	mov rax, 32
+	int 80h
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL listProcess: RAX = 33
+;			Funcion que se encarga de llamar a la syscall que imprime los procesos
+;-------------------------------------------------------
+; Llamada en C:
+;	void listProcess();
+;-------------------------------------------------------
+listProcess:
+	push rbp
+	mov rbp, rsp
+
+	mov rax, 33
 	int 80h
 
 	mov rsp, rbp

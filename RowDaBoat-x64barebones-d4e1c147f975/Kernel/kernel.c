@@ -54,7 +54,8 @@ int main()
 	setWindows();
 	load_idt();
 
-	sys_start((uint64_t) sampleCodeModuleAddress, 1, NULL);
+	const char *name = "shell";
+	sys_start((uint64_t) sampleCodeModuleAddress, 1, &name);
 	_sti();
 	_hlt();
 
