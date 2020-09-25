@@ -86,4 +86,7 @@ int startProcess(int (*mainptr)(int, char const **), int argc, char const *argv[
 // Syscall que retorna el pid del proceso que la llama
 unsigned int getpid();
 
+// Syscall para terminar un proceso según su pid
+int kill(unsigned int pid);
+
 #endif

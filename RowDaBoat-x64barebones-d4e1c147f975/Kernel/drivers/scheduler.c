@@ -101,3 +101,22 @@ void sys_exit(){
 unsigned int sys_getpid(){
     return currentProc->pcb.pid;
 }
+
+// Syscall para matar un pid especificado
+int sys_kill(unsigned int pid){
+    if(lastProc == NULL)
+        return 0;
+
+    ProcNode *search = lastProc;
+    
+    //  Realizo la busqueda del proceso con el pid y lo marco como KILLED
+    do{
+        search = search->next;
+        if(search->pcb.pid == pid){
+            search->pcb.state = KILLED;
+            return 1;
+        }
+    }while(search != lastProc);
+
+    return 0;
+}

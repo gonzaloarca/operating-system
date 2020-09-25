@@ -12,6 +12,7 @@ GLOBAL free
 GLOBAL getMemStatus
 GLOBAL startProcess
 GLOBAL getpid
+GLOBAL kill
 
 section .text
 
@@ -312,6 +313,29 @@ getpid:
 
 	mov rax, 32
 	int 80h
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL kill: RAX = 34
+;			Syscall para terminar un proceso segun un pid dado
+;-------------------------------------------------------
+; Llamada en C:
+;	int kill(unsigned int pid);
+;-------------------------------------------------------
+kill:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 34
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
 
 	mov rsp, rbp
 	pop rbp
