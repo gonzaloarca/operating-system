@@ -80,7 +80,7 @@ typedef struct{
 // Syscall que escribe en la estructura indicada los valores que permiten saber el estado de la memoria disponible para alocar en dicho instante
 void getMemStatus(MemStatus *stat);
 
-//  Iniciar un proceso
+//  Iniciar un proceso que corre la funcion mainptr con argc argumentos que recibe en argv
 int startProcess(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 
 #endif

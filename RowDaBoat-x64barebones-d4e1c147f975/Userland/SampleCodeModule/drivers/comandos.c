@@ -170,7 +170,6 @@ void printMemStatus(){
 
 #define TECLA_F1		"\tEjecuta el guardado de los registros, para que sean impresos con inforeg."
 #define TECLA_F2		"\tEjecuta el borrado total de la linea actual."
-#define CAMBIO			"\tEjecuta el cambio de proceso."
 
 void help(){
 	puts("---------Informacion sobre comandos disponibles----------------\n");
@@ -231,11 +230,6 @@ void help(){
 	printf("%s", "F2\t");
 	changeWindowColor(0xffffff);
 	printf("%s\n", TECLA_F2);
-
-	changeWindowColor(0x4ad5f2);
-	printf("%s", "F3\t");
-	changeWindowColor(0xffffff);
-	printf("%s\n", CAMBIO);
 
 	putchar('\n');
 }
