@@ -165,6 +165,7 @@ void printMemStatus(){
 #define PRINTMEM_MSG 	"\tMuestra los 32 bytes siguientes a partir de la direccion de memoria(en hexadecimal) recibida por parametro."
 #define PRINTTIME_MSG 	"\tMuestra la hora actual del dispositivo."
 #define MEMSTATUS_MSG	"\tMuestra el estado de la memoria disponible para alocar."
+#define PS_MSG			"\tMuestra una lista de los procesos actuales."
 #define EXCP_0_MSG		"\tComando para verificar la rutina de excepcion de division por cero."
 #define EXCP_6_MSG		"\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
 
@@ -207,6 +208,11 @@ void help(){
 	printf("%s", "memStatus");
 	changeWindowColor(0xffffff);
 	printf("%s\n", MEMSTATUS_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s\t   ", "ps");
+	changeWindowColor(0xffffff);
+	printf("%s\n", PS_MSG);
 
 	changeWindowColor(0xffd300);
 	printf("%s", "executeZeroException");
