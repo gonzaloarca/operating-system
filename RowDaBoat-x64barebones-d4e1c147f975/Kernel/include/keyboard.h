@@ -6,7 +6,6 @@
 #include <libasm64.h>
 #include <stdint.h>
 #include <registers.h>
-#include <process_manager.h>
 
 //	Funcion que se queda esperando a que toquen una tecla 
 //	(o su combinacion con shift)

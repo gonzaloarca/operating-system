@@ -21,6 +21,8 @@ EXTERN irqDispatcher
 EXTERN exceptionDispatcher
 EXTERN sysCallDispatcher
 
+EXTERN getNextRSP
+
 SECTION .text
 
 %macro pushStateNoA 0
@@ -126,7 +128,25 @@ picSlaveMask:
 
 ;8254 Timer (Timer Tick)
 _irq00Handler:
-	irqHandlerMaster 0
+	pushState
+
+	mov rdi, 0
+	call irqDispatcher
+
+	;	Hago el cambio del stack frame del proceso
+	mov rdi, rsp
+	call getNextRSP
+	cmp rax, 0
+	jz .end
+	mov rsp, rax
+
+.end:
+	; signal pic EOI (End of Interrupt)
+	mov al, 20h
+	out 20h, al
+
+	popState
+	iretq
 
 ;Keyboard
 _irq01Handler:

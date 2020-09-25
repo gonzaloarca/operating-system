@@ -5,6 +5,8 @@
 #include <video_driver.h>
 #include <window_manager.h>
 #include <idtLoader.h>
+#include <scheduler.h>
+#include <interrupts.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -17,9 +19,6 @@ static const uint64_t PageSize = 0x1000;
 
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
-
-typedef int (*EntryPoint)();
-
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
@@ -50,10 +49,14 @@ void * initializeKernelBinary()
 
 int main()
 {
+	_cli();
+
 	setWindows();
 	load_idt();
 
-	((EntryPoint)sampleCodeModuleAddress)();
+	sys_start((uint64_t) sampleCodeModuleAddress, 1, NULL);
+	_sti();
+	_hlt();
 
 	return 0;
 }

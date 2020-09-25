@@ -5,8 +5,8 @@
 #include <libasm64.h>
 #include <registers.h>
 #include <rtc_driver.h>
-#include <process_manager.h>
 #include <memManager.h>
+#include <scheduler.h>
 
 typedef struct{
 	uint64_t rbx;
@@ -68,17 +68,6 @@ uint64_t syscall_14()
 	return (uint64_t) sys_getRegisters();
 }
 
-//	La syscall 21 recibe un puntero a funcion de un proceso y lo inicializa
-uint64_t syscall_21( uint64_t rbx ){
-	return sys_initModule((void (*)()) rbx);
-}
-
-//	La syscall 23 corre el primer proceso si es que hay al menos uno cargado
-uint64_t syscall_23(){
-	sys_runFirstProcess();
-	return 0;
-}
-
 //	La syscall 25 rellena en la estructura indicada por parametro los 32 bytes de informacion que se obtienen a partir de address
 uint64_t syscall_25(uint64_t rbx, uint64_t rcx){
 	sys_getMemory((memType *) rbx, (char *) rcx);
@@ -99,6 +88,17 @@ uint64_t syscall_27(uint64_t rbx){
 // La syscall 28 rellena en la estructura indicada por parametro los valores del estado de la memoria disponible para alocar en dicho instante
 uint64_t syscall_28(uint64_t rbx){
 	sys_getMemStatus((MemStatus *) rbx);
+	return 0;
+}
+
+// La syscall 30 es para iniciar un proceso. Se le pasa el punteor al main del programa y los atrbutos de este (argc y argv). Devuelve 0 si se pudo iniciar.
+uint64_t syscall_30(uint64_t rbx, uint64_t rcx, uint64_t rdx){
+	return sys_start(rbx, (int) rcx, (char const **) rdx);
+}
+
+//	La syscall 31 pone el estado del proceso actual en KILLED para luego quitarlo de la lista en la proxima iteracion
+uint64_t syscall_31(){
+	sys_exit();
 	return 0;
 }
 
@@ -126,10 +126,6 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 
 		case 14: return syscall_14();
 
-		case 21: return syscall_21( reg->rbx );
-
-		case 23: return syscall_23();
-
 		case 25: return syscall_25( reg->rbx, reg->rcx);
 
 		case 26: return syscall_26( reg->rbx );
@@ -137,6 +133,10 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 27: return syscall_27( reg->rbx );
 
 		case 28: return syscall_28( reg->rbx );
+
+		case 30: return syscall_30( reg->rbx, reg->rcx, reg->rdx );
+
+		case 31: return syscall_31();
 	}
 
 	return 1;

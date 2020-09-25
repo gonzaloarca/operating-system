@@ -9,7 +9,6 @@
 #define RSHIFT_RELEASED (RIGHT_SHIFT+0x80)
 #define F1 59
 #define F2 60
-#define F3 61
 #define BUFFER_SIZE 200
 
 //	Tengo que guardarme si el shift se encuentra presionado
@@ -44,9 +43,6 @@ void keyboard_handler()
 
 	if(buffer[lastPos] == F1)
 		saveRegisters();
-
-	if(buffer[lastPos] == F3)
-		switchProcess();
 
 	// Actualizo el indice del buffer circular
 	lastPos = (lastPos + 1) % BUFFER_SIZE;

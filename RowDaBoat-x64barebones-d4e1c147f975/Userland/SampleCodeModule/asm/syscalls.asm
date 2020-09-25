@@ -6,12 +6,11 @@ GLOBAL getTime
 GLOBAL getCPUTemp
 GLOBAL getRegisters
 GLOBAL clrScreen
-GLOBAL initProcess
-GLOBAL runFirstProcess
 GLOBAL getMemory
 GLOBAL malloc
 GLOBAL free
 GLOBAL getMemStatus
+GLOBAL startProcess
 
 section .text
 
@@ -172,47 +171,6 @@ getRegisters:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL initProcess: RAX = 21
-;			Funcion para agregar un nuevo modulo a la lista de modulos
-;-------------------------------------------------------
-; Llamada en C:
-;	int initProcess( void (*program)() )
-;-------------------------------------------------------
-initProcess:
-	push rbp
-	mov rbp, rsp
-	push rbx
-
-	mov rax, 21
-	mov rbx, rdi
-	int 80h
-
-	pop rbx
-	mov rsp, rbp
-	pop rbp
-	ret
-
-;-------------------------------------------------------
-;	SYSCALL runFirstProcess: RAX = 23
-;			Funcion que se encarga de correr el primer proceso en la cola, en caso de existir
-;-------------------------------------------------------
-; Llamada en C:
-;	void runFirstProcess()
-;-------------------------------------------------------
-runFirstProcess:
-	push rbp
-	mov rbp, rsp
-	push rax
-
-	mov rax, 23
-	int 80h
-
-	pop rax
-	mov rsp, rbp
-	pop rbp
-	ret
-
-;-------------------------------------------------------
 ;	SYSCALL getMemory: RAX = 25
 ;			Funcion que se encarga de llamar a la syscall que escribe en la estructura indicada los 32 bytes de informacion de la memoria a partir de address
 ;-------------------------------------------------------
@@ -309,6 +267,33 @@ getMemStatus:
 
 	pop rbx
 
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL startProcess: RAX = 30
+;			Inicia un proceso nuevo
+;-------------------------------------------------------
+; Llamada en C:
+;	int startProcess(int (*mainptr)(int, char const **), int argc, char const *argv[]);
+;-------------------------------------------------------
+startProcess:
+	push rbp
+	mov rbp, rsp
+	push rbx
+	push rcx
+	push rdx
+
+	mov rax, 30
+	mov rbx, rdi		; 1er parametro 
+	mov rcx, rsi		; 2do parametro
+	;en rdx ya esta cargado el 3er parametro
+	int 80h
+
+	pop rdx
+	pop rcx
+	pop rbx
 	mov rsp, rbp
 	pop rbp
 	ret
