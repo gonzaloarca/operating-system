@@ -11,6 +11,7 @@ GLOBAL malloc
 GLOBAL free
 GLOBAL getMemStatus
 GLOBAL startProcess
+GLOBAL getpid
 
 section .text
 
@@ -294,6 +295,24 @@ startProcess:
 	pop rdx
 	pop rcx
 	pop rbx
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL getpid: RAX = 32
+;			Funcion que se encarga de llamar a la syscall que retorna el pid del proceso actual
+;-------------------------------------------------------
+; Llamada en C:
+;	unsigned int getpid();
+;-------------------------------------------------------
+getpid:
+	push rbp
+	mov rbp, rsp
+
+	mov rax, 32
+	int 80h
+
 	mov rsp, rbp
 	pop rbp
 	ret

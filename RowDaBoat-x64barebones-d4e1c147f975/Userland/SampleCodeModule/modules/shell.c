@@ -24,12 +24,10 @@ static void parse(){
     
     if(strcmp( inputBuffer, "help\n") == 0)
         help();
-    else if(strcmp( inputBuffer, "inforeg\n" ) == 0){
+    else if(strcmp( inputBuffer, "inforeg\n" ) == 0)
 	   printInforeg();
-    }
-    else if(strcmp( inputBuffer, "clear\n" ) == 0){
+    else if(strcmp( inputBuffer, "clear\n" ) == 0)
         clrScreen();
-    }
     else if(strcmp( inputBuffer, "printtime\n" ) == 0){
         printTime();
         putchar('\n');
@@ -47,20 +45,16 @@ static void parse(){
         }else
             fprintf(2, "-printmem: Falta ingresar la direccion como parametro.\n");
     }
-    else if(strcmp( inputBuffer, "cpuinfo\n") == 0){
+    else if(strcmp( inputBuffer, "cpuinfo\n") == 0)
         printCPUInfo();
-    }
-    else if(strcmp( inputBuffer, "cputemp\n") == 0){
+    else if(strcmp( inputBuffer, "cputemp\n") == 0)
         printCPUTemp();
-        return;
-    }
     else if(strcmp( inputBuffer, "executeZeroException\n") == 0)
         executeZeroException();
     else if(strcmp( inputBuffer, "executeUIException\n") == 0)
         executeUIException();
-    else if(strcmp( inputBuffer, "memStatus\n") == 0){
+    else if(strcmp( inputBuffer, "memStatus\n") == 0)
         printMemStatus();
-    }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }

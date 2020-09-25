@@ -20,7 +20,7 @@ typedef struct ProcNode
 } ProcNode;
 
 static ProcNode *currentProc, *lastProc, nodeAux;
-static unsigned int lastPID = 0;
+static unsigned int lastPID = 1;
 
 int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     if((void *) mainPtr == NULL)
@@ -95,4 +95,9 @@ void sys_exit(){
         return;         //No hay nada corriendo
 
     currentProc->pcb.state = KILLED;
+}
+
+//  Syscall que retorna PID del proceso actual
+unsigned int sys_getpid(){
+    return currentProc->pcb.pid;
 }

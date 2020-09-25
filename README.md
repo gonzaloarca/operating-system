@@ -82,3 +82,8 @@
 ;	SYSCALL exit: RAX = 31
 ;			Se encarga de setear el estado como KILLED del proceso que la llama para que luego sea eliminado
 ;------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------
+;	SYSCALL getpid: RAX = 32
+;			Syscall que retorna en RAX el pid del proceso actual
+;-------------------------------------------------------

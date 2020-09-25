@@ -16,10 +16,10 @@ uint64_t getNextRSP(uint64_t rsp);
 
 void sys_exit();
 
+unsigned int sys_getpid();
+
 /*
 int sys_kill(int pid);
-
-int sys_getpid();
 
 void sys_listProcess();
 
@@ -27,4 +27,5 @@ void sys_nice();
 
 void sys_changeStatus();
 */
+
 #endif

@@ -102,6 +102,11 @@ uint64_t syscall_31(){
 	return 0;
 }
 
+//	La syscall 32 retorna el pid del proceso que la ejecuto
+uint64_t syscall_32(){
+	return sys_getpid();
+}
+
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
 //	Cada syscall se encarga de interpretar a la estructura
@@ -137,6 +142,8 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 30: return syscall_30( reg->rbx, reg->rcx, reg->rdx );
 
 		case 31: return syscall_31();
+
+		case 32: return syscall_32();
 	}
 
 	return 1;
