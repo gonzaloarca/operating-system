@@ -154,7 +154,7 @@ void printCPUTemp(){
 void printMemStatus(){
 	MemStatus stat;
 	getMemStatus(&stat);
-	printf("Total = %lu\tOcupada = %lu\tLibre = %lu\n", stat.totalMem, stat.occMem, stat.freeMem);
+	printf("Total = %lu B\tOcupada = %lu B\tLibre = %lu B\tPorcentaje libre: %f\%\n", stat.totalMem, stat.occMem, stat.freeMem, (double)(stat.freeMem*100)/stat.totalMem);
 }
 
 // Constantes utilizadas por el comando help
@@ -164,7 +164,7 @@ void printMemStatus(){
 #define INFOREG_MSG 	"\tMuestra el estado de los registros del ultimo guardado(los guardados se realizan presionando F1)."
 #define PRINTMEM_MSG 	"\tMuestra los 32 bytes siguientes a partir de la direccion de memoria(en hexadecimal) recibida por parametro."
 #define PRINTTIME_MSG 	"\tMuestra la hora actual del dispositivo."
-#define MEMSTATUS_MSG	"\tMuestra el estado de la memoria disponible para alocar."
+#define MEM_MSG			"\tMuestra el estado de la memoria disponible para alocar."
 #define PS_MSG			"\tMuestra una lista de los procesos actuales."
 #define EXCP_0_MSG		"\tComando para verificar la rutina de excepcion de division por cero."
 #define EXCP_6_MSG		"\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
@@ -205,9 +205,9 @@ void help(){
 	printf("%s\n", PRINTTIME_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s", "memStatus");
+	printf("%s\t  ", "mem");
 	changeWindowColor(0xffffff);
-	printf("%s\n", MEMSTATUS_MSG);
+	printf("%s\n", MEM_MSG);
 
 	changeWindowColor(0xffd300);
 	printf("%s\t   ", "ps");

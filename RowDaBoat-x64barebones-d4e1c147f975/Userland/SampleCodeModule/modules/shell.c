@@ -53,7 +53,7 @@ static void parse(){
         executeZeroException();
     else if(strcmp( inputBuffer, "executeUIException\n") == 0)
         executeUIException();
-    else if(strcmp( inputBuffer, "memStatus\n") == 0)
+    else if(strcmp( inputBuffer, "mem\n") == 0)
         printMemStatus();
     else if(strcmp( inputBuffer, "ps\n") == 0)
         listProcess();
