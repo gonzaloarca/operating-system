@@ -1,5 +1,6 @@
 #include <registers.h>
 #include <window_manager.h>
+#include <scheduler.h>
 
 #define ZERO_EXCEPTION_ID 0
 #define UNDEFINEDINSTRUCTION_EXCEPTION_ID 6
@@ -13,7 +14,8 @@ static void divideByZeroException(){
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "DIVIDE BY ZERO EXCEPTION\n", 25);
 	printRegisters(&reg);
-//	recoverModule();
+	sys_exit();
+	sys_runNext();
 	return;
 }
 
@@ -21,7 +23,8 @@ static void undefinedInstructionException(){
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "UNDEFINED INSTRUCTION EXCEPTION\n", 32);
 	printRegisters(&reg);
-//	recoverModule();
+	sys_exit();
+	sys_runNext();
 	return;
 }
 
@@ -29,7 +32,8 @@ static void defaultException(){
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "UNKNOWN EXCEPTION\n", 18);
 	printRegisters(&reg);
-//	recoverModule();
+	sys_exit();
+	sys_runNext();
 	return;
 }
 

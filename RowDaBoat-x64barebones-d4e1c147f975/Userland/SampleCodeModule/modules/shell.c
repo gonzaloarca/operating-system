@@ -50,9 +50,9 @@ static void parse(){
     else if(strcmp( inputBuffer, "cputemp\n") == 0)
         printCPUTemp();
     else if(strcmp( inputBuffer, "executeZeroException\n") == 0)
-        executeZeroException();
+        startProcess((int (*)(int, const char **))executeZeroException, 0, NULL);
     else if(strcmp( inputBuffer, "executeUIException\n") == 0)
-        executeUIException();
+        startProcess((int (*)(int, const char **))executeUIException, 0, NULL);
     else if(strcmp( inputBuffer, "mem\n") == 0)
         printMemStatus();
     else if(strcmp( inputBuffer, "ps\n") == 0)

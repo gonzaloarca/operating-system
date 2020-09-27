@@ -158,6 +158,7 @@ int sys_kill(unsigned int pid, char state){
 
 //Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso
 void sys_runNext(){
+    currentProc->pcb.quantumCounter = MAX_QUANTUM;
     decrease_ticks();
     forceTick();
 }
