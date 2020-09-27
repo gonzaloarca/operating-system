@@ -113,7 +113,7 @@ void sys_listProcess(){
     ProcNode *aux = lastProc->next; // Arranco desde el primero
     printProcessListHeader();
     do{
-        printProcess((char **)aux->pcb.argv, aux->pcb.pid, 13, aux->pcb.rsp, aux->pcb.mem[0], 7);
+        printProcess((char **)aux->pcb.argv, aux->pcb.pid, 13, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
         aux = aux->next;
     }while(aux != lastProc->next);
 }

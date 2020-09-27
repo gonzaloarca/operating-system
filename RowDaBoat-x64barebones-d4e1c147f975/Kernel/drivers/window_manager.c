@@ -392,7 +392,7 @@ static void blockIdleSymbol(){
 }
 
 void printProcessListHeader(){
-	sys_write(1, "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tRBP \t\t\tFOREGROUND\n", 52);
+	sys_write(1, "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tBase Pointer\tFOREGROUND\n", 58);
 }
 
 // Rellena la columna actual con espacios hasta que ocupe sus SIZECOL_PROCESSLIST caracteres
