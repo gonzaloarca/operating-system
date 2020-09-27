@@ -1,6 +1,7 @@
 #include <scheduler.h>
 #include <memManager.h>
 #include <window_manager.h>
+#include <time.h>
 
 typedef struct 
 {
@@ -117,7 +118,7 @@ void sys_listProcess(){
     }while(aux != lastProc->next);
 }
 
-// Syscall para matar un pid especificado
+// Syscall para cambiar el estado de un pid especifico
 int sys_kill(unsigned int pid, char state){
     if(lastProc == NULL)
         return 0;
@@ -141,4 +142,10 @@ int sys_kill(unsigned int pid, char state){
     }while(search != lastProc);
 
     return 0;
+}
+
+//Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso
+void sys_runNext(){
+    decrease_ticks();
+    forceTick();
 }

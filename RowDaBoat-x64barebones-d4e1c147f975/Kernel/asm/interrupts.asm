@@ -17,6 +17,8 @@ GLOBAL _sysCallHandler
 GLOBAL _exception0Handler
 GLOBAL _exception6Handler
 
+GLOBAL forceTick
+
 EXTERN irqDispatcher
 EXTERN exceptionDispatcher
 EXTERN sysCallDispatcher
@@ -125,7 +127,6 @@ picSlaveMask:
     pop     rbp
     retn
 
-
 ;8254 Timer (Timer Tick)
 _irq00Handler:
 	pushState
@@ -207,6 +208,10 @@ _sysCallHandler:
 haltcpu:
 	cli
 	hlt
+	ret
+
+forceTick:
+	int 20h
 	ret
 
 SECTION .bss

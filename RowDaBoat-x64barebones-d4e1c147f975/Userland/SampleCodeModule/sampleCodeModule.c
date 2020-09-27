@@ -4,12 +4,18 @@
 #include <evaluator.h>
 
 int testMain(int argc, char const *argv[]){
-	printf("WORKS LIKE A CHARM\n");
+	
+	while(1){
+		runNext();
+	}
 	return 0;
 }
 
 int main()
 {
+	startProcess(testMain, 0, NULL);
+	startProcess(testMain, 0, NULL);
+	startProcess(testMain, 0, NULL);
 	startProcess(testMain, 0, NULL);
 	runShell();
 

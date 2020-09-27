@@ -9,6 +9,10 @@ void timer_handler() {
 		idleSymbol();
 }
 
+void decrease_ticks() {
+	ticks--;
+}
+
 int ticks_elapsed() {
 	return ticks;
 }

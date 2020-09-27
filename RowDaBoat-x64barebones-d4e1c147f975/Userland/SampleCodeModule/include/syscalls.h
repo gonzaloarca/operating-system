@@ -96,4 +96,7 @@ void listProcess();
 // Syscall para cambiar el estado de un proceso según su pid
 int kill(unsigned int pid, char state);
 
+// Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso
+void runNext();
+
 #endif

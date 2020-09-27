@@ -5,6 +5,7 @@
 #include <window_manager.h>
 
 void timer_handler();
+void decrease_ticks();
 int ticks_elapsed();
 int seconds_elapsed();
 

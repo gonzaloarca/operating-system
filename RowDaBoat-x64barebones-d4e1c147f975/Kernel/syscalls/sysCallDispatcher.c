@@ -119,6 +119,11 @@ uint64_t syscall_34(uint64_t rbx, uint64_t rcx){
 	return sys_kill((unsigned int) rbx, (char) rcx);
 }
 
+uint64_t syscall_35(){
+	sys_runNext();
+	return 0;
+}
+
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
 //	Cada syscall se encarga de interpretar a la estructura
@@ -160,6 +165,8 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 33: return syscall_33();
 
 		case 34: return syscall_34( reg->rbx, reg->rcx );
+
+		case 35: return syscall_35();
 	}
 
 	return 1;

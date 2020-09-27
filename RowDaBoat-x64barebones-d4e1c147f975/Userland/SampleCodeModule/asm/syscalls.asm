@@ -14,6 +14,7 @@ GLOBAL startProcess
 GLOBAL getpid
 GLOBAL listProcess
 GLOBAL kill
+GLOBAL runNext
 
 section .text
 
@@ -362,3 +363,23 @@ kill:
 	mov rsp, rbp
 	pop rbp
 	ret
+;-------------------------------------------------------
+;	SYSCALL runNext: RAX = 35
+;			Syscall para que el proceso corriendo en el momento renuncie al CPU 
+;			y se corra el siguiente proceso
+;-------------------------------------------------------
+; Llamada en C:
+;	void runNext();
+;-------------------------------------------------------
+runNext:
+	push rbp
+	mov rbp, rsp
+
+	mov rax, 35
+	int 80h
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+

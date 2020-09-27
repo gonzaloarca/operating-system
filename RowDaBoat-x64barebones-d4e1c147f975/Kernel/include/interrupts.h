@@ -35,4 +35,7 @@ void picSlaveMask(uint8_t mask);
 //Termina la ejecución de la cpu.
 void haltcpu(void);
 
+//Llama a int 20h
+void forceTick(void);
+
 #endif /* INTERRUPS_H_ */
