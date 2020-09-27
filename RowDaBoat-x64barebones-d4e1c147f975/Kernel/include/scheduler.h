@@ -4,6 +4,9 @@
 #include <stdint.h>
 
 #define STACK_SIZE 16384
+#define MAX_QUANTUM 30
+#define DEFAULT_QUANTUM 29
+
 #define ACTIVE  1
 #define BLOCKED 0
 #define KILLED 2
@@ -22,11 +25,8 @@ int sys_kill(unsigned int pid, char state);
 
 void sys_listProcess();
 
-/*
+void sys_runNext();
 
-void sys_nice();
-
-void sys_changeStatus();
-*/
+int sys_nice(unsigned int pid, unsigned int priority);
 
 #endif

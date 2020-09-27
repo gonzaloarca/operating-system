@@ -15,6 +15,7 @@ GLOBAL getpid
 GLOBAL listProcess
 GLOBAL kill
 GLOBAL runNext
+GLOBAL nice
 
 section .text
 
@@ -363,6 +364,7 @@ kill:
 	mov rsp, rbp
 	pop rbp
 	ret
+
 ;-------------------------------------------------------
 ;	SYSCALL runNext: RAX = 35
 ;			Syscall para que el proceso corriendo en el momento renuncie al CPU 
@@ -382,4 +384,28 @@ runNext:
 	pop rbp
 	ret
 
+;-------------------------------------------------------
+;	SYSCALL nice: RAX = 36
+;		Syscall para cambiar la prioridad de un proceso segun un pid dado
+;-------------------------------------------------------
+; Llamada en C:
+;	int nice(unsigned int pid, unsigned int priority);
+;-------------------------------------------------------
+nice:
+	push rbp
+	mov rbp, rsp
 
+	push rbx
+	push rcx
+
+	mov rax, 36
+	mov rbx, rdi
+	mov rcx, rsi
+	int 80h
+
+	pop rcx
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret

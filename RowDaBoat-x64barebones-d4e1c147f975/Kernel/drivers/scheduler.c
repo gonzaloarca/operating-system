@@ -2,6 +2,7 @@
 #include <memManager.h>
 #include <window_manager.h>
 #include <time.h>
+#include <interrupts.h>
 
 typedef struct 
 {
@@ -12,6 +13,8 @@ typedef struct
 	uint64_t mainPtr;               		//puntero al inicio del programa
     int argc;
     uint64_t argv;
+    unsigned int priority;                  //dónde empieza a contar sus quantums
+    unsigned int quantumCounter;            //contador para saber si terminó sus quantums
 } PCB;
 
 //  Nodo para la lista de procesos
@@ -43,6 +46,8 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     new->pcb.mainPtr = mainPtr;
     new->pcb.argc = argc;
     new->pcb.argv = (uint64_t) argv;
+    new->pcb.priority = DEFAULT_QUANTUM;
+    new->pcb.quantumCounter = DEFAULT_QUANTUM;
 
     //ALINEAR
     new->pcb.rsp &= -8;
@@ -77,20 +82,26 @@ uint64_t getNextRSP(uint64_t rsp){
     
     ProcNode *previous = currentProc;
 
-    do{
-        currentProc = currentProc->next;
-
-        if(currentProc->pcb.state == KILLED){
-            if(currentProc == lastProc)
-                lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
-
-            sys_free(currentProc->pcb.mem);
+    if(currentProc->pcb.quantumCounter == MAX_QUANTUM){     //  En este if vemos si le toca cambiar al proceso
+        currentProc->pcb.quantumCounter = currentProc->pcb.priority;
+        
+        do{
             currentProc = currentProc->next;
-            sys_free(previous->next);
-            previous->next = currentProc;
-        }else
-            previous = previous->next;
-    }while(currentProc->pcb.state != ACTIVE);
+
+            if(currentProc->pcb.state == KILLED){
+                if(currentProc == lastProc)
+                    lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
+
+                sys_free(currentProc->pcb.mem);
+                currentProc = currentProc->next;
+                sys_free(previous->next);
+                previous->next = currentProc;
+            }else
+                previous = previous->next;
+        }while(currentProc->pcb.state != ACTIVE);
+    }
+
+    currentProc->pcb.quantumCounter++;
 
     return currentProc->pcb.rsp;
 }
@@ -113,7 +124,7 @@ void sys_listProcess(){
     ProcNode *aux = lastProc->next; // Arranco desde el primero
     printProcessListHeader();
     do{
-        printProcess((char **)aux->pcb.argv, aux->pcb.pid, 13, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
+        printProcess((char **)aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
         aux = aux->next;
     }while(aux != lastProc->next);
 }
@@ -132,6 +143,7 @@ int sys_kill(unsigned int pid, char state){
                 return 0;
             else
             {
+                //NO PUEDO MATAR A LA SHELL
                 if(search->pcb.pid == 1 && state == KILLED)
                     return 0;
                 
@@ -148,4 +160,28 @@ int sys_kill(unsigned int pid, char state){
 void sys_runNext(){
     decrease_ticks();
     forceTick();
+}
+
+//Syscall para cambiar la prioridad de un proceso
+int sys_nice(unsigned int pid, unsigned int priority){
+    if(pid > lastPID || priority >= MAX_QUANTUM)
+        return 0;
+
+    ProcNode *search = lastProc;
+    //  Realizo la busqueda del proceso con el pid
+    do{
+        search = search->next;
+        if(search->pcb.pid == pid){
+            if(search->pcb.state == KILLED)
+                return 0;
+            else
+            {                
+                search->pcb.priority = priority;
+                search->pcb.quantumCounter = priority;
+                return 1;
+            }
+        }
+    }while(search != lastProc);
+
+    return 0;
 }

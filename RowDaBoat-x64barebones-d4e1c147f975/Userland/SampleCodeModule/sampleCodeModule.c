@@ -6,7 +6,7 @@
 int testMain(int argc, char const *argv[]){
 	
 	while(1){
-		runNext();
+//		runNext();
 	}
 	return 0;
 }
@@ -17,6 +17,8 @@ int main()
 	startProcess(testMain, 0, NULL);
 	startProcess(testMain, 0, NULL);
 	startProcess(testMain, 0, NULL);
+	startProcess(testMain, 0, NULL);
+	nice(1, 0);
 	runShell();
 
 	return 0;

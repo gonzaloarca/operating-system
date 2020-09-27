@@ -113,15 +113,20 @@ uint64_t syscall_33(){
 	return 0;
 }
 
-
 //	La syscall 34 cambia el estado del proceso en especifico segun el pid indicado. Devuelve 1 si pudo encontrar el proceso
 uint64_t syscall_34(uint64_t rbx, uint64_t rcx){
 	return sys_kill((unsigned int) rbx, (char) rcx);
 }
 
+//	La syscall 35 cede el CPU al siguiente proceso
 uint64_t syscall_35(){
 	sys_runNext();
 	return 0;
+}
+
+//	La syscall 36 cambia la prioridad de un proceso
+uint64_t syscall_36(uint64_t rbx, uint64_t rcx){
+	return sys_nice((unsigned int) rbx, (unsigned int) rcx);
 }
 
 //	scNumber indica a cual syscall se llamo
@@ -167,6 +172,8 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 34: return syscall_34( reg->rbx, reg->rcx );
 
 		case 35: return syscall_35();
+
+		case 36: return syscall_36( reg->rbx, reg->rcx );
 	}
 
 	return 1;
