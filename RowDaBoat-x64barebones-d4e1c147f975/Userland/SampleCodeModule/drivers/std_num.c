@@ -132,3 +132,17 @@ int pointerToHexString(void *pointer, char buffer[POINTER_SIZE + 1]){
 
     return POINTER_SIZE;
 }
+
+int strToPositiveInt(char *str){
+    int aux = 0;
+
+    for(; *str != '\n' && *str != 0 ; str++){
+        aux *= 10;
+        if(*str < '0' || *str > '9')
+            return -1;
+
+        aux += (*str - '0');
+    }
+
+    return aux;
+}

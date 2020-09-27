@@ -1,6 +1,10 @@
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
+#define ACTIVE  1
+#define BLOCKED 0
+#define KILLED 2
+
 #include <stddef.h>
 
 // Estructura utilizada para manejar una copia de los registros realizada en algun momento
@@ -89,7 +93,7 @@ unsigned int getpid();
 // Syscall que imprime los procesos corriendo en el momento
 void listProcess();
 
-// Syscall para terminar un proceso según su pid
-int kill(unsigned int pid);
+// Syscall para cambiar el estado de un proceso según su pid
+int kill(unsigned int pid, char state);
 
 #endif

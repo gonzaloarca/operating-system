@@ -18,7 +18,7 @@ void sys_exit();
 
 unsigned int sys_getpid();
 
-int sys_kill(unsigned int pid);
+int sys_kill(unsigned int pid, char state);
 
 void sys_listProcess();
 

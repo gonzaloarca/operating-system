@@ -339,21 +339,24 @@ listProcess:
 
 ;-------------------------------------------------------
 ;	SYSCALL kill: RAX = 34
-;			Syscall para terminar un proceso segun un pid dado
+;			Syscall para cambiar el estado de un proceso segun un pid dado
 ;-------------------------------------------------------
 ; Llamada en C:
-;	int kill(unsigned int pid);
+;	int kill(unsigned int pid, char state);
 ;-------------------------------------------------------
 kill:
 	push rbp
 	mov rbp, rsp
 
 	push rbx
+	push rcx
 
 	mov rax, 34
 	mov rbx, rdi
+	mov rcx, rsi
 	int 80h
 
+	pop rcx
 	pop rbx
 
 	mov rsp, rbp

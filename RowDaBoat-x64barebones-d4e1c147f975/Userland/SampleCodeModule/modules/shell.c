@@ -57,6 +57,10 @@ static void parse(){
         printMemStatus();
     else if(strcmp( inputBuffer, "ps\n") == 0)
         listProcess();
+    else if(strcmp( "kill ", inputBuffer ) == 0){
+        int pid = strToPositiveInt(inputBuffer+5);
+        kill(pid, KILLED);
+    }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }

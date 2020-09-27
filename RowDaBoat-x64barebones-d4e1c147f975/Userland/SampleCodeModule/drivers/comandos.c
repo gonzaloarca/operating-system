@@ -166,6 +166,7 @@ void printMemStatus(){
 #define PRINTTIME_MSG 	"\tMuestra la hora actual del dispositivo."
 #define MEM_MSG			"\tMuestra el estado de la memoria disponible para alocar."
 #define PS_MSG			"\tMuestra una lista de los procesos actuales."
+#define KILL_MSG		"\tFinaliza el proceso del pid indicado por parametro."
 #define EXCP_0_MSG		"\tComando para verificar la rutina de excepcion de division por cero."
 #define EXCP_6_MSG		"\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
 
@@ -213,6 +214,11 @@ void help(){
 	printf("%s\t   ", "ps");
 	changeWindowColor(0xffffff);
 	printf("%s\n", PS_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s\t ", "kill");
+	changeWindowColor(0xffffff);
+	printf("%s\n", KILL_MSG);
 
 	changeWindowColor(0xffd300);
 	printf("%s", "executeZeroException");

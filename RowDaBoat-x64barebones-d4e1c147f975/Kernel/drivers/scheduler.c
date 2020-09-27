@@ -78,7 +78,11 @@ uint64_t getNextRSP(uint64_t rsp){
 
     do{
         currentProc = currentProc->next;
+
         if(currentProc->pcb.state == KILLED){
+            if(currentProc == lastProc)
+                lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
+
             sys_free(currentProc->pcb.mem);
             currentProc = currentProc->next;
             sys_free(previous->next);
@@ -114,18 +118,25 @@ void sys_listProcess(){
 }
 
 // Syscall para matar un pid especificado
-int sys_kill(unsigned int pid){
+int sys_kill(unsigned int pid, char state){
     if(lastProc == NULL)
         return 0;
 
     ProcNode *search = lastProc;
-    
     //  Realizo la busqueda del proceso con el pid y lo marco como KILLED
     do{
         search = search->next;
         if(search->pcb.pid == pid){
-            search->pcb.state = KILLED;
-            return 1;
+            if(search->pcb.state == KILLED)
+                return 0;
+            else
+            {
+                if(search->pcb.pid == 1 && state == KILLED)
+                    return 0;
+                
+                search->pcb.state = state;
+                return 1;
+            }
         }
     }while(search != lastProc);
 

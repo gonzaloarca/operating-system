@@ -55,4 +55,4 @@
 		Syscall que imprime en salida estandar el listado de los procesos actuales
 
 14.	SYSCALL kill: RAX = 34
-		Syscall para terminar un proceso segun un pid dado
+		Syscall para cambiar el estado de un proceso al indicado en RCX segun un pid dado en RBX
