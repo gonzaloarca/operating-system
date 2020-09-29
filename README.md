@@ -61,4 +61,4 @@
 		Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso, no recibe parametros
 
 16. SYSCALL nice: RAX = 36
-		Syscall para cambiar la prioridad de un proceso segun un pid dado
+		Syscall para cambiar la prioridad de un proceso segun un pid dado, retorna 0 en caso de error

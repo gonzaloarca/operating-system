@@ -28,8 +28,8 @@ int intToHexString(unsigned long int num, char buffer[MAX_INT_DIG]);
 //	Devuelve la longitud del string
 int pointerToHexString(void *pointer, char buffer[POINTER_SIZE + 1]);
 
-//  Convierte el string indicado a int positivo y lo retorna
+//  Convierte el string indicado a int positivo y lo retorna, ademas deja en legth su cantidad de caracteres
 //  En caso de error retorna -1
-int strToPositiveInt(char *str);
+int strToPositiveInt(char *str, int *length);
 
 #endif
