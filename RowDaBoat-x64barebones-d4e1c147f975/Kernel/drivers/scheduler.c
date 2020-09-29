@@ -12,7 +12,7 @@ typedef struct
     char state;                             //activo o bloqueado
 	uint64_t mainPtr;               		//puntero al inicio del programa
     int argc;
-    uint64_t argv;
+    char **argv;
     unsigned int priority;                  //dónde empieza a contar sus quantums
     unsigned int quantumCounter;            //contador para saber si terminó sus quantums
 } PCB;
@@ -26,6 +26,30 @@ typedef struct ProcNode
 
 static ProcNode *currentProc, *lastProc, nodeAux;
 static unsigned int lastPID = 1;
+
+//Funcion auxiliar para contar caracteres de un string
+static int strlen(const char* str){
+    int ans = 0;
+    for(; str[ans] != 0 ; ans++);
+    return ans;
+}
+
+//Funcion auxiliar para copiar los argumentos que recibe el proceso
+static void copyArgs(int argc, const char ** from, char ***into){
+    const char * aux = "aux";
+    *into = (char **) sys_malloc((argc+1)* sizeof(aux));
+    for(int i = 0, j = 0, length; i < argc ; i++){
+        
+        length = strlen(from[i]);
+        (*into)[i] = sys_malloc((length+1)*sizeof(aux[0]));
+
+        for(j = 0; j < length ; j++)
+            (*into)[i][j] = from[i][j];
+
+        (*into)[i][j+1] = 0;
+    }
+    (*into)[argc] = NULL;
+}
 
 int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     if((void *) mainPtr == NULL)
@@ -44,8 +68,10 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     new->pcb.rsp = (uint64_t) new->pcb.mem + STACK_SIZE;
     new->pcb.state = ACTIVE;
     new->pcb.mainPtr = mainPtr;
+    
     new->pcb.argc = argc;
-    new->pcb.argv = (uint64_t) argv;
+    copyArgs(argc, argv, &new->pcb.argv);
+
     new->pcb.priority = DEFAULT_QUANTUM;
     new->pcb.quantumCounter = DEFAULT_QUANTUM;
 
@@ -92,6 +118,10 @@ uint64_t getNextRSP(uint64_t rsp){
                 if(currentProc == lastProc)
                     lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
 
+                for(int i = 0; i < currentProc->pcb.argc ; i++){
+                    sys_free(currentProc->pcb.argv[i]);
+                }
+                sys_free(currentProc->pcb.argv);
                 sys_free(currentProc->pcb.mem);
                 currentProc = currentProc->next;
                 sys_free(previous->next);
@@ -124,7 +154,7 @@ void sys_listProcess(){
     ProcNode *aux = lastProc->next; // Arranco desde el primero
     printProcessListHeader();
     do{
-        printProcess((char **)aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
+        printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
         aux = aux->next;
     }while(aux != lastProc->next);
 }

@@ -7,7 +7,7 @@
 char inputBuffer[INPUT_BUFFER_SIZE];
 int indexBuffer;
 static void parse();
-static char *symbol = "$> ";
+static char *symbol = "$>";
 
 
 void runShell(){
@@ -60,6 +60,12 @@ static void parse(){
     else if(strcmp( "kill ", inputBuffer ) == 0){
         int pid = strToPositiveInt(inputBuffer+5);
         kill(pid, KILLED);
+    }
+    else if(strcmp( inputBuffer, "loop\n") == 0){
+        const char * loopname = "loop";
+        const char *argv[1];
+        argv[0] = loopname;
+        startProcess((int (*)(int, const char **))loop, 1, argv);
     }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");

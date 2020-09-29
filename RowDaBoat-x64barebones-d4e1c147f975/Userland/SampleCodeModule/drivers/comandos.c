@@ -157,6 +157,14 @@ void printMemStatus(){
 	printf("Total = %lu B\tOcupada = %lu B\tLibre = %lu B\tPorcentaje libre: %f\%\n", stat.totalMem, stat.occMem, stat.freeMem, (double)(stat.freeMem*100)/stat.totalMem);
 }
 
+void loop(){
+	int pid = getpid();
+	while(1){
+		for(int i = 0; i < LOOP_SLEEP ; i++);
+		printf("%d ", pid);
+	}
+}
+
 // Constantes utilizadas por el comando help
 #define CLEAR_MSG		"\tLimpia la pantalla."
 #define CPUINFO_MSG 	"\tMuestra informacion de interes sobre el cpu."
@@ -167,6 +175,7 @@ void printMemStatus(){
 #define MEM_MSG			"\tMuestra el estado de la memoria disponible para alocar."
 #define PS_MSG			"\tMuestra una lista de los procesos actuales."
 #define KILL_MSG		"\tFinaliza el proceso del pid indicado por parametro."
+#define LOOP_MSG		"\tCrea un proceso que imprime su PID cada tantos segundos mientras se ejecuta."
 #define EXCP_0_MSG		"\tComando para verificar la rutina de excepcion de division por cero."
 #define EXCP_6_MSG		"\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
 
@@ -219,6 +228,11 @@ void help(){
 	printf("%s\t ", "kill");
 	changeWindowColor(0xffffff);
 	printf("%s\n", KILL_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s\t ", "loop");
+	changeWindowColor(0xffffff);
+	printf("%s\n", LOOP_MSG);
 
 	changeWindowColor(0xffd300);
 	printf("%s", "executeZeroException");
