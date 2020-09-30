@@ -37,6 +37,11 @@ static int strlen(const char* str){
 
 //Funcion auxiliar para copiar los argumentos que recibe el proceso
 static void copyArgs(int argc, const char ** from, char ***into){
+    if(argc == 0 || from == NULL){
+        *into = NULL;
+        return;
+    }
+
     const char * aux = "aux";
     *into = (char **) sys_malloc((argc+1)* sizeof(aux));
     for(int i = 0, j = 0, length; i < argc ; i++){
@@ -53,11 +58,14 @@ static void copyArgs(int argc, const char ** from, char ***into){
 }
 
 int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
-    if((void *) mainPtr == NULL)
+    if((void *) mainPtr == NULL){
+        sys_write(2,"Error en funcion a ejecutar\n", 28);
         return -1;
+    }
     
     ProcNode *new = sys_malloc(sizeof(nodeAux));            //Creo el nuevo nodo
     if(new == NULL){
+        sys_write(2,"Error en malloc de nodo\n", 24);
         return -1;
     }
     // Le seteo los datos
@@ -65,6 +73,7 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     new->pcb.mem = sys_malloc(STACK_SIZE);
 
     if(new->pcb.mem == NULL){
+        sys_write(2,"Error en malloc de PCB\n", 23);
         return -1;
     }
 
@@ -162,10 +171,14 @@ uint64_t getNextRSP(uint64_t rsp){
                 if(currentProc == lastProc)
                     lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
 
-                for(int i = 0; i < currentProc->pcb.argc ; i++){
-                    sys_free(currentProc->pcb.argv[i]);
+            
+                if(currentProc->pcb.argv != NULL){
+                    for(int i = 0; i < currentProc->pcb.argc ; i++)
+                        sys_free(currentProc->pcb.argv[i]);
+
+                    sys_free(currentProc->pcb.argv);
                 }
-                sys_free(currentProc->pcb.argv);
+
                 sys_free(currentProc->pcb.mem);
                 currentProc = currentProc->next;
                 sys_free(previous->next);

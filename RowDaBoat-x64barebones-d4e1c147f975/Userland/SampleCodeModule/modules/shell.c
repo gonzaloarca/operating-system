@@ -1,6 +1,7 @@
 #include <std_io.h>
 #include <comandos.h>
 #include <syscalls.h>
+#include <test_util.h>
 
 #define INPUT_BUFFER_SIZE 100
 
@@ -8,7 +9,6 @@ char inputBuffer[INPUT_BUFFER_SIZE];
 int indexBuffer;
 static void parse();
 static char *symbol = "$>";
-
 
 void runShell(){
     printf("\nIngrese help y presione enter para una explicacion del programa\n");
@@ -81,6 +81,20 @@ static void parse(){
         if(nice(pid, priority) == 0)
             printf("Error en argumentos\n"); //puede que no haya encontrado el pid o que la prioridad no sea valida
     }
+    else if(strcmp( inputBuffer, "test_mm\n") == 0){
+        const char * auxname = "test_mm";
+        startProcess((int (*)(int, const char **))test_mm, 1, &auxname);
+    }
+    else if(strcmp( inputBuffer, "test_prio\n") == 0){
+        const char * auxname = "test_prio";
+        startProcess((int (*)(int, const char **))test_prio, 1, &auxname);
+    }
+    else if(strcmp( inputBuffer, "test_proc\n") == 0){
+        const char * auxname = "test_processes";
+        startProcess((int (*)(int, const char **))test_processes, 1, &auxname);
+    }
+    else if(strcmp( inputBuffer, "test_sync\n") == 0)
+        return;//IMPLEMENTAR
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }

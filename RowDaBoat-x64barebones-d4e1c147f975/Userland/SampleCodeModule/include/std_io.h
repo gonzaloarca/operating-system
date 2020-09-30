@@ -12,6 +12,8 @@ int getchar();
 
 char *gets(char *str);
 
+void * memset(void * destiation, int32_t c, uint64_t length);
+
 int fprintf(int fd, char *format, ...);
 
 int printf(char *format, ...);

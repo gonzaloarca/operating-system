@@ -403,15 +403,15 @@ static void fillColumn(int longitud){
 	}
 }
 
-void printProcess(char *name[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground){
+void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground){
 	char aux[10];	// maxima longitud de un longint
 	int longitud = 0;
-	if(name[0][0] == 0 ){
+	if(argv == NULL){
 		sys_write(1,"null", 4);
 		fillColumn(4);
 	}
 	else{							// si tiene nombre, imprime solo los primeros SIZECOL_PROCESSLIST-1 caracteres(es para mantener el formato de tabla)
-		char *aux2 = name[0];
+		char *aux2 = argv[0];
 		while(*aux2 != 0 && longitud < SIZECOL_PROCESSLIST){
 			sys_write(1, aux2, 1);
 			aux2++;

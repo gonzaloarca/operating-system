@@ -179,7 +179,10 @@ void loop(){
 #define NICE_MSG		"\tModifica la prioridad del proceso indicado, recibe como primer parametro PID y como segundo un numero entre 0 y 5 siendo 0 la maxima prioridad."
 #define EXCP_0_MSG		"\tComando para verificar la rutina de excepcion de division por cero."
 #define EXCP_6_MSG		"\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
-
+#define TEST_MM_MSG		"\tComando para ejecutar test."
+#define TEST_PRIO_MSG	"\tComando para ejecutar test."
+#define TEST_PROCESSES_MSG	"\tComando para ejecutar test."
+#define TEST_SYNC_MSG	"\tComando para ejecutar test."
 #define TECLA_F1		"\tEjecuta el guardado de los registros, para que sean impresos con inforeg."
 #define TECLA_F2		"\tEjecuta el borrado total de la linea actual."
 
@@ -249,6 +252,26 @@ void help(){
 	printf("%s", "executeUIException  ");
 	changeWindowColor(0xffffff);
 	printf("%s\n", EXCP_6_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s  ", "test_mm");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TEST_MM_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "test_prio");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TEST_PRIO_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "test_proc");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TEST_PROCESSES_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "test_sync");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TEST_SYNC_MSG);
 
 	putchar('\n');
 
