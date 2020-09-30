@@ -26,6 +26,7 @@ typedef struct ProcNode
 
 static ProcNode *currentProc, *lastProc, nodeAux;
 static unsigned int lastPID = 1;
+static int fgFlag = 0;                              //Flag que indica si debe haber cambio al proceso en foreground
 
 //Funcion auxiliar para contar caracteres de un string
 static int strlen(const char* str){
@@ -138,9 +139,20 @@ uint64_t getNextRSP(uint64_t rsp){
     }else
         currentProc->pcb.rsp = rsp;
     
+    //  Si tengo que cambiar al proceso en foreground
+    if(fgFlag){
+        currentProc->pcb.quantumCounter = currentProc->pcb.priority;
+        currentProc = lastProc->next;
+        currentProc->pcb.state = ACTIVE;
+        currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
+        fgFlag = 0;
+        return currentProc->pcb.rsp;
+    }
+
     ProcNode *previous = currentProc;
 
-    if(currentProc->pcb.quantumCounter == MAX_QUANTUM){     //  En este if vemos si le toca cambiar al proceso
+    //  En este if vemos si le toca cambiar al proceso
+    if(currentProc->pcb.quantumCounter == MAX_QUANTUM || currentProc->pcb.state == BLOCKED){  
         currentProc->pcb.quantumCounter = currentProc->pcb.priority;
         
         do{
@@ -168,6 +180,12 @@ uint64_t getNextRSP(uint64_t rsp){
     return currentProc->pcb.rsp;
 }
 
+//  Se activa un flag para cambiar al proceso que corre en foreground
+void activateForeground(){
+    fgFlag = 1;
+    sys_runNext();
+}
+
 //  Syscall para eliminar el proceso actual de la lista de procesos
 void sys_exit(){
     if(currentProc == NULL)
@@ -186,7 +204,8 @@ void sys_listProcess(){
     ProcNode *aux = lastProc->next; // Arranco desde el primero
     printProcessListHeader();
     do{
-        printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
+        if(aux->pcb.state != KILLED)
+            printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
         aux = aux->next;
     }while(aux != lastProc->next);
 }

@@ -13,11 +13,11 @@ int testMain(int argc, char const *argv[]){
 
 int main()
 {
-	startProcess(testMain, 0, NULL);
-	startProcess(testMain, 0, NULL);
-	startProcess(testMain, 0, NULL);
-	startProcess(testMain, 0, NULL);
-	startProcess(testMain, 0, NULL);
+	char *test = "test";
+	for (size_t i = 0; i < 5; i++)
+	{
+		startProcess(testMain, 1, &test);	
+	}
 	nice(1, 0);
 	runShell();
 

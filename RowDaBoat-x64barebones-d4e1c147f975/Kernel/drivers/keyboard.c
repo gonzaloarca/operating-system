@@ -1,6 +1,7 @@
 #include <keyboard.h>
 #include <interrupts.h>
 #include <window_manager.h>
+#include <scheduler.h>
 
 #define LEFT_SHIFT 42
 #define RIGHT_SHIFT 54
@@ -46,6 +47,8 @@ void keyboard_handler()
 
 	// Actualizo el indice del buffer circular
 	lastPos = (lastPos + 1) % BUFFER_SIZE;
+
+	activateForeground();
 }
 
 char asciiMap(int code)
@@ -114,6 +117,7 @@ uint64_t sys_read(char* out_buffer, unsigned long int count, char delim)
 	while( c != delim && i < count ){
 		while( (c = asciiMap(readBuffer())) == 0 ){
 			_hlt();
+//			sys_runNext();
 		} //levanto una tecla valida del buffer del teclado
 
 		switch( c ){
