@@ -1,4 +1,5 @@
 #include <std_num.h>
+#define NULL ((void *)0)
 
 int floatToString(double number, char buffer[DOUBLE_SIZE])
 {
@@ -133,16 +134,19 @@ int pointerToHexString(void *pointer, char buffer[POINTER_SIZE + 1]){
     return POINTER_SIZE;
 }
 
-int strToPositiveInt(char *str){
-    int aux = 0;
+int strToPositiveInt(char *str, int *length){
+    int aux = 0, i = 0;
 
-    for(; *str != '\n' && *str != 0 ; str++){
+    for(; str[i] != '\n' && str[i] != 0 && str[i] != ' ' ; i++){
         aux *= 10;
-        if(*str < '0' || *str > '9')
+        if(str[i] < '0' || str[i] > '9')
             return -1;
 
-        aux += (*str - '0');
+        aux += (str[i] - '0');
     }
 
+    if(length != NULL)
+        *length = i;
+    
     return aux;
 }

@@ -1,6 +1,8 @@
 #ifndef _COMANDOS_H
 #define _COMANDOS_H
 
+#define LOOP_SLEEP 7000000
+
 #include <stdint.h>
 #include <std_io.h>
 #include <syscalls.h>
@@ -49,4 +51,6 @@ void executeUIException();
 // Programa que imprime los valores sobre el estado de la memoria
 void printMemStatus();
 
+// Programa que cada cierto tiempo de ejecucion imprime su PID en salida estandar
+void loop();
 #endif

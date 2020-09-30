@@ -99,7 +99,7 @@ int kill(unsigned int pid, char state);
 // Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso
 void runNext();
 
-//  Syscall para cambiar la prioridad de un proceso según su pid
+// Syscall para cambiar la prioridad de un proceso según su pid, retorna 0 en caso de error
 int nice(unsigned int pid, unsigned int priority);
 
 #endif

@@ -7,7 +7,7 @@
 char inputBuffer[INPUT_BUFFER_SIZE];
 int indexBuffer;
 static void parse();
-static char *symbol = "$> ";
+static char *symbol = "$>";
 
 
 void runShell(){
@@ -58,8 +58,28 @@ static void parse(){
     else if(strcmp( inputBuffer, "ps\n") == 0)
         listProcess();
     else if(strcmp( "kill ", inputBuffer ) == 0){
-        int pid = strToPositiveInt(inputBuffer+5);
+        int pid = strToPositiveInt(inputBuffer+5, NULL);
+        if(pid == -1)
+            printf("Error en argumentos\n");
+            
         kill(pid, KILLED);
+    }
+    else if(strcmp( inputBuffer, "loop\n") == 0){
+        const char * loopname = "loop";
+        startProcess((int (*)(int, const char **))loop, 1, &loopname);
+    }
+    else if(strcmp( "nice ", inputBuffer) == 0){
+        int pid, priority, aux = 0;
+        pid = strToPositiveInt(inputBuffer+5, &aux);
+        if(pid == -1)
+            printf("Error en argumentos\n");
+
+        priority = strToPositiveInt(inputBuffer+5+aux+1, NULL);
+        if(priority == -1)
+            printf("Error en argumentos\n");
+
+        if(nice(pid, priority) == 0)
+            printf("Error en argumentos\n"); //puede que no haya encontrado el pid o que la prioridad no sea valida
     }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
