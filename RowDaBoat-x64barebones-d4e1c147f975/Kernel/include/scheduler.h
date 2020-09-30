@@ -11,9 +11,11 @@
 #define BLOCKED 0
 #define KILLED 2
 
-uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, int argv);
+uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t argv);
 
 int sys_start(uint64_t mainPtr, int argc, char const *argv[]);
+
+void _start(int *(mainPtr)(int, char const **), int argc, char const *argv[]);
 
 uint64_t getNextRSP(uint64_t rsp);
 

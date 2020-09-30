@@ -38,9 +38,11 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     // Le seteo los datos
     new->pcb.pid = lastPID++;
     new->pcb.mem = sys_malloc(STACK_SIZE);
+
     if(new->pcb.mem == NULL){
         return -1;
     }
+
     new->pcb.rsp = (uint64_t) new->pcb.mem + STACK_SIZE;
     new->pcb.state = ACTIVE;
     new->pcb.mainPtr = mainPtr;
@@ -59,7 +61,7 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     if(lastProc == NULL){
         lastProc = new;
         new->next = new;
-    }else{
+    }else {
         new->next = lastProc->next;
         lastProc->next = new;
         lastProc = new;
@@ -68,13 +70,43 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     return 0;
 }
 
+uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t argv){
+    uint64_t *framePtr = (uint64_t*)frame - 1;
+
+    //Datos para el iretq
+    *framePtr = 0; //SS
+    framePtr--;
+    *framePtr = (uint64_t)framePtr; //RSP
+    framePtr--;
+    *framePtr = 0x202; //RFLAGS
+    framePtr--;
+    *framePtr = 0x8; //CS
+    framePtr--;
+    *framePtr = (uint64_t)_start; //RIP
+    framePtr--;
+
+    //Lleno los registros con valores crecientes de 0 a 14
+    for(int i = 0; i < 15; i++, framePtr--)
+        *framePtr = i;
+    
+    //framePtr me apunta una posicion despues de r15, lo incremento para que apunte a r15
+    framePtr++;
+
+    //Cargo rdi, rsi y rdx con sus respectivos argumentos para que _start los levante
+    *(framePtr+9) = mainptr; //rdi
+    *(framePtr+8) = argc;
+    *(framePtr+11) = argv;
+
+    return (uint64_t)framePtr;
+}
+
 //  Guarda el rsp del proceso que lo llama por la interrupcion
 //  Luego devuelve el rsp del proximo proceso a ejecutar
 uint64_t getNextRSP(uint64_t rsp){
     //  Si todavia no está corriendo ningún proceso
     if(currentProc == NULL){
         if(lastProc == NULL){   //  Todavia no hay procesos
-            return 0;
+            return 0; //retorna 0 ya que se corresponderia con NULL en cuanto a direcciones, y esta funcion retorna una direccion
         }
         currentProc = lastProc->next;
     }else

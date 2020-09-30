@@ -196,7 +196,7 @@ _sysCallHandler:
 	mov [rsp+16], rdx
 	mov [rsp+24], rsi
 	mov [rsp+32], rdi
-	mov rdi, rax	; Se pasa el eax como primer parametro
+	mov rdi, rax	; Se pasa el rax como primer parametro
 	mov rsi, rsp	; El segundo argumento es el puntero a los parametros
 	call sysCallDispatcher
 	;	Lo que devuelve esta en RAX y permanece ahi para el usuario
