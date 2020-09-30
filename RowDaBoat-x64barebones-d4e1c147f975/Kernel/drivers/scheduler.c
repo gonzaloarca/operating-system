@@ -93,7 +93,7 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
         lastProc = new;
     }
 
-    return 0;
+    return new->pcb.pid;
 }
 
 uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t argv){

@@ -406,7 +406,7 @@ static void fillColumn(int longitud){
 void printProcess(char *name[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground){
 	char aux[10];	// maxima longitud de un longint
 	int longitud = 0;
-	if(name == NULL){
+	if(name[0][0] == 0 ){
 		sys_write(1,"null", 4);
 		fillColumn(4);
 	}

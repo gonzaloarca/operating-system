@@ -43,7 +43,7 @@
         Recibe en RBX el puntero a la estructura MemStatus
 
 10. SYSCALL startProcess: RAX = 30
-		Iniciar un proceso que corre la funcion indicada en RAX(int (*)(int, char const **)) con RBX argumentos que recibe en RCX(char const *)
+		Iniciar un proceso que corre la funcion indicada en RAX(int (*)(int, char const **)) con RBX argumentos que recibe en RCX(char const *) y retorna el PID
 
 11.	SYSCALL exit: RAX = 31
 		Se encarga de setear el estado como KILLED del proceso que la llama para que luego sea eliminado, no recibe parametros
