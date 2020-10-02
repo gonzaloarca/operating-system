@@ -21,6 +21,7 @@ typedef struct
 typedef struct ProcNode
 {
     struct ProcNode *next;
+    struct ProcNode *previous;
     PCB pcb;
 } ProcNode;
 
@@ -97,9 +98,12 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     if(lastProc == NULL){
         lastProc = new;
         new->next = new;
+        new->previous = new;
     }else {
         new->next = lastProc->next;
+        new->previous = lastProc;
         lastProc->next = new;
+        new->next->previous = new;
         lastProc = new;
     }
 
@@ -139,37 +143,41 @@ uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t a
 //  Guarda el rsp del proceso que lo llama por la interrupcion
 //  Luego devuelve el rsp del proximo proceso a ejecutar
 uint64_t getNextRSP(uint64_t rsp){
-    //  Si todavia no está corriendo ningún proceso
-    if(currentProc == NULL){
-        if(lastProc == NULL){   //  Todavia no hay procesos
-            return 0; //retorna 0 ya que se corresponderia con NULL en cuanto a direcciones, y esta funcion retorna una direccion
+
+    if(currentProc == NULL){     //  Si todavia no está corriendo ningún proceso
+        if(lastProc == NULL){    //  Todavia no hay procesos
+            return 0;            //retorna 0 ya que se corresponderia con NULL en cuanto a direcciones, y esta funcion retorna una direccion
         }
         currentProc = lastProc->next;
     }else
         currentProc->pcb.rsp = rsp;
     
-    //  Si tengo que cambiar al proceso en foreground
-    if(fgFlag){
-        currentProc->pcb.quantumCounter = currentProc->pcb.priority;
-        currentProc = lastProc->next;
-        currentProc->pcb.state = ACTIVE;
-        currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
-        fgFlag = 0;
+    
+    if(fgFlag){                 //  Si tengo que cambiar al proceso en foreground
+        switchForeground();
         return currentProc->pcb.rsp;
     }
 
-    ProcNode *previous = currentProc;
-
-    //  En este if vemos si le toca cambiar al proceso
+                                //  En este if vemos si le toca cambiar al proceso
     if(currentProc->pcb.quantumCounter == MAX_QUANTUM || currentProc->pcb.state != ACTIVE ){  
         currentProc->pcb.quantumCounter = currentProc->pcb.priority;
         
-        currentProc = currentProc->next;
+        findNextActive();
+    }
+
+    currentProc->pcb.quantumCounter++;
+
+    return currentProc->pcb.rsp;
+}
+
+void findNextActive(){
+
+     currentProc = currentProc->next;
         while(currentProc->pcb.state != ACTIVE){
             //currentProc = currentProc->next;
             if(currentProc->pcb.state == KILLED){
                 if(currentProc == lastProc)
-                    lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
+                    lastProc = currentProc->previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
 
             
                 if(currentProc->pcb.argv != NULL){
@@ -181,24 +189,31 @@ uint64_t getNextRSP(uint64_t rsp){
 
                 sys_free(currentProc->pcb.mem);
                 currentProc = currentProc->next;
-                sys_free(previous->next);
-                previous->next = currentProc;
+                currentProc->previous = currentProc->previous->previous;
+                sys_free(currentProc->previous->next);
+                currentProc->previous->next = currentProc;
             }else{
-                previous = previous->next;
                 currentProc = currentProc->next;
             }
-        }
-    }
+        } 
+}
 
-    currentProc->pcb.quantumCounter++;
-
-    return currentProc->pcb.rsp;
+void freeResources(ProcNode *prev){
+    
 }
 
 //  Se activa un flag para cambiar al proceso que corre en foreground
-void activateForeground(){
+void triggerForeground(){
     fgFlag = 1;
     sys_runNext();
+}
+
+void switchForeground(){
+    currentProc->pcb.quantumCounter = currentProc->pcb.priority;
+    currentProc = lastProc->next;
+    currentProc->pcb.state = ACTIVE;
+    currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
+    fgFlag = 0;
 }
 
 //  Syscall para eliminar el proceso actual de la lista de procesos

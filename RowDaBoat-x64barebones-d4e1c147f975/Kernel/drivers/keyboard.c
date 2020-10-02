@@ -48,7 +48,7 @@ void keyboard_handler()
 	// Actualizo el indice del buffer circular
 	lastPos = (lastPos + 1) % BUFFER_SIZE;
 
-	activateForeground();
+	triggerForeground();
 }
 
 char asciiMap(int code)

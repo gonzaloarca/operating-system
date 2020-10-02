@@ -19,7 +19,11 @@ void _start(int *(mainPtr)(int, char const **), int argc, char const *argv[]);
 
 uint64_t getNextRSP(uint64_t rsp);
 
-void activateForeground();
+void findNextActive();
+
+void triggerForeground();
+
+void switchForeground();
 
 void sys_exit();
 
