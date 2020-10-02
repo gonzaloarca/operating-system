@@ -161,12 +161,12 @@ uint64_t getNextRSP(uint64_t rsp){
     ProcNode *previous = currentProc;
 
     //  En este if vemos si le toca cambiar al proceso
-    if(currentProc->pcb.quantumCounter == MAX_QUANTUM || currentProc->pcb.state == BLOCKED){  
+    if(currentProc->pcb.quantumCounter == MAX_QUANTUM || currentProc->pcb.state != ACTIVE ){  
         currentProc->pcb.quantumCounter = currentProc->pcb.priority;
         
-        do{
-            currentProc = currentProc->next;
-
+        currentProc = currentProc->next;
+        while(currentProc->pcb.state != ACTIVE){
+            //currentProc = currentProc->next;
             if(currentProc->pcb.state == KILLED){
                 if(currentProc == lastProc)
                     lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
@@ -183,9 +183,11 @@ uint64_t getNextRSP(uint64_t rsp){
                 currentProc = currentProc->next;
                 sys_free(previous->next);
                 previous->next = currentProc;
-            }else
+            }else{
                 previous = previous->next;
-        }while(currentProc->pcb.state != ACTIVE);
+                currentProc = currentProc->next;
+            }
+        }
     }
 
     currentProc->pcb.quantumCounter++;
@@ -217,8 +219,7 @@ void sys_listProcess(){
     ProcNode *aux = lastProc->next; // Arranco desde el primero
     printProcessListHeader();
     do{
-        if(aux->pcb.state != KILLED)
-            printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
+        printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7, aux->pcb.state);
         aux = aux->next;
     }while(aux != lastProc->next);
 }
@@ -226,7 +227,7 @@ void sys_listProcess(){
 // Syscall para cambiar el estado de un pid especifico
 int sys_kill(unsigned int pid, char state){
     if(lastProc == NULL)
-        return 0;
+        return -1;
 
     ProcNode *search = lastProc;
     //  Realizo la busqueda del proceso con el pid y lo marco como KILLED
@@ -234,12 +235,12 @@ int sys_kill(unsigned int pid, char state){
         search = search->next;
         if(search->pcb.pid == pid){
             if(search->pcb.state == KILLED)
-                return 0;
+                return -1;
             else
             {
                 //NO PUEDO MATAR A LA SHELL
                 if(search->pcb.pid == 1 && state == KILLED)
-                    return 0;
+                    return -1;
                 
                 search->pcb.state = state;
                 return 1;
@@ -247,7 +248,7 @@ int sys_kill(unsigned int pid, char state){
         }
     }while(search != lastProc);
 
-    return 0;
+    return -1;
 }
 
 //Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso
@@ -260,7 +261,7 @@ void sys_runNext(){
 //Syscall para cambiar la prioridad de un proceso
 int sys_nice(unsigned int pid, unsigned int priority){
     if(pid > lastPID || priority >= MAX_QUANTUM)
-        return 0;
+        return -1;
 
     ProcNode *search = lastProc;
     //  Realizo la busqueda del proceso con el pid
@@ -268,7 +269,7 @@ int sys_nice(unsigned int pid, unsigned int priority){
         search = search->next;
         if(search->pcb.pid == pid){
             if(search->pcb.state == KILLED)
-                return 0;
+                return -1;
             else
             {                
                 search->pcb.priority = priority;
@@ -278,5 +279,5 @@ int sys_nice(unsigned int pid, unsigned int priority){
         }
     }while(search != lastProc);
 
-    return 0;
+    return -1;
 }
