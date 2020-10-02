@@ -68,6 +68,22 @@ static void parse(){
         const char * loopname = "loop";
         startProcess((int (*)(int, const char **))loop, 1, &loopname);
     }
+    else if(strcmp("block ", inputBuffer) == 0){
+        int pid, aux = 0;
+        pid = strToPositiveInt(inputBuffer+6, &aux);
+        if(pid == -1)
+            printf("Error en argumentos\n");
+        if(block(pid) == -1)
+            printf("Error en argumentos\n");
+    }
+    else if(strcmp("unblock ", inputBuffer) == 0){
+        int pid, aux = 0;
+        pid = strToPositiveInt(inputBuffer+8, &aux);
+        if(pid == -1)
+            printf("Error en argumentos\n");
+        if(block(pid) == -1)
+            printf("Error en argumentos\n");
+    }
     else if(strcmp( "nice ", inputBuffer) == 0){
         int pid, priority, aux = 0;
         pid = strToPositiveInt(inputBuffer+5, &aux);
@@ -78,7 +94,7 @@ static void parse(){
         if(priority == -1)
             printf("Error en argumentos\n");
 
-        if(nice(pid, priority) == 0)
+        if(nice(pid, priority) == -1)
             printf("Error en argumentos\n"); //puede que no haya encontrado el pid o que la prioridad no sea valida
     }
     else if(strcmp( inputBuffer, "test_mm\n") == 0){

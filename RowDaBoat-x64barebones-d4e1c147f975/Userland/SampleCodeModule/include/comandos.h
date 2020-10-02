@@ -53,4 +53,11 @@ void printMemStatus();
 
 // Programa que cada cierto tiempo de ejecucion imprime su PID en salida estandar
 void loop();
+
+// Funcion que permite poner en estado activo a un proceso
+int unblock(int PID);
+
+// Funcion que permite poner en estado bloqueadlo a un proceso
+int block(int PID);
+
 #endif

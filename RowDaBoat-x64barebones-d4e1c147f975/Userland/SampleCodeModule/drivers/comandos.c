@@ -165,6 +165,14 @@ void loop(){
 	}
 }
 
+int unblock(int PID){
+	return kill(PID, ACTIVE);
+}
+
+int block(int PID){
+	return kill(PID, BLOCKED);
+}
+
 // Constantes utilizadas por el comando help
 #define CLEAR_MSG		"\tLimpia la pantalla."
 #define CPUINFO_MSG 	"\tMuestra informacion de interes sobre el cpu."
@@ -176,70 +184,79 @@ void loop(){
 #define PS_MSG			"\tMuestra una lista de los procesos actuales."
 #define KILL_MSG		"\tFinaliza el proceso del pid indicado por parametro."
 #define LOOP_MSG		"\tCrea un proceso que imprime su PID cada cierto tiempo mientras se ejecuta."
-#define NICE_MSG		"\tModifica la prioridad del proceso indicado, recibe como primer parametro PID y como segundo un numero entre 0 y 5 siendo 0 la maxima prioridad."
+#define BLOCK_MSG		"\tBloquea el proceso del PID indicado"
+#define UNBLOCK_MSG		"\tDesloquea el proceso del PID indicado"
+#define NICE_MSG		"\tModifica la prioridad del proceso indicado, la prioridad es entre 0 y 5 siendo 0 la maxima prioridad."
 #define EXCP_0_MSG		"\tComando para verificar la rutina de excepcion de division por cero."
 #define EXCP_6_MSG		"\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
-#define TEST_MM_MSG		"\tComando para ejecutar test."
-#define TEST_PRIO_MSG	"\tComando para ejecutar test."
-#define TEST_PROCESSES_MSG	"\tComando para ejecutar test."
-#define TEST_SYNC_MSG	"\tComando para ejecutar test."
+#define TEST_MSG		"Comandos para ejecutar tests:"
 #define TECLA_F1		"\tEjecuta el guardado de los registros, para que sean impresos con inforeg."
 #define TECLA_F2		"\tEjecuta el borrado total de la linea actual."
 
 void help(){
 	puts("---------Informacion sobre comandos disponibles----------------\n");
 	changeWindowColor(0xffd300);
-	printf("%s\t", "clear");
+	printf("%s\t\t", "clear");
 	changeWindowColor(0xffffff);
 	printf("%s\n", CLEAR_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s  ", "cpuinfo");
+	printf("%s  \t", "cpuinfo");
 	changeWindowColor(0xffffff);
 	printf("%s\n", CPUINFO_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s  ", "cputemp");
+	printf("%s  \t", "cputemp");
 	changeWindowColor(0xffffff);
 	printf("%s\n", CPUTEMP_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s  ", "inforeg");
+	printf("%s  \t", "inforeg");
 	changeWindowColor(0xffffff);
 	printf("%s\n", INFOREG_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s ", "printmem");
+	printf("%s dir ", "printmem");
 	changeWindowColor(0xffffff);
 	printf("%s\n", PRINTMEM_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s", "printtime");
+	printf("%s\t", "printtime");
 	changeWindowColor(0xffffff);
 	printf("%s\n", PRINTTIME_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s\t  ", "mem");
+	printf("%s\t\t  ", "mem");
 	changeWindowColor(0xffffff);
 	printf("%s\n", MEM_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s\t   ", "ps");
+	printf("%s\t\t   ", "ps");
 	changeWindowColor(0xffffff);
 	printf("%s\n", PS_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s\t ", "kill");
+	printf("%s PID\t ", "kill");
 	changeWindowColor(0xffffff);
 	printf("%s\n", KILL_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s\t ", "loop");
+	printf("%s\t\t ", "loop");
 	changeWindowColor(0xffffff);
 	printf("%s\n", LOOP_MSG);
 
 	changeWindowColor(0xffd300);
-	printf("%s\t ", "nice");
+	printf("%s\t", "block PID");
+	changeWindowColor(0xffffff);
+	printf("%s\n", BLOCK_MSG);
+	
+	changeWindowColor(0xffd300);
+	printf("%s  ", "unblock PID");
+	changeWindowColor(0xffffff);
+	printf("%s\n", UNBLOCK_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s", "nice PID PRIO");
 	changeWindowColor(0xffffff);
 	printf("%s\n", NICE_MSG);
 
@@ -253,25 +270,16 @@ void help(){
 	changeWindowColor(0xffffff);
 	printf("%s\n", EXCP_6_MSG);
 
+	printf("%s\t", TEST_MSG);
 	changeWindowColor(0xffd300);
-	printf("%s  ", "test_mm");
-	changeWindowColor(0xffffff);
-	printf("%s\n", TEST_MM_MSG);
+	printf("%s  ", "test_mm\t");
 
-	changeWindowColor(0xffd300);
-	printf("%s", "test_prio");
-	changeWindowColor(0xffffff);
-	printf("%s\n", TEST_PRIO_MSG);
+	printf("%s", "test_prio\t");
 
-	changeWindowColor(0xffd300);
-	printf("%s", "test_proc");
-	changeWindowColor(0xffffff);
-	printf("%s\n", TEST_PROCESSES_MSG);
+	printf("%s", "test_proc\t");
 
-	changeWindowColor(0xffd300);
-	printf("%s", "test_sync");
+	printf("%s", "test_sync\t");
 	changeWindowColor(0xffffff);
-	printf("%s\n", TEST_SYNC_MSG);
 
 	putchar('\n');
 
