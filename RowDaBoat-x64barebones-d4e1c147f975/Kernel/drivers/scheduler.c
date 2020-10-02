@@ -4,26 +4,6 @@
 #include <time.h>
 #include <interrupts.h>
 
-typedef struct 
-{
-	unsigned int pid;				        //process ID del programa
-    uint64_t *mem;                          //inicio de la memoria para el stack del proceso
-    uint64_t rsp;                           //stack pointer del proceso
-    char state;                             //activo o bloqueado
-	uint64_t mainPtr;               		//puntero al inicio del programa
-    int argc;
-    char **argv;
-    unsigned int priority;                  //dónde empieza a contar sus quantums
-    unsigned int quantumCounter;            //contador para saber si terminó sus quantums
-} PCB;
-
-//  Nodo para la lista de procesos
-typedef struct ProcNode
-{
-    struct ProcNode *next;
-    PCB pcb;
-} ProcNode;
-
 static ProcNode *currentProc, *lastProc, nodeAux;
 static unsigned int lastPID = 1;
 static int fgFlag = 0;                              //Flag que indica si debe haber cambio al proceso en foreground
@@ -37,6 +17,11 @@ static int strlen(const char* str){
 
 //Funcion auxiliar para copiar los argumentos que recibe el proceso
 static void copyArgs(int argc, const char ** from, char ***into){
+    if(argc == 0 || from == NULL){
+        *into = NULL;
+        return;
+    }
+
     const char * aux = "aux";
     *into = (char **) sys_malloc((argc+1)* sizeof(aux));
     for(int i = 0, j = 0, length; i < argc ; i++){
@@ -53,11 +38,14 @@ static void copyArgs(int argc, const char ** from, char ***into){
 }
 
 int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
-    if((void *) mainPtr == NULL)
+    if((void *) mainPtr == NULL){
+        sys_write(2,"Error en funcion a ejecutar\n", 28);
         return -1;
+    }
     
     ProcNode *new = sys_malloc(sizeof(nodeAux));            //Creo el nuevo nodo
     if(new == NULL){
+        sys_write(2,"Error en malloc de nodo\n", 24);
         return -1;
     }
     // Le seteo los datos
@@ -65,6 +53,7 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     new->pcb.mem = sys_malloc(STACK_SIZE);
 
     if(new->pcb.mem == NULL){
+        sys_write(2,"Error en malloc de PCB\n", 23);
         return -1;
     }
 
@@ -88,9 +77,12 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     if(lastProc == NULL){
         lastProc = new;
         new->next = new;
+        new->previous = new;
     }else {
         new->next = lastProc->next;
+        new->previous = lastProc;
         lastProc->next = new;
+        new->next->previous = new;
         lastProc = new;
     }
 
@@ -130,48 +122,31 @@ uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t a
 //  Guarda el rsp del proceso que lo llama por la interrupcion
 //  Luego devuelve el rsp del proximo proceso a ejecutar
 uint64_t getNextRSP(uint64_t rsp){
-    //  Si todavia no está corriendo ningún proceso
-    if(currentProc == NULL){
-        if(lastProc == NULL){   //  Todavia no hay procesos
-            return 0; //retorna 0 ya que se corresponderia con NULL en cuanto a direcciones, y esta funcion retorna una direccion
+
+    if(currentProc == NULL){     //  Si todavia no está corriendo ningún proceso
+        if(lastProc == NULL){    //  Todavia no hay procesos
+            return 0;            //retorna 0 ya que se corresponderia con NULL en cuanto a direcciones, y esta funcion retorna una direccion
         }
         currentProc = lastProc->next;
     }else
         currentProc->pcb.rsp = rsp;
-    
-    //  Si tengo que cambiar al proceso en foreground
-    if(fgFlag){
-        currentProc->pcb.quantumCounter = currentProc->pcb.priority;
-        currentProc = lastProc->next;
-        currentProc->pcb.state = ACTIVE;
-        currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
-        fgFlag = 0;
+
+    //Si el proceso que acabo de correr se murio, tipicamente mediante un exit
+    if(currentProc->pcb.state == KILLED){
+        freeResources(&currentProc);
+    }
+
+    if(fgFlag){                 //  Si tengo que cambiar al proceso en foreground
+        switchForeground();
         return currentProc->pcb.rsp;
     }
 
-    ProcNode *previous = currentProc;
-
-    //  En este if vemos si le toca cambiar al proceso
-    if(currentProc->pcb.quantumCounter == MAX_QUANTUM || currentProc->pcb.state == BLOCKED){  
-        currentProc->pcb.quantumCounter = currentProc->pcb.priority;
+                                //  En este if vemos si le toca cambiar al proceso
+    if(currentProc->pcb.quantumCounter == MAX_QUANTUM || currentProc->pcb.state != ACTIVE ){  
+        currentProc->pcb.quantumCounter = currentProc->pcb.priority; //Si llego a su maximo de quantums, lo reseteo
         
-        do{
+        do{                    //Encuentro algun proceso no bloqueado para correr
             currentProc = currentProc->next;
-
-            if(currentProc->pcb.state == KILLED){
-                if(currentProc == lastProc)
-                    lastProc = previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
-
-                for(int i = 0; i < currentProc->pcb.argc ; i++){
-                    sys_free(currentProc->pcb.argv[i]);
-                }
-                sys_free(currentProc->pcb.argv);
-                sys_free(currentProc->pcb.mem);
-                currentProc = currentProc->next;
-                sys_free(previous->next);
-                previous->next = currentProc;
-            }else
-                previous = previous->next;
         }while(currentProc->pcb.state != ACTIVE);
     }
 
@@ -180,10 +155,36 @@ uint64_t getNextRSP(uint64_t rsp){
     return currentProc->pcb.rsp;
 }
 
+void freeResources(ProcNode **node){
+    if(*node == lastProc)
+        lastProc = (*node)->previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
+
+    if((*node)->pcb.argv != NULL){
+        for(int i = 0; i < (*node)->pcb.argc ; i++)
+            sys_free((*node)->pcb.argv[i]);
+
+        sys_free((*node)->pcb.argv);
+    }
+
+    sys_free((*node)->pcb.mem);
+    *node = (*node)->next;
+    (*node)->previous = (*node)->previous->previous;
+    sys_free((*node)->previous->next);
+    (*node)->previous->next = *node;
+}
+
 //  Se activa un flag para cambiar al proceso que corre en foreground
-void activateForeground(){
+void triggerForeground(){
     fgFlag = 1;
     sys_runNext();
+}
+
+void switchForeground(){
+    currentProc->pcb.quantumCounter = currentProc->pcb.priority;
+    currentProc = lastProc->next;
+    currentProc->pcb.state = ACTIVE;
+    currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
+    fgFlag = 0;
 }
 
 //  Syscall para eliminar el proceso actual de la lista de procesos
@@ -192,6 +193,7 @@ void sys_exit(){
         return;         //No hay nada corriendo
 
     currentProc->pcb.state = KILLED;
+    sys_runNext();
 }
 
 //  Syscall que retorna PID del proceso actual
@@ -204,8 +206,7 @@ void sys_listProcess(){
     ProcNode *aux = lastProc->next; // Arranco desde el primero
     printProcessListHeader();
     do{
-        if(aux->pcb.state != KILLED)
-            printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7);
+        printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7, aux->pcb.state);
         aux = aux->next;
     }while(aux != lastProc->next);
 }
@@ -213,28 +214,32 @@ void sys_listProcess(){
 // Syscall para cambiar el estado de un pid especifico
 int sys_kill(unsigned int pid, char state){
     if(lastProc == NULL)
-        return 0;
+        return -1;
 
     ProcNode *search = lastProc;
     //  Realizo la busqueda del proceso con el pid y lo marco como KILLED
     do{
         search = search->next;
         if(search->pcb.pid == pid){
-            if(search->pcb.state == KILLED)
+            if(state == KILLED){
+                if(pid == 1){ //Si es la shell, no la mato
+                   return -1;
+                }
+
+                if(search == currentProc){ //Si un proceso se quiere matar a si mismo, el scheduler deberia encargarse de el
+                    sys_exit();
+                }
+
+                freeResources(&search);
                 return 0;
-            else
-            {
-                //NO PUEDO MATAR A LA SHELL
-                if(search->pcb.pid == 1 && state == KILLED)
-                    return 0;
-                
+            } else{
                 search->pcb.state = state;
-                return 1;
+                return 0;
             }
         }
     }while(search != lastProc);
 
-    return 0;
+    return -1;
 }
 
 //Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso
@@ -247,7 +252,7 @@ void sys_runNext(){
 //Syscall para cambiar la prioridad de un proceso
 int sys_nice(unsigned int pid, unsigned int priority){
     if(pid > lastPID || priority >= MAX_QUANTUM)
-        return 0;
+        return -1;
 
     ProcNode *search = lastProc;
     //  Realizo la busqueda del proceso con el pid
@@ -255,7 +260,7 @@ int sys_nice(unsigned int pid, unsigned int priority){
         search = search->next;
         if(search->pcb.pid == pid){
             if(search->pcb.state == KILLED)
-                return 0;
+                return -1;
             else
             {                
                 search->pcb.priority = priority;
@@ -265,5 +270,5 @@ int sys_nice(unsigned int pid, unsigned int priority){
         }
     }while(search != lastProc);
 
-    return 0;
+    return -1;
 }

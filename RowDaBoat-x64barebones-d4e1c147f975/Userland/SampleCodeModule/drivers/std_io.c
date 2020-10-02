@@ -69,6 +69,16 @@ int puts(char *str){
     return fputs(str, 1);
 }
 
+void * memset(void * destiation, int32_t c, uint64_t length){
+	uint8_t chr = (uint8_t)c;
+	char * dst = (char*)destiation;
+
+	while(length--)
+		dst[length] = chr;
+
+	return destiation;
+}
+
 int vfprintf(int fd, char* format, va_list arg){
     if(format == 0 || (fd != 1 && fd != 2 )){   //solo tenemos implementados stdout y stderr
         return -1;

@@ -1,5 +1,6 @@
 #include <window_manager.h>
 #include <stddef.h>
+#include <scheduler.h>
 
 #define SIZECOL_PROCESSLIST 16
 
@@ -392,7 +393,7 @@ static void blockIdleSymbol(){
 }
 
 void printProcessListHeader(){
-	sys_write(1, "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tBase Pointer\tFOREGROUND\n", 58);
+	sys_write(1, "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tBase Pointer\tForeground  \tState\n", 66);
 }
 
 // Rellena la columna actual con espacios hasta que ocupe sus SIZECOL_PROCESSLIST caracteres
@@ -403,15 +404,15 @@ static void fillColumn(int longitud){
 	}
 }
 
-void printProcess(char *name[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground){
+void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground, int status){
 	char aux[10];	// maxima longitud de un longint
 	int longitud = 0;
-	if(name[0][0] == 0 ){
+	if(argv == NULL){
 		sys_write(1,"null", 4);
 		fillColumn(4);
 	}
 	else{							// si tiene nombre, imprime solo los primeros SIZECOL_PROCESSLIST-1 caracteres(es para mantener el formato de tabla)
-		char *aux2 = name[0];
+		char *aux2 = argv[0];
 		while(*aux2 != 0 && longitud < SIZECOL_PROCESSLIST){
 			sys_write(1, aux2, 1);
 			aux2++;
@@ -436,6 +437,23 @@ void printProcess(char *name[], unsigned int pid, unsigned int priority, uint64_
 	sys_write(1, aux, longitud);
 	fillColumn(longitud);
 
-	sys_write(1, &foreground, 1);
+	//sys_write(1, &foreground, 1);
+	fillColumn(0);
+
+	switch (status)
+	{
+	case ACTIVE:
+		sys_write(1,"active", 6);
+		break;
+	case BLOCKED:
+		sys_write(1,"blocked", 7);
+		break;
+	case KILLED:
+		sys_write(1, "killed", 6);
+		break;
+	default:
+		sys_write(1,"unknown", 7);
+		break;
+	}
 	sys_write(1, "\n", 1);
 }

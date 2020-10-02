@@ -66,6 +66,6 @@ void idleSymbol();
 void printProcessListHeader();
 
 // Funcion que imprime en pantalla informacion de un proceso
-void printProcess(char *name[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground);
+void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground, int status);
 
 #endif
