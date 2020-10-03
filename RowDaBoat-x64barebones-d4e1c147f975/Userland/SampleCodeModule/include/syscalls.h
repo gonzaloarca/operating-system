@@ -92,6 +92,10 @@ unsigned int startProcessFg(int (*mainptr)(int, char const **), int argc, char c
 // Devuelve su pid
 unsigned int startProcessBg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 
+// Syscall que finaliza la ejecucion de un proceso, marcando su estado como "KILLED" y luego
+// llamando a que se ejecute el siguiente proceso en la cola de listos.
+void exit();
+
 // Syscall que retorna el pid del proceso que la llama
 unsigned int getpid();
 

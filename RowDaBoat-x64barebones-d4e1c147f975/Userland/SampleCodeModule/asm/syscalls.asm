@@ -12,6 +12,7 @@ GLOBAL free
 GLOBAL getMemStatus
 GLOBAL startProcessFg
 GLOBAL startProcessBg
+GLOBAL exit
 GLOBAL getpid
 GLOBAL listProcess
 GLOBAL kill
@@ -327,6 +328,25 @@ startProcessBg:
 	pop rdx
 	pop rcx
 	pop rbx
+	mov rsp, rbp
+	pop rbp
+	ret
+	
+;-------------------------------------------------------
+;	SYSCALL exit: RAX = 31
+;			Finaliza la ejecucion de un proceso y a continuacion el scheduler
+;			libera sus recursos
+;-------------------------------------------------------
+; Llamada en C:
+;	void exit();
+;-------------------------------------------------------
+exit:
+	push rbp
+	mov rbp, rsp
+
+	mov rax, 31
+	int 80h
+
 	mov rsp, rbp
 	pop rbp
 	ret
