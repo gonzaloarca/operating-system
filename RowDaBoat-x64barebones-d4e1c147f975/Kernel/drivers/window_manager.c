@@ -437,8 +437,11 @@ void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_
 	sys_write(1, aux, longitud);
 	fillColumn(longitud);
 
-	//sys_write(1, &foreground, 1);
-	fillColumn(0);
+	if(foreground)
+		sys_write(1, "yes", 3);
+	else
+		sys_write(1, "no ", 3);
+	fillColumn(3);
 
 	switch (status)
 	{
@@ -446,6 +449,7 @@ void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_
 		sys_write(1,"active", 6);
 		break;
 	case BLOCKED:
+	case BLOCKED_BY_FG:
 		sys_write(1,"blocked", 7);
 		break;
 	case KILLED:

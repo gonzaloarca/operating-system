@@ -216,10 +216,15 @@ unsigned int sys_getpid(){
 
 // Syscall que imprime los procesos actuales
 void sys_listProcess(){
+    char fg;
     ProcNode *aux = lastProc->next; // Arranco desde el primero
     printProcessListHeader();
     do{
-        printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), 7, aux->pcb.state);
+        if(aux == lastProc->next || aux->pcb.state == BLOCKED_BY_FG)
+            fg = 1;
+        else
+            fg = 0;
+        printProcess(aux->pcb.argv, aux->pcb.pid, aux->pcb.priority, aux->pcb.rsp, (uint64_t)(((char*)aux->pcb.mem) + STACK_SIZE - 8), fg, aux->pcb.state);
         aux = aux->next;
     }while(aux != lastProc->next);
 }
