@@ -1,10 +1,9 @@
 # Sistemas Operativos
-----------------------
 ## Trabajo Práctico Nro. 2
 #### Construcción del Núcleo de un Sistema Operativo y estructuras de administración de recursos
-----------------------
+
 ## Hecho hasta ahora
-----------------------
+
 #### Memory Managers
 - Implementado MM1: buddy system con liberacion de los bloques alocados
 - Implementado MM2: malloc con liberación de los bloques alocados al estilo del libro 'El lenguaje de programación C' de Kernighan & Ritchie.
@@ -31,7 +30,6 @@ make buddy
 - Implementado sistema en donde las interrupciones de teclado hacen que el siguiente proceso a correr sea el que esté en foreground, si es que éste estaba bloqueado esperando por entrada
 - Implementadas todas las syscalls solicitadas en la sección de mismo nombre en el enunciado
 - Los tests test_processes y test_priority parecen funcionar bien
-- 
 ------------------------
 #### Nota: Para ejecutar los tests desde la shell, o por cualquier otra cosa que quiera saberse sobre los comandos disponibles, ejecute 'help' desde ésta para obtener la información correspondiente.
 -----------------------
