@@ -84,8 +84,13 @@ typedef struct{
 // Syscall que escribe en la estructura indicada los valores que permiten saber el estado de la memoria disponible para alocar en dicho instante
 void getMemStatus(MemStatus *stat);
 
-// Syscall que permite iciar un proceso que corre la funcion mainptr con argc argumentos que recibe en argv
-int startProcess(int (*mainptr)(int, char const **), int argc, char const *argv[]);
+//  Syscall para correr un proceso en foreground (bloquea al proceso en foreground actual)
+//  Devuelve el pid del proceso nuevo
+unsigned int startProcessFg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
+
+// Syscall que permite iniciar un proceso en background que corre la funcion mainptr con argc argumentos que recibe en argv
+// Devuelve su pid
+unsigned int startProcessBg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 
 // Syscall que retorna el pid del proceso que la llama
 unsigned int getpid();

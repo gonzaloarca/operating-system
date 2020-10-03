@@ -8,36 +8,22 @@ static ProcNode *currentProc, *lastProc, nodeAux;
 static unsigned int lastPID = 1;
 static int fgFlag = 0;                              //Flag que indica si debe haber cambio al proceso en foreground
 
+//Funcion para setear los datos en el Stack Frame de un nuevo proceso
+static uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t argv);
+
+//Funcion para liberar un nodo de la lista de procesos
+static void freeResources(ProcNode **node);
+
+//Fuerzo el cambio al proceso en foreground (el primero de mi lista)
+static void switchForeground();
+
 //Funcion auxiliar para contar caracteres de un string
-static int strlen(const char* str){
-    int ans = 0;
-    for(; str[ans] != 0 ; ans++);
-    return ans;
-}
+static int strlen(const char* str);
 
 //Funcion auxiliar para copiar los argumentos que recibe el proceso
-static void copyArgs(int argc, const char ** from, char ***into){
-    if(argc == 0 || from == NULL){
-        *into = NULL;
-        return;
-    }
+static void copyArgs(int argc, const char ** from, char ***into);
 
-    const char * aux = "aux";
-    *into = (char **) sys_malloc((argc+1)* sizeof(aux));
-    for(int i = 0, j = 0, length; i < argc ; i++){
-        
-        length = strlen(from[i]);
-        (*into)[i] = sys_malloc((length+1)*sizeof(aux[0]));
-
-        for(j = 0; j < length ; j++)
-            (*into)[i][j] = from[i][j];
-
-        (*into)[i][j+1] = 0;
-    }
-    (*into)[argc] = NULL;
-}
-
-int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
+unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
     if((void *) mainPtr == NULL){
         sys_write(2,"Error en funcion a ejecutar\n", 28);
         return -1;
@@ -89,7 +75,30 @@ int sys_start(uint64_t mainPtr, int argc, char const *argv[]){
     return new->pcb.pid;
 }
 
-uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t argv){
+unsigned int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]){
+    //Solamente el primer proceso de la lista puede iniciar a otros en foreground
+    if(currentProc != NULL && currentProc != lastProc->next)
+        return 0;
+
+    //Primero inicio el proceso como si fuera en Background
+    unsigned pid = sys_startProcBg(mainPtr, argc, argv);
+
+    //Luego bloqueo el proceso que lo llamó (el primero de la lista) si no es el unico elemento en la lista
+    if(lastProc != lastProc->next)
+        lastProc->next->pcb.state = BLOCKED_BY_FG;
+    //El nuevo proceso de foreground tiene la misma prioridad que el que reemplaza
+    lastProc->pcb.priority = lastProc->next->pcb.priority;
+    //Y mi nuevo proceso reemplaza al primero de la lista (muevo una posicion atras el puntero al ultimo)
+    lastProc = lastProc->previous;
+
+    //Cambio al nuevo proceso
+    triggerForeground();
+    sys_runNext();
+
+    return pid;
+}
+
+static uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t argv){
     uint64_t *framePtr = (uint64_t*)frame - 1;
 
     //Datos para el iretq
@@ -155,9 +164,13 @@ uint64_t getNextRSP(uint64_t rsp){
     return currentProc->pcb.rsp;
 }
 
-void freeResources(ProcNode **node){
+static void freeResources(ProcNode **node){
+    // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
     if(*node == lastProc)
-        lastProc = (*node)->previous;            // Si el proceso a borrar es el ultimo, se debe modificar el lastProc para que sea el anterior a este
+        lastProc = (*node)->previous;
+    // Si voy a borrar el primer proceso (el que está en foreground) tengo que desbloquear al siguiente
+    if(*node == lastProc->next || (*node)->next->pcb.state == BLOCKED_BY_FG)
+        (*node)->next->pcb.state = ACTIVE;
 
     if((*node)->pcb.argv != NULL){
         for(int i = 0; i < (*node)->pcb.argc ; i++)
@@ -179,7 +192,7 @@ void triggerForeground(){
     sys_runNext();
 }
 
-void switchForeground(){
+static void switchForeground(){
     currentProc->pcb.quantumCounter = currentProc->pcb.priority;
     currentProc = lastProc->next;
     currentProc->pcb.state = ACTIVE;
@@ -213,7 +226,7 @@ void sys_listProcess(){
 
 // Syscall para cambiar el estado de un pid especifico
 int sys_kill(unsigned int pid, char state){
-    if(lastProc == NULL)
+    if(lastProc == NULL || state == BLOCKED_BY_FG)
         return -1;
 
     ProcNode *search = lastProc;
@@ -271,4 +284,31 @@ int sys_nice(unsigned int pid, unsigned int priority){
     }while(search != lastProc);
 
     return -1;
+}
+
+static void copyArgs(int argc, const char ** from, char ***into){
+    if(argc == 0 || from == NULL){
+        *into = NULL;
+        return;
+    }
+
+    const char * aux = "aux";
+    *into = (char **) sys_malloc((argc+1)* sizeof(aux));
+    for(int i = 0, j = 0, length; i < argc ; i++){
+        
+        length = strlen(from[i]);
+        (*into)[i] = sys_malloc((length+1)*sizeof(aux[0]));
+
+        for(j = 0; j < length ; j++)
+            (*into)[i][j] = from[i][j];
+
+        (*into)[i][j+1] = 0;
+    }
+    (*into)[argc] = NULL;
+}
+
+static int strlen(const char* str){
+    int ans = 0;
+    for(; str[ans] != 0 ; ans++);
+    return ans;
 }

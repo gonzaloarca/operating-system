@@ -50,9 +50,9 @@ static void parse(){
     else if(strcmp( inputBuffer, "cputemp\n") == 0)
         printCPUTemp();
     else if(strcmp( inputBuffer, "executeZeroException\n") == 0)
-        startProcess((int (*)(int, const char **))executeZeroException, 0, NULL);
+        startProcessFg((int (*)(int, const char **))executeZeroException, 0, NULL);
     else if(strcmp( inputBuffer, "executeUIException\n") == 0)
-        startProcess((int (*)(int, const char **))executeUIException, 0, NULL);
+        startProcessFg((int (*)(int, const char **))executeUIException, 0, NULL);
     else if(strcmp( inputBuffer, "mem\n") == 0)
         printMemStatus();
     else if(strcmp( inputBuffer, "ps\n") == 0)
@@ -66,7 +66,7 @@ static void parse(){
     }
     else if(strcmp( inputBuffer, "loop\n") == 0){
         const char * loopname = "loop";
-        startProcess((int (*)(int, const char **))loop, 1, &loopname);
+        startProcessBg((int (*)(int, const char **))loop, 1, &loopname);
     }
     else if(strcmp("block ", inputBuffer) == 0){
         int pid, aux = 0;
@@ -99,15 +99,15 @@ static void parse(){
     }
     else if(strcmp( inputBuffer, "test_mm\n") == 0){
         const char * auxname = "test_mm";
-        startProcess((int (*)(int, const char **))test_mm, 1, &auxname);
+        startProcessBg((int (*)(int, const char **))test_mm, 1, &auxname);
     }
     else if(strcmp( inputBuffer, "test_prio\n") == 0){
         const char * auxname = "test_prio";
-        startProcess((int (*)(int, const char **))test_prio, 1, &auxname);
+        startProcessBg((int (*)(int, const char **))test_prio, 1, &auxname);
     }
     else if(strcmp( inputBuffer, "test_proc\n") == 0){
         const char * auxname = "test_processes";
-        startProcess((int (*)(int, const char **))test_processes, 1, &auxname);
+        startProcessBg((int (*)(int, const char **))test_processes, 1, &auxname);
     }
     else if(strcmp( inputBuffer, "test_sync\n") == 0)
         return;//IMPLEMENTAR

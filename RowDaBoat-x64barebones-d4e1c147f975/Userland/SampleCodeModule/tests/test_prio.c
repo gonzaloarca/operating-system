@@ -26,7 +26,7 @@ void test_prio(){
   uint64_t i;
 
   for(i = 0; i < TOTAL_PROCESSES; i++)
-    pids[i] = startProcess((int (*)(int, const char **)) endless_loop, 0, NULL);
+    pids[i] = startProcessBg((int (*)(int, const char **)) endless_loop, 0, NULL);
 
   bussy_wait(WAIT);
   printf("\nCHANGING PRIORITIES...\n");

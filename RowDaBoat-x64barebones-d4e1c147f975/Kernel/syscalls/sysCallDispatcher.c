@@ -91,9 +91,18 @@ uint64_t syscall_28(uint64_t rbx){
 	return 0;
 }
 
-// La syscall 30 es para iniciar un proceso. Se le pasa el punteor al main del programa y los atrbutos de este (argc y argv). Devuelve 0 si se pudo iniciar.
+// La syscall 30 es para iniciar un proceso en foreground (bloquea al proceso en foreground). 
+//Se le pasa el punteor al main del programa y los atrbutos de este (argc y argv). 
+//Devuelve el pid del nuevo proceso.
+uint64_t syscall_29(uint64_t rbx, uint64_t rcx, uint64_t rdx){
+	return sys_startProcFg(rbx, (int) rcx, (char const **) rdx);
+}
+
+// La syscall 30 es para iniciar un proceso en background (no bloquea el proceso en foreground). 
+//Se le pasa el punteor al main del programa y los atrbutos de este (argc y argv). 
+//Devuelve el pid del nuevo proceso.
 uint64_t syscall_30(uint64_t rbx, uint64_t rcx, uint64_t rdx){
-	return sys_start(rbx, (int) rcx, (char const **) rdx);
+	return sys_startProcBg(rbx, (int) rcx, (char const **) rdx);
 }
 
 //	La syscall 31 pone el estado del proceso actual en KILLED para luego quitarlo de la lista en la proxima iteracion
@@ -160,6 +169,8 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg)
 		case 27: return syscall_27( reg->rbx );
 
 		case 28: return syscall_28( reg->rbx );
+
+		case 29: return syscall_29( reg->rbx, reg->rcx, reg->rdx );
 
 		case 30: return syscall_30( reg->rbx, reg->rcx, reg->rdx );
 

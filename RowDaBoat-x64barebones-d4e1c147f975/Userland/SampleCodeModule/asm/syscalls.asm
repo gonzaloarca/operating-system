@@ -10,7 +10,8 @@ GLOBAL getMemory
 GLOBAL malloc
 GLOBAL free
 GLOBAL getMemStatus
-GLOBAL startProcess
+GLOBAL startProcessFg
+GLOBAL startProcessBg
 GLOBAL getpid
 GLOBAL listProcess
 GLOBAL kill
@@ -277,13 +278,40 @@ getMemStatus:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL startProcess: RAX = 30
-;			Inicia un proceso nuevo
+;	SYSCALL startProcessFg: RAX = 29
+;			Inicia un proceso nuevo en foreground, devuelve su pid
 ;-------------------------------------------------------
 ; Llamada en C:
-;	int startProcess(int (*mainptr)(int, char const **), int argc, char const *argv[]);
+;	unsigned int startProcessFg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 ;-------------------------------------------------------
-startProcess:
+startProcessFg:
+	push rbp
+	mov rbp, rsp
+	push rbx
+	push rcx
+	push rdx
+
+	mov rax, 29
+	mov rbx, rdi		; 1er parametro 
+	mov rcx, rsi		; 2do parametro
+	;en rdx ya esta cargado el 3er parametro
+	int 80h
+
+	pop rdx
+	pop rcx
+	pop rbx
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL startProcessBg: RAX = 30
+;			Inicia un proceso nuevo en background, devuelve su pid
+;-------------------------------------------------------
+; Llamada en C:
+;	unsigned int startProcessBg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
+;-------------------------------------------------------
+startProcessBg:
 	push rbp
 	mov rbp, rsp
 	push rbx

@@ -30,7 +30,7 @@ void test_processes(){
   while (1){
     // Create MAX_PROCESSES processes
     for(rq = 0; rq < MAX_PROCESSES; rq++){
-      p_rqs[rq].pid = startProcess((int (*)(int, const char **)) endless_loop, 0, NULL);  // TODO: Port this call as required
+      p_rqs[rq].pid = startProcessBg((int (*)(int, const char **)) endless_loop, 0, NULL);  // TODO: Port this call as required
 
       if (p_rqs[rq].pid == -1){                           // TODO: Port this as required
         printf("Error creating process\n");               // TODO: Port this as required

@@ -55,7 +55,7 @@ int main()
 	load_idt();
 
 	const char *name = "shell";
-	sys_start((uint64_t) sampleCodeModuleAddress, 1, &name);
+	sys_startProcFg((uint64_t) sampleCodeModuleAddress, 1, &name);
 	_sti();
 	_hlt();
 
