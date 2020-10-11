@@ -52,6 +52,7 @@ unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
 
     new->pcb.priority = DEFAULT_QUANTUM;
     new->pcb.quantumCounter = DEFAULT_QUANTUM;
+    new->pcb.sem = NULL;
 
     //ALINEAR
     new->pcb.rsp &= -8;
@@ -156,6 +157,10 @@ uint64_t getNextRSP(uint64_t rsp){
         
         do{                    //Encuentro algun proceso no bloqueado para correr
             currentProc = currentProc->next;
+            if(currentProc->pcb.sem != NULL && *(currentProc->pcb.sem) > 0){
+                currentProc->pcb.state = ACTIVE;
+                currentProc->pcb.sem = NULL;
+            }
         }while(currentProc->pcb.state != ACTIVE);
     }
 
@@ -250,8 +255,13 @@ int sys_kill(unsigned int pid, char state){
 
                 freeResources(&search);
                 return 0;
-            } else{
+            } else {
                 search->pcb.state = state;
+
+                if(state == BLOCKED && search == currentProc){ //Si un proceso se bloquea a si mismo, se fuerza un cambio de contexto
+                    sys_runNext();
+                }
+
                 return 0;
             }
         }
@@ -316,4 +326,14 @@ static int strlen(const char* str){
     int ans = 0;
     for(; str[ans] != 0 ; ans++);
     return ans;
+}
+
+int setSemaphore(sem_t *sem){
+    if(currentProc->pcb.sem != NULL || sem == NULL){ //Un proceso solo deberia estar bloqueado por 1 semaforo a la vez
+        return -1;
+    }
+
+    currentProc->pcb.sem = sem;
+    currentProc->pcb.state = BLOCKED;
+    return 0;
 }

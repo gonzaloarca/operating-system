@@ -2,6 +2,7 @@
 #define SCHEDULER_H_
 
 #include <stdint.h>
+#include <sem.h>
 
 #define STACK_SIZE 16384
 #define MAX_QUANTUM 5
@@ -12,8 +13,7 @@
 #define KILLED 2
 #define BLOCKED_BY_FG 3
 
-typedef struct 
-{
+typedef struct {
 	unsigned int pid;				        //process ID del programa
     uint64_t *mem;                          //inicio de la memoria para el stack del proceso
     uint64_t rsp;                           //stack pointer del proceso
@@ -23,6 +23,7 @@ typedef struct
     char **argv;
     unsigned int priority;                  //dónde empieza a contar sus quantums
     unsigned int quantumCounter;            //contador para saber si terminó sus quantums
+    sem_t *sem;                             //referencia al semaforo por el cual el proceso espera
 } PCB;
 
 //  Nodo para la lista de procesos
@@ -65,5 +66,8 @@ void sys_runNext();
 
 //Syscall para cambiar la prioridad de un proceso
 int sys_nice(unsigned int pid, unsigned int priority);
+
+//Setea el semaforo por el cual espera el proceso actual
+int setSemaphore(sem_t *sem);
 
 #endif

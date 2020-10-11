@@ -4,6 +4,9 @@ GLOBAL executeUIException
 GLOBAL cpuModel
 GLOBAL cpuVendor
 GLOBAL cpuBrand
+GLOBAL _xchg
+GLOBAL _inc
+
 section .text
 
 ;-------------------------------------------------------
@@ -152,4 +155,13 @@ executeZeroException:
 ;-------------------------------------------------------
 executeUIException:
 	UD2
+	ret
+
+_xchg:
+	xchg rdi, [rsi]
+	mov rax, rdi
+	ret
+
+_inc:
+	inc QWORD [rdi]
 	ret

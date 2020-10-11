@@ -18,6 +18,9 @@ GLOBAL listProcess
 GLOBAL kill
 GLOBAL runNext
 GLOBAL nice
+GLOBAL semBlock
+GLOBAL semOpen
+GLOBAL semClose
 
 section .text
 
@@ -452,6 +455,80 @@ nice:
 	int 80h
 
 	pop rcx
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL semBlock: RAX = 37
+;			// Syscall para bloquear al proceso caller por la espera de un semaforo
+;-------------------------------------------------------
+; Llamada en C:
+;	int semBlock(sem_t *sem)
+;-------------------------------------------------------
+semBlock:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 37
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL semOpen: RAX = 38
+;		Syscall que abre un semaforo y lo devuelve. Si ya existe un semaforo con el id 
+;		proporcionado, se ignora el valor init y preserva su valor anterior
+;-------------------------------------------------------
+; Llamada en C:
+;	sem_t *semOpen(unsigned int id, unsigned int init);
+;-------------------------------------------------------
+semOpen:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+	push rcx
+
+	mov rax, 38
+	mov rbx, rdi
+	mov rcx, rsi
+	int 80h
+
+	pop rcx
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+
+;-------------------------------------------------------
+;	SYSCALL semBlock: RAX = 39
+;			// Syscall que cierra un semaforo y desaloca los recursos utilizados por el mismo
+;-------------------------------------------------------
+; Llamada en C:
+;	int semClose(sem_t *sem)
+;-------------------------------------------------------
+semClose:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 37
+	mov rbx, rdi
+	int 80h
+
 	pop rbx
 
 	mov rsp, rbp

@@ -6,6 +6,7 @@
 #define KILLED 2
 
 #include <stddef.h>
+#include <stdint.h>
 
 // Estructura utilizada para manejar una copia de los registros realizada en algun momento
 typedef struct RegistersType {
@@ -110,5 +111,17 @@ void runNext();
 
 // Syscall para cambiar la prioridad de un proceso según su pid, retorna 0 en caso de error
 int nice(unsigned int pid, unsigned int priority);
+
+// Tipo de dato utilizado para semaforos
+typedef unsigned int sem_t;
+
+// Syscall para bloquear al proceso caller por la espera de un semaforo
+int semBlock(sem_t *sem);
+
+// Syscall que abre un semaforo y lo devuelve. Si ya existe un semaforo con el id proporcionado, se ignora el valor init y preserva su valor anterior
+sem_t *semOpen(unsigned int id, unsigned int init);
+
+// Syscall que cierra un semaforo y desaloca los recursos utilizados por el mismo
+int semClose(sem_t *sem);
 
 #endif
