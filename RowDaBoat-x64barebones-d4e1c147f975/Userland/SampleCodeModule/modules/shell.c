@@ -109,8 +109,14 @@ static void parse(){
         const char * auxname = "test_processes";
         startProcessBg((int (*)(int, const char **))test_processes, 1, &auxname);
     }
-    else if(strcmp( inputBuffer, "test_sync\n") == 0)
-        return;//IMPLEMENTAR
+    else if(strcmp( inputBuffer, "test_sync\n") == 0){
+        const char * auxname = "test_sync";
+        startProcessBg((int (*)(int, const char **))test_sync, 1, &auxname);
+    }
+    else if(strcmp( inputBuffer, "test_no_sync\n") == 0){
+        const char * auxname = "test_no_sync";
+        startProcessBg((int (*)(int, const char **))test_no_sync, 1, &auxname);
+    }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }

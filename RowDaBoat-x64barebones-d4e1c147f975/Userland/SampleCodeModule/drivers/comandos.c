@@ -279,6 +279,8 @@ void help(){
 	printf("%s", "test_proc\t");
 
 	printf("%s", "test_sync\t");
+
+	printf("%s", "test_no_sync\t");
 	changeWindowColor(0xffffff);
 
 	putchar('\n');
