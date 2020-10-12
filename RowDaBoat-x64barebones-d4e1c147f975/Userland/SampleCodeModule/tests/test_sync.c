@@ -1,28 +1,9 @@
 #include <stdint.h>
 #include <std_io.h>
 #include <syscalls.h>
+#include <std_num.h>
 
 // FALTA PROBAR
-
-uint64_t my_create_process(char *name)
-{
-    return 0;
-}
-
-uint64_t my_sem_wait(char *sem_id)
-{
-    return 0;
-}
-
-uint64_t my_sem_post(char *sem_id)
-{
-    return 0;
-}
-
-uint64_t my_sem_close(char *sem_id)
-{
-    return 0;
-}
 
 #define TOTAL_PAIR_PROCESSES 2
 #define SEM_ID 7
@@ -70,20 +51,38 @@ void inc(uint64_t sem, int64_t value, uint64_t N)
     exit();
 }
 
+int incMain(int argc, char *argv[])
+{
+    uint64_t sem = (uint64_t) strToPositiveInt(argv[1], NULL);
+
+    int64_t value;
+    if (argv[2][0] == '-'){
+        value = (-1) * (int64_t) strToPositiveInt(argv[2]+1, NULL);
+    }else{
+        value = (int64_t) strToPositiveInt(argv[2], NULL);
+    }
+
+    uint64_t n = (uint64_t) strToPositiveInt(argv[3], NULL);
+
+    inc(sem, value, n);
+
+    return 0;
+}
+
 void test_sync()
 {
     uint64_t i;
 
     global = 0;
-    const char *args1[4] = {"inc", "1", "1", "1000000"};
-    const char *args2[4] = {"inc", "1", "-1", "1000000"};
+    char *args1[4] = {"inc", "1", "1", "1000000"};
+    char *args2[4] = {"inc", "1", "-1", "1000000"};
 
     printf("CREATING PROCESSES...(WITH SEM)\n");
 
     for (i = 0; i < TOTAL_PAIR_PROCESSES; i++)
     {
-        startProcessBg((int (*)(int, const char **))inc, 4, args1);
-        startProcessBg((int (*)(int, const char **))inc, 4, args2);
+        startProcessBg((int (*)(int, const char **))incMain, 4, (const char **) args1);
+        startProcessBg((int (*)(int, const char **))incMain, 4, (const char **) args2);
     }
     exit();
 }
@@ -93,16 +92,15 @@ void test_no_sync()
     uint64_t i;
 
     global = 0;
-    const char *args1[4] = {"inc", "0", "1", "1000000"};
-    const char *args2[4] = {"inc", "0", "-1", "1000000"};
-
+    char *args1[4] = {"inc", "0", "1", "1000000"};
+    char *args2[4] = {"inc", "0", "-1", "1000000"};
 
     printf("CREATING PROCESSES...(WITHOUT SEM)\n");
 
     for (i = 0; i < TOTAL_PAIR_PROCESSES; i++)
     {
-        startProcessBg((int (*)(int, const char **))inc, 4, args1);
-        startProcessBg((int (*)(int, const char **))inc, 4, args2);
+        startProcessBg((int (*)(int, const char **))incMain, 4, (const char **) args1);
+        startProcessBg((int (*)(int, const char **))incMain, 4, (const char **) args2);
     }
     exit();
 }
