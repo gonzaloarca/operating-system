@@ -13,7 +13,7 @@ int testMain(int argc, char const *argv[]){
 
 int main()
 {
-	nice(1, 0);
+//	nice(1, 0);
 	runShell();
 
 	return 0;

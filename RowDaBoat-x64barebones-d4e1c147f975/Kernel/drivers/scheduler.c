@@ -157,6 +157,7 @@ uint64_t getNextRSP(uint64_t rsp){
         
         do{                    //Encuentro algun proceso no bloqueado para correr
             currentProc = currentProc->next;
+                                //Si está bloqueado, veo si el semaforo lo deja desbloquearse
             if(currentProc->pcb.sem != NULL && *(currentProc->pcb.sem) > 0){
                 currentProc->pcb.state = ACTIVE;
                 currentProc->pcb.sem = NULL;
@@ -335,5 +336,8 @@ int setSemaphore(sem_t *sem){
 
     currentProc->pcb.sem = sem;
     currentProc->pcb.state = BLOCKED;
+
+    sys_runNext();
+
     return 0;
 }

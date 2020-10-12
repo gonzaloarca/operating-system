@@ -3,9 +3,10 @@
 #include <scheduler.h>
 
 typedef struct SemNode{
-    unsigned int id;
-    sem_t value;
-    struct SemNode *next;
+    unsigned int id;            //id del semaforo
+    sem_t value;                //valor actual del semaforo
+    unsigned int count;         //cantidad de procesos que abrieron el semaforo
+    struct SemNode *next;       
 } SemNode;
 
 static SemNode *semList;         //Lista de semaforos
@@ -25,8 +26,10 @@ sem_t *sys_semOpen(unsigned int id, unsigned int init){
     SemNode *search;
     //Busco el id en la lista. Si lo encuentro, me quedo con el valor que ya tenía
     for(search = semList; ; search = search->next){
-        if(search->id == id)
+        if(search->id == id){
+            (search->count)++;
             return &(search->value);
+        }
         if(search->next == NULL)
             break;
     }
@@ -41,6 +44,7 @@ sem_t *sys_semOpen(unsigned int id, unsigned int init){
 static void createNode(SemNode *node, unsigned int id, unsigned int init){
     node->id = id;
     node->value = init;
+    node->count = 0;
     node->next = NULL;
 }
 
@@ -49,13 +53,17 @@ int sys_semClose(sem_t *sem){
 
     for(search = semList; search != NULL ; previous = search, search = search->next){
         if(&(search->value) == sem){
-            if(previous == NULL){  
-                //Este caso es cuando el id es el del primer semaforo de la lista
-                semList = search->next;
-            } else{
-                previous->next = search->next;
+            (search->count)--;
+            //Si ya lo cerraron todos los procesos, saco el semaforo de la lista
+            if(search->count == 0){
+                if(previous == NULL){  
+                    //Este caso es cuando el id es el del primer semaforo de la lista
+                    semList = search->next;
+                } else{
+                    previous->next = search->next;
+                }
+                sys_free(search);
             }
-            sys_free(search);
             return 0;
         }
     }
