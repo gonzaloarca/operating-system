@@ -18,9 +18,10 @@ GLOBAL listProcess
 GLOBAL kill
 GLOBAL runNext
 GLOBAL nice
-GLOBAL semBlock
-GLOBAL semOpen
-GLOBAL semClose
+GLOBAL createChannel
+GLOBAL deleteChannel
+GLOBAL sleep
+GLOBAL wakeup
 
 section .text
 
@@ -462,19 +463,92 @@ nice:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL semBlock: RAX = 37
-;			// Syscall para bloquear al proceso caller por la espera de un semaforo
+;	SYSCALL createChannel: RAX = 37
+;		La syscall 37 crea un canal de comunicacion para señales de sleep y wakeup, 
+;		devuelve el ID del canal, y en caso de error devuelve -1
+;		No recibe parametros
 ;-------------------------------------------------------
 ; Llamada en C:
-;	int semBlock(sem_t *sem)
+;	int createChannel();
 ;-------------------------------------------------------
-semBlock:
+createChannel:
+	push rbp
+	mov rbp, rsp
+
+	mov rax, 37
+	int 80h
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL deleteChannel: RAX = 38
+;		La syscall 38 destruye un canal de comunicacion para señales de sleep y wakeup dado su ID
+;		Si el ID no se corresponde con ningun canal existente, devuelve -1. Sino devuelve 0
+;		Recibe el ID del canal por parametro
+;-------------------------------------------------------
+; Llamada en C:
+;	int deleteChannel(unsigned int id);
+;-------------------------------------------------------
+deleteChannel:
 	push rbp
 	mov rbp, rsp
 
 	push rbx
 
-	mov rax, 37
+	mov rax, 38
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL sleep: RAX = 39
+;		La syscall 39 manda a dormir al proceso actual en el caso que corresponda.
+;		Si ya habian señales pendientes, retorna 1. En caso contrario, devuelve 0. En caso de error, devuelve -1.
+;		Recibe el id del canal correspondiente
+;-------------------------------------------------------
+; Llamada en C:
+;	int sleep(unsigned int id);
+;-------------------------------------------------------
+sleep:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 39
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL wakeup: RAX = 40
+;		La syscall 40 despierta a los procesos esperando en el canal pasado como argumento por su ID
+;		Si no habia nadie durmiendo, incrementa el contador de señales. En este caso, retorna 1.
+;		Si habia alguien durmiendo, lo despierta y retorna 0. En caso de error retorna -1.
+;		Recibe el id del canal correspondiente
+;-------------------------------------------------------
+; Llamada en C:
+;	int wakeup(unsigned int id);
+;-------------------------------------------------------
+wakeup:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 40
 	mov rbx, rdi
 	int 80h
 

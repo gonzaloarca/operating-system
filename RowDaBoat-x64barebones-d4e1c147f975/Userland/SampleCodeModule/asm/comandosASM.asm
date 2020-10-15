@@ -156,12 +156,17 @@ executeZeroException:
 executeUIException:
 	UD2
 	ret
-
+;-------------------------------------------------------
+; Funcion que swapea el valor de un semaforo con otro valor dado de forma atomica 
+;-------------------------------------------------------
 _xchg:
-	xchg rdi, [rsi]
-	mov rax, rdi
+	xchg edi, [rsi]
+	mov eax, edi
 	ret
 
+;-------------------------------------------------------
+; Funcion que incrementa atomicamente el valor de un semaforo
+;-------------------------------------------------------
 _inc:
-	lock inc QWORD [rdi]
+	lock inc DWORD [rdi]
 	ret

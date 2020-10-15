@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <std_io.h>
-#include <syscalls.h>
+#include <sem.h>
 #include <std_num.h>
 
 // FALTA PROBAR
@@ -22,7 +22,7 @@ void inc(uint64_t sem, int64_t value, uint64_t N)
 {
     uint64_t i;
     //printf("sem = %d, value = %d, N = %d\n", (int)sem, (int)value, (int)N);
-    sem_t *semaph;
+    Semaphore *semaph;
     if(sem){
         semaph = semOpen(SEM_ID, 1);
     }
@@ -75,8 +75,8 @@ void test_sync()
     uint64_t i;
 
     global = 0;
-    char *args1[4] = {"inc", "1", "1", "100"};
-    char *args2[4] = {"inc", "1", "-1", "100"};
+    char *args1[4] = {"inc", "1", "1", "10"};
+    char *args2[4] = {"inc", "1", "-1", "10"};
 
     printf("CREATING PROCESSES...(WITH SEM)\n");
 

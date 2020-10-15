@@ -52,7 +52,6 @@ unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
 
     new->pcb.priority = DEFAULT_QUANTUM;
     new->pcb.quantumCounter = DEFAULT_QUANTUM;
-    new->pcb.sem = NULL;
 
     //ALINEAR
     new->pcb.rsp &= -8;
@@ -157,11 +156,6 @@ uint64_t getNextRSP(uint64_t rsp){
         
         do{                    //Encuentro algun proceso no bloqueado para correr
             currentProc = currentProc->next;
-                                //Si está bloqueado, veo si el semaforo lo deja desbloquearse
-            if(currentProc->pcb.sem != NULL && *(currentProc->pcb.sem) > 0){
-                currentProc->pcb.state = ACTIVE;
-                currentProc->pcb.sem = NULL;
-            }
         }while(currentProc->pcb.state != ACTIVE);
     }
 
@@ -327,17 +321,4 @@ static int strlen(const char* str){
     int ans = 0;
     for(; str[ans] != 0 ; ans++);
     return ans;
-}
-
-int setSemaphore(sem_t *sem){
-    if(currentProc->pcb.sem != NULL || sem == NULL){ //Un proceso solo deberia estar bloqueado por 1 semaforo a la vez
-        return -1;
-    }
-
-    currentProc->pcb.sem = sem;
-    currentProc->pcb.state = BLOCKED;
-
-    sys_runNext();
-
-    return 0;
 }

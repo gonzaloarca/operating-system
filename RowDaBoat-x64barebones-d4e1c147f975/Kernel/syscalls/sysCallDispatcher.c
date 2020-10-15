@@ -7,7 +7,7 @@
 #include <rtc_driver.h>
 #include <memManager.h>
 #include <scheduler.h>
-#include <sem.h>
+#include <sig.h>
 
 typedef struct{
 	uint64_t rbx;
@@ -131,11 +131,32 @@ uint64_t syscall_36(uint64_t rbx, uint64_t rcx){
 	return sys_nice((unsigned int) rbx, (unsigned int) rcx);
 }
 
-// La syscall 37 bloquea al proceso actual por la espera de un semaforo en particular
-uint64_t syscall_37(uint64_t rbx){
-	return sys_semBlock((sem_t *)rbx);
+// La syscall 37 crea un canal de comunicacion para señales de sleep y wakeup, 
+// devuelve el ID del canal, y en caso de error devuelve -1
+uint64_t syscall_37(){ 
+	return sys_createChannel();
 }
 
+// La syscall 38 destruye un canal de comunicacion para señales de sleep y wakeup dado su ID
+// Si el ID no se corresponde con ningun canal existente, devuelve -1. Sino devuelve 0 
+uint64_t syscall_38(uint64_t rbx){
+	return sys_deleteChannel((unsigned int) rbx);
+}
+
+// La syscall 39 manda a dormir al proceso actual en el caso que corresponda.
+// Si ya habian señales pendientes, retorna 1. En caso contrario, devuelve 0. En caso de error, devuelve -1.
+uint64_t syscall_39(uint64_t rbx){
+	return sys_sleep((unsigned int) rbx);
+}
+
+// La syscall 40 despierta a los procesos esperando en el canal pasado como argumento por su ID
+// Si no habia nadie durmiendo, incrementa el contador de señales. En este caso, retorna 1.
+// Si habia alguien durmiendo, lo despierta y retorna 0. En caso de error retorna -1.
+uint64_t syscall_40(uint64_t rbx){
+	return sys_wakeup((unsigned int) rbx);
+}
+
+// La 
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
 //	Cada syscall se encarga de interpretar a la estructura
@@ -182,7 +203,13 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg){
 
 		case 36: return syscall_36( reg->rbx, reg->rcx );
 
-		case 37: return syscall_37( reg->rbx );
+		case 37: return syscall_37();
+
+		case 38: return syscall_38( reg->rbx );
+
+		case 39: return syscall_39( reg->rbx );
+
+		case 40: return syscall_40( reg->rbx );
 	}
 
 	return 1;

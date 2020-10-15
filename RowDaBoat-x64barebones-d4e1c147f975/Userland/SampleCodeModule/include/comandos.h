@@ -61,9 +61,9 @@ int unblock(int PID);
 int block(int PID);
 
 // Funcion que swapea el valor de un semaforo con otro valor dado de forma atomica 
-unsigned int _xchg(unsigned int value, sem_t *sem);
+unsigned int _xchg(unsigned int value, unsigned int *semValue);
 
 // Funcion que incrementa atomicamente el valor de un semaforo
-void _inc(sem_t *sem);
+void _inc(unsigned int *semValue);
 
 #endif

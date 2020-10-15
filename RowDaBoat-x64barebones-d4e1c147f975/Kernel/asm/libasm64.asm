@@ -5,6 +5,7 @@ GLOBAL sys_getCPUTemp
 GLOBAL saveRegistersASM
 GLOBAL saveRegistersASMexcp
 GLOBAL sys_getMemory
+GLOBAL _xchg
 
 section .text
 	
@@ -285,4 +286,16 @@ sys_getMemory:
 
 	mov rsp, rbp
 	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	Funcion que swapea el valor de un lock con otro valor dado de forma atomica 
+;-------------------------------------------------------
+; Llamada en C:
+;	int _xchg(int *lock, int value)
+;-------------------------------------------------------
+
+_xchg:
+	xchg edi, [rsi] 
+	mov eax, edi
 	ret
