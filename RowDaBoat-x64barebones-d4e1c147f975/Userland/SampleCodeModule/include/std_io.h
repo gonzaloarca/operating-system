@@ -34,7 +34,8 @@ int puts(char * s);
 
 int scanf(char *format, ...);
 
-// Funcion que retorna -1 si str1 es menor que str2, 0 si son iguales y 1 caso contrario
+// Funcion que retorna 0 si str1 es igual o está incluido al principio de str2
+// Si no, retorna -1 si str1 < str2 o 1 si str1 > str2
 int strcmp(char *str1, char *str2);
 
 // Funcion que retorna la longitud de str

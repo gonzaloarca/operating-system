@@ -2,13 +2,18 @@
 #include <comandos.h>
 #include <syscalls.h>
 #include <test_util.h>
+#include <evaluator.h>
 
 #define INPUT_BUFFER_SIZE 100
+#define BG_SYMBOL '&'
+#define PIPE_SYMBOL '|'
 
-char inputBuffer[INPUT_BUFFER_SIZE];
+char inputBuffer[INPUT_BUFFER_SIZE+1];
 int indexBuffer;
-static void parse();
 static char *symbol = "$>";
+
+static void parse();
+static void run(char *command, int bgFlag);
 
 void runShell(){
     printf("\nIngrese help y presione enter para una explicacion del programa\n");
@@ -20,97 +25,149 @@ void runShell(){
 }
 
 static void parse(){
-    inputBuffer[indexBuffer] = 0;         // Reemplazo con 0 el final para utilizar strcmp
-    
-    if(strcmp( inputBuffer, "help\n") == 0)
+    int bgFlag = 0;
+    int pipeFlag = 0;
+
+    inputBuffer[--indexBuffer] = 0;     //Me saco el \n del comando
+
+    //Veo si me pide correr en background
+    if(inputBuffer[indexBuffer-1] == BG_SYMBOL){
+        bgFlag = 1;
+        //Quito el simbolo del string
+        indexBuffer -= 2;
+        inputBuffer[indexBuffer] = 0;
+    }
+
+    int i;
+    for (i = 0; i < indexBuffer; i++){
+        if(inputBuffer[i] == PIPE_SYMBOL){
+            pipeFlag = 1;
+            break;
+        }
+    }
+
+    if(pipeFlag){
+        //Implementar sistema de piping, en i se encuentra la posicion del simbolo
+        fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
+    } else{
+        run(inputBuffer, bgFlag);
+    }
+        
+}
+
+//Recibe el nombre del comando como string y un flag indicando si es bg o fg
+static void run(char *command, int bgFlag){   
+    const char *name;
+
+    if(strcmp( command, "help") == 0)
         help();
-    else if(strcmp( inputBuffer, "inforeg\n" ) == 0)
+    else if(strcmp( command, "inforeg" ) == 0)
 	   printInforeg();
-    else if(strcmp( inputBuffer, "clear\n" ) == 0)
+    else if(strcmp( command, "clear" ) == 0)
         clrScreen();
-    else if(strcmp( inputBuffer, "printtime\n" ) == 0){
+    else if(strcmp( command, "printtime" ) == 0){
         printTime();
         putchar('\n');
     }
-    else if(strcmp( "printmem", inputBuffer ) == 0){           // solo valido que lo q este al principio del input valide con el comando,
-                                                                // el resto va a ser el argumento
-        if( inputBuffer[8] == ' ' && inputBuffer[9] != '\n'){       // se ingreso un parametro
-            char address[INPUT_BUFFER_SIZE- 10] = {0};              // maximo tamanio posible del argumento("printmem " son 9 caracteres y tampoco cuento el \n)
+    else if(strcmp( "printmem", command ) == 0){           // solo valido que lo q este al principio del input valide con el comando,
+                                                           // el resto va a ser el argumento
+        if( command[8] == ' ' && command[9] != 0){         // se ingreso un parametro
+            char address[INPUT_BUFFER_SIZE- 10] = {0};     // maximo tamanio posible del argumento("printmem " son 9 caracteres y tampoco cuento el \n)
             int i = 0;
-            for(; inputBuffer[9 + i] != '\n' && i < indexBuffer -1; i++)   // en inputBuffer[indexBuffer] esta el \n
-                address[i] = inputBuffer[9 + i];
+            for(; command[9 + i] != 0 ; i++)  
+                address[i] = command[9 + i];
 
             address[i] = 0;
             printmem(address);
         }else
             fprintf(2, "-printmem: Falta ingresar la direccion como parametro.\n");
     }
-    else if(strcmp( inputBuffer, "cpuinfo\n") == 0)
+    else if(strcmp( command, "cpuinfo") == 0)
         printCPUInfo();
-    else if(strcmp( inputBuffer, "cputemp\n") == 0)
+    else if(strcmp( command, "cputemp") == 0)
         printCPUTemp();
-    else if(strcmp( inputBuffer, "executeZeroException\n") == 0)
-        startProcessFg((int (*)(int, const char **))executeZeroException, 0, NULL);
-    else if(strcmp( inputBuffer, "executeUIException\n") == 0)
-        startProcessFg((int (*)(int, const char **))executeUIException, 0, NULL);
-    else if(strcmp( inputBuffer, "mem\n") == 0)
+    else if(strcmp( command, "executeZeroException") == 0){
+        name = "Zero Exc";
+        startProcessFg((int (*)(int, const char **))executeZeroException, 1, &name);
+    }
+    else if(strcmp( command, "executeUIException") == 0){
+        name = "UI Exc";
+        startProcessFg((int (*)(int, const char **))executeUIException, 1, &name);
+    }
+    else if(strcmp( command, "mem") == 0)
         printMemStatus();
-    else if(strcmp( inputBuffer, "ps\n") == 0)
+    else if(strcmp( command, "ps") == 0)
         listProcess();
-    else if(strcmp( "kill ", inputBuffer ) == 0){
-        int pid = strToPositiveInt(inputBuffer+5, NULL);
+    else if(strcmp( "kill ", command ) == 0){
+        int pid = strToPositiveInt(command+5, NULL);
         if(pid == -1)
             printf("Error en argumentos\n");
             
         kill(pid, KILLED);
     }
-    else if(strcmp( inputBuffer, "loop\n") == 0){
-        const char * loopname = "loop";
-        startProcessBg((int (*)(int, const char **))loop, 1, &loopname);
+    else if(strcmp( command, "loop") == 0){
+        name = "loop";
+        if(bgFlag)
+            startProcessBg((int (*)(int, const char **))loop, 1, &name);
+        else
+            startProcessFg((int (*)(int, const char **))loop, 1, &name);
     }
-    else if(strcmp("block ", inputBuffer) == 0){
+    else if(strcmp("block ", command) == 0){
         int pid, aux = 0;
-        pid = strToPositiveInt(inputBuffer+6, &aux);
+        pid = strToPositiveInt(command+6, &aux);
         if(pid == -1)
             printf("Error en argumentos\n");
         if(block(pid) == -1)
             printf("Error en argumentos\n");
     }
-    else if(strcmp("unblock ", inputBuffer) == 0){
+    else if(strcmp("unblock ", command) == 0){
         int pid, aux = 0;
-        pid = strToPositiveInt(inputBuffer+8, &aux);
+        pid = strToPositiveInt(command+8, &aux);
         if(pid == -1)
             printf("Error en argumentos\n");
-        if(block(pid) == -1)
+        if(unblock(pid) == -1)
             printf("Error en argumentos\n");
     }
-    else if(strcmp( "nice ", inputBuffer) == 0){
+    else if(strcmp( "nice ", command) == 0){
         int pid, priority, aux = 0;
-        pid = strToPositiveInt(inputBuffer+5, &aux);
+        pid = strToPositiveInt(command+5, &aux);
         if(pid == -1)
             printf("Error en argumentos\n");
 
-        priority = strToPositiveInt(inputBuffer+5+aux+1, NULL);
+        priority = strToPositiveInt(command+5+aux+1, NULL);
         if(priority == -1)
             printf("Error en argumentos\n");
 
         if(nice(pid, priority) == -1)
             printf("Error en argumentos\n"); //puede que no haya encontrado el pid o que la prioridad no sea valida
     }
-    else if(strcmp( inputBuffer, "test_mm\n") == 0){
-        const char * auxname = "test_mm";
-        startProcessBg((int (*)(int, const char **))test_mm, 1, &auxname);
+    else if(strcmp( command, "test_mm") == 0){
+        name = "test_mm";
+        if(bgFlag)
+            startProcessBg((int (*)(int, const char **))test_mm, 1, &name);
+        else
+            startProcessFg((int (*)(int, const char **))test_mm, 1, &name);
     }
-    else if(strcmp( inputBuffer, "test_prio\n") == 0){
-        const char * auxname = "test_prio";
-        startProcessBg((int (*)(int, const char **))test_prio, 1, &auxname);
+    else if(strcmp( command, "test_prio") == 0){
+        name = "test_prio";
+        if(bgFlag)
+            startProcessBg((int (*)(int, const char **))test_prio, 1, &name);
+        else
+            startProcessFg((int (*)(int, const char **))test_prio, 1, &name);
     }
-    else if(strcmp( inputBuffer, "test_proc\n") == 0){
-        const char * auxname = "test_processes";
-        startProcessBg((int (*)(int, const char **))test_processes, 1, &auxname);
+    else if(strcmp( command, "test_proc") == 0){
+        name = "test_processes";
+        if(bgFlag)
+            startProcessBg((int (*)(int, const char **))test_processes, 1, &name);
+        else
+            startProcessFg((int (*)(int, const char **))test_processes, 1, &name);
     }
-    else if(strcmp( inputBuffer, "test_sync\n") == 0)
+    else if(strcmp( command, "test_sync") == 0)
         return;//IMPLEMENTAR
+    else if(strcmp( command, "calc") == 0){
+        name = "calculator";
+        startProcessFg((int (*)(int, const char **))calculator, 1, &name);
+    }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }

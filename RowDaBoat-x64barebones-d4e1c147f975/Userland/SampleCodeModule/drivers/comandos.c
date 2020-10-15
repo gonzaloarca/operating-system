@@ -192,6 +192,8 @@ int block(int PID){
 #define TEST_MSG		"Comandos para ejecutar tests:"
 #define TECLA_F1		"\tEjecuta el guardado de los registros, para que sean impresos con inforeg."
 #define TECLA_F2		"\tEjecuta el borrado total de la linea actual."
+#define BACKGROUND 		"\tAgreguelo al final de un comando para correrlo en background"
+#define CALCULATOR		"\tSistema de calculadora simple"
 
 void help(){
 	puts("---------Informacion sobre comandos disponibles----------------\n");
@@ -261,6 +263,11 @@ void help(){
 	printf("%s\n", NICE_MSG);
 
 	changeWindowColor(0xffd300);
+	printf("%s\t\t ", "calc");
+	changeWindowColor(0xffffff);
+	printf("%s\n", CALCULATOR);
+
+	changeWindowColor(0xffd300);
 	printf("%s", "executeZeroException");
 	changeWindowColor(0xffffff);
 	printf("%s\n", EXCP_0_MSG);
@@ -293,6 +300,11 @@ void help(){
 	printf("%s", "F2\t");
 	changeWindowColor(0xffffff);
 	printf("%s\n", TECLA_F2);
+
+	changeWindowColor(0x4ad5f2);
+	printf("%s", " &\t");
+	changeWindowColor(0xffffff);
+	printf("%s\n", BACKGROUND);
 
 	putchar('\n');
 }

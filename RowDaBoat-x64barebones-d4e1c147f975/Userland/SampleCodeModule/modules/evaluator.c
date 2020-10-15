@@ -23,20 +23,24 @@ void calculator()
 	char buffer[BUFFER_SIZE+1];
 	int length;
 	double result;
-	printf("\nIngrese help= para una explicacion del programa\n");
+	printf("\nIngrese help para una explicacion del programa\n");
 
 	while(1){
 		puts(symbol);
-		if ( (length = read(buffer, BUFFER_SIZE+1, '=')) != 0 )
+		if ( (length = read(buffer, BUFFER_SIZE+1, '\n')) != 0 )
 		{
 			if (length > 1)
 			{
-				buffer[--length] = 0;		//	Quito el '=' del final
+				buffer[--length] = 0;		//	Quito el '\n' del final
 
 				if (strcmp(buffer,"help") == 0)
 					printHelp();
 				else if (strcmp(buffer,"clear") == 0)
 					clrScreen();
+				else if (strcmp(buffer,"exit") == 0){
+					putchar('\n');
+					return;
+				}
 				else
 				{
 					if (balance(buffer) == 0)
@@ -64,10 +68,9 @@ static void printHelp()
 	printf("\tEscriba una expresion inorder sin espacios\n");
 	printf("\tSoportado: + - * /\n");
 	printf("\tLa letra A denota el resultado de la ultima expresion\n");
-	printf("\tApriete '=' para calcular el resultado\n");
+	printf("\tApriete Enter para calcular el resultado\n");
 	printf("\tApriete F2 para borrar la expresion actual\n");
-	printf("\tApriete F3 para ejecutar el cambio de proceso\n");
-	printf("\tComandos: help, clear\n");
+	printf("\tComandos: help, clear, exit\n");
 }
 
 /*	Esta funcion funciona recursivamente.
