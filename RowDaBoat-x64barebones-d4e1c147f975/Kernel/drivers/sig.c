@@ -23,7 +23,7 @@ int sys_createChannel(){
     ChannelNodeHeader *aux;
     ChannelNodeHeader *search;
 
-    if((aux = sys_malloc(sizeof(aux))) == NULL){
+    if((aux = sys_malloc(sizeof(*aux))) == NULL){
         return -1;
     }
     
@@ -112,7 +112,7 @@ int sys_sleep(unsigned int channelId){
     release(channel->lock);
 
     ChannelNode *new;
-    if((new = sys_malloc(sizeof(new))) == NULL){
+    if((new = sys_malloc(sizeof(*new))) == NULL){
         return -1;
     }
     
@@ -144,9 +144,7 @@ int sys_wakeup(unsigned int channelId){
         return -1;
     }
     
-    sys_write(1, "aca1", 4);
     acquire(channel->lock);
-    sys_write(1, "aca2", 4);
     //Si se hace un wakeup y no habia nadie esperando, se incrementa
     //el contador de señales, para prevenir un signal lost
     if(channel->first == NULL){
@@ -155,7 +153,6 @@ int sys_wakeup(unsigned int channelId){
         return 1;
     }
     release(channel->lock);
-    sys_write(1, "aca3", 4);
 
     ChannelNode *current = channel->first;
     ChannelNode *aux;
@@ -163,15 +160,11 @@ int sys_wakeup(unsigned int channelId){
 
     //Recorro la lista activando todos los pro
     while(current != NULL){
-        sys_write(1, "en el while\n", 12);
-        if(current == NULL)
-            sys_write(2,"mbeh",4);
         sys_kill(current->pid, ACTIVE);
-        sys_write(1, "despues de kill\n", 16);
         aux = current;
         current = current->next;
         sys_free(aux);
     }
-    sys_write(1, "fin", 3);
+    
     return 0;
 }

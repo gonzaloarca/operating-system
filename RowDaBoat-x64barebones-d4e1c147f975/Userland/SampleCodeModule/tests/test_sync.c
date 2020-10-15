@@ -3,6 +3,9 @@
 #include <sem.h>
 #include <std_num.h>
 
+
+#include <comandos.h>
+
 // FALTA PROBAR
 
 #define TOTAL_PAIR_PROCESSES 2
@@ -21,7 +24,6 @@ void slowInc(int64_t *p, int64_t inc)
 void inc(uint64_t sem, int64_t value, uint64_t N)
 {
     uint64_t i;
-    //printf("sem = %d, value = %d, N = %d\n", (int)sem, (int)value, (int)N);
     Semaphore *semaph;
     if(sem){
         semaph = semOpen(SEM_ID, 1);
@@ -66,7 +68,6 @@ int incMain(int argc, char *argv[])
     uint64_t n = (uint64_t) strToPositiveInt(argv[3], NULL);
 
     inc(sem, value, n);
-
     return 0;
 }
 
@@ -75,8 +76,8 @@ void test_sync()
     uint64_t i;
 
     global = 0;
-    char *args1[4] = {"inc", "1", "1", "10"};
-    char *args2[4] = {"inc", "1", "-1", "10"};
+    char *args1[4] = {"inc", "1", "1", "100"};
+    char *args2[4] = {"inc", "1", "-1", "100"};
 
     printf("CREATING PROCESSES...(WITH SEM)\n");
 

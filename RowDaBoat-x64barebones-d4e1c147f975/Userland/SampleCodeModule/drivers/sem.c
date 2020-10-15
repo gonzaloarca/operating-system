@@ -18,17 +18,13 @@ void semWait(Semaphore *sem){
     while((semAux = _xchg(0, &(sem->value))) == 0){
         sleep(sem->channelId);
     }
-    printf("hola soy %d y el semaforo ahora vale %d\n", getpid(), sem->value);
     //Una vez que el semaforo es distinto de 0, se disminuye su valor de forma atomica
     _xchg(semAux-1, &(sem->value));
 }
 
 void semPost(Semaphore *sem){
-    printf("post\n");
     _inc(&(sem->value));
-    printf("hola soy %d y el semaforo ahora vale %d\n", getpid(), sem->value);
     wakeup(sem->channelId);
-    printf("wakeup\n");
 }
 
 
