@@ -22,8 +22,9 @@ static unsigned lastId = 0;
 int sys_createChannel(){
     ChannelNodeHeader *aux;
     ChannelNodeHeader *search;
+    ChannelNodeHeader auxSizeOf;
 
-    if((aux = sys_malloc(sizeof(*aux))) == NULL){
+    if((aux = sys_malloc(sizeof(auxSizeOf))) == NULL){
         return -1;
     }
     
@@ -112,7 +113,8 @@ int sys_sleep(unsigned int channelId){
     release(channel->lock);
 
     ChannelNode *new;
-    if((new = sys_malloc(sizeof(*new))) == NULL){
+    ChannelNode aux;
+    if((new = sys_malloc(sizeof(aux))) == NULL){
         return -1;
     }
     
@@ -158,7 +160,7 @@ int sys_wakeup(unsigned int channelId){
     ChannelNode *aux;
     channel->first = NULL;
 
-    //Recorro la lista activando todos los pro
+    //Recorro la lista activando todos los procesos durmientes y eliminandolos de la lista
     while(current != NULL){
         sys_kill(current->pid, ACTIVE);
         aux = current;

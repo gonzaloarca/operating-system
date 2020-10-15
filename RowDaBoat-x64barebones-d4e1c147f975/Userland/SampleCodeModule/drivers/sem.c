@@ -87,7 +87,7 @@ int semClose(Semaphore *sem){
     for(search = semList; search != NULL ; previous = search, search = search->next){
         if(&(search->sem) == sem){
             (search->sem.count)--;
-            //Si ya lo cerraron todos los procesos, saco el semaforo de la lista
+            //Si ya lo cerraron todos los procesos, saco el semaforo de la lista y elimino el canal de señales -- OJO CONDICIONES DE CORRERA CON SEMOPEN
             if(search->sem.count == 0){
                 deleteChannel(search->sem.channelId);
                 if(previous == NULL){  

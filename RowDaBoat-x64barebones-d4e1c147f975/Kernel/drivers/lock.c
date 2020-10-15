@@ -4,7 +4,8 @@
 
 int *createLock(){
     int *lock;
-    if((lock = sys_malloc(sizeof(lock))) == NULL){
+    int aux;
+    if((lock = sys_malloc(sizeof(aux))) == NULL){
         return NULL;
     }
 
