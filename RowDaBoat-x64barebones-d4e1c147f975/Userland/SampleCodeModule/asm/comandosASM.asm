@@ -163,5 +163,5 @@ _xchg:
 	ret
 
 _inc:
-	inc QWORD [rdi]
+	lock inc QWORD [rdi]
 	ret

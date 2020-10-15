@@ -11,4 +11,10 @@ void semWait(sem_t *sem);
 // Funcion que incrementa atomicamente el valor de un semaforo en una unidad
 void semPost(sem_t *sem);
 
+// Funcion abre un semaforo y lo devuelve. Si ya existe un semaforo con el id proporcionado, se ignora el valor init y preserva su valor anterior
+sem_t *semOpen(unsigned int id, unsigned int init);
+
+// Funcion que cierra un semaforo y desaloca los recursos utilizados por el mismo
+int semClose(sem_t *sem);
+
 #endif

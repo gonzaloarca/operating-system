@@ -116,10 +116,4 @@ int nice(unsigned int pid, unsigned int priority);
 // Syscall para bloquear al proceso caller por la espera de un semaforo
 int semBlock(sem_t *sem);
 
-// Syscall que abre un semaforo y lo devuelve. Si ya existe un semaforo con el id proporcionado, se ignora el valor init y preserva su valor anterior
-sem_t *semOpen(unsigned int id, unsigned int init);
-
-// Syscall que cierra un semaforo y desaloca los recursos utilizados por el mismo
-int semClose(sem_t *sem);
-
 #endif

@@ -136,16 +136,6 @@ uint64_t syscall_37(uint64_t rbx){
 	return sys_semBlock((sem_t *)rbx);
 }
 
-// La syscall 38 abre un semaforo y lo devuelve. Si ya existe un semaforo con el id proporcionado, se ignora el valor init y preserva su valor anterior
-uint64_t syscall_38(uint64_t rbx, uint64_t rcx){
-	return (uint64_t) sys_semOpen((unsigned int)rbx, (unsigned int)rcx);
-}
-
-// La syscall 39 cierra un semaforo y desaloca los recursos utilizados por el mismo
-uint64_t syscall_39(uint64_t rbx){
-	return sys_semClose((sem_t *)rbx);
-}
-
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
 //	Cada syscall se encarga de interpretar a la estructura
@@ -193,8 +183,6 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg){
 		case 36: return syscall_36( reg->rbx, reg->rcx );
 
 		case 37: return syscall_37( reg->rbx );
-
-		case 38: return syscall_38( reg->rbx, reg->rcx );
 	}
 
 	return 1;
