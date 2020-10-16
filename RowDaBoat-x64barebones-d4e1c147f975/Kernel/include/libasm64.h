@@ -32,4 +32,8 @@ typedef struct memType {
 
 void sys_getMemory(memType* answer, char * address);
 
+// Funcion que swapea el valor de un lock con otro valor dado de forma atomica 
+int _xchg(int value, int *lock);
+
+
 #endif

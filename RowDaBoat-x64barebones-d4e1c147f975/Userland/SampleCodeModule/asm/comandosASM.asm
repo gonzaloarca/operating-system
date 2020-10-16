@@ -4,6 +4,9 @@ GLOBAL executeUIException
 GLOBAL cpuModel
 GLOBAL cpuVendor
 GLOBAL cpuBrand
+GLOBAL _xchg
+GLOBAL _inc
+
 section .text
 
 ;-------------------------------------------------------
@@ -152,4 +155,18 @@ executeZeroException:
 ;-------------------------------------------------------
 executeUIException:
 	UD2
+	ret
+;-------------------------------------------------------
+; Funcion que swapea el valor de un semaforo con otro valor dado de forma atomica 
+;-------------------------------------------------------
+_xchg:
+	xchg edi, [rsi]
+	mov eax, edi
+	ret
+
+;-------------------------------------------------------
+; Funcion que incrementa atomicamente el valor de un semaforo
+;-------------------------------------------------------
+_inc:
+	lock inc DWORD [rdi]
 	ret

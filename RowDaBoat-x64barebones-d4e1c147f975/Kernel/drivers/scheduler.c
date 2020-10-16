@@ -240,18 +240,20 @@ int sys_kill(unsigned int pid, char state){
         search = search->next;
         if(search->pcb.pid == pid){
             if(state == KILLED){
-                if(pid == 1){ //Si es la shell, no la mato
+                if(pid == 1) //Si es la shell, no la mato
                    return -1;
-                }
 
-                if(search == currentProc){ //Si un proceso se quiere matar a si mismo, el scheduler deberia encargarse de el
+                if(search == currentProc) //Si un proceso se quiere matar a si mismo, el scheduler deberia encargarse de el
                     sys_exit();
-                }
 
                 freeResources(&search);
                 return 0;
-            } else{
+            } else {
                 search->pcb.state = state;
+
+                if(state == BLOCKED && search == currentProc) //Si un proceso se bloquea a si mismo, se fuerza un cambio de contexto
+                    sys_runNext();
+                
                 return 0;
             }
         }
@@ -307,7 +309,7 @@ static void copyArgs(int argc, const char ** from, char ***into){
         for(j = 0; j < length ; j++)
             (*into)[i][j] = from[i][j];
 
-        (*into)[i][j+1] = 0;
+        (*into)[i][j] = 0;
     }
     (*into)[argc] = NULL;
 }

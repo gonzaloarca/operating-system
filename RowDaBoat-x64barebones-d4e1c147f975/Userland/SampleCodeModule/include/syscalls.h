@@ -6,6 +6,8 @@
 #define KILLED 2
 
 #include <stddef.h>
+#include <stdint.h>
+#include <sem.h>
 
 // Estructura utilizada para manejar una copia de los registros realizada en algun momento
 typedef struct RegistersType {
@@ -110,5 +112,23 @@ void runNext();
 
 // Syscall para cambiar la prioridad de un proceso según su pid, retorna 0 en caso de error
 int nice(unsigned int pid, unsigned int priority);
+
+// Syscall para crear un canal de comunicacion para señales de sleep y wakeup, 
+// devuelve el ID del canal, y en caso de error devuelve -1
+int createChannel();
+
+// Syscall destruye un canal de comunicacion para señales de sleep y wakeup dado su ID
+// Si el ID no se corresponde con ningun canal existente, devuelve -1. Sino devuelve 0 
+int deleteChannel(unsigned int id);
+
+// Syscall que manda a dormir al proceso actual en el caso que corresponda.
+// Si ya habian señales pendientes, retorna 1. En caso contrario, devuelve 0. En caso de error, devuelve -1.
+int sleep(unsigned int id);
+
+// Syscall que despierta a los procesos esperando en el canal pasado como argumento por su ID
+// Si no habia nadie durmiendo, incrementa el contador de señales. En este caso, retorna 1.
+// Si habia alguien durmiendo, lo despierta y retorna 0. En caso de error retorna -1.
+// Recibe el id del canal correspondiente
+int wakeup(unsigned int id);
 
 #endif
