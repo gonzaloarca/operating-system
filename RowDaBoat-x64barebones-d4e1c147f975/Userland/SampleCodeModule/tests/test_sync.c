@@ -5,7 +5,7 @@
 
 // FALTA PROBAR
 
-#define TOTAL_PAIR_PROCESSES 200
+#define TOTAL_PAIR_PROCESSES 2
 #define SEM_ID 7
 
 int64_t global; //shared memory
@@ -75,8 +75,8 @@ void test_sync()
     uint64_t i;
 
     global = 0;
-    char *args1[4] = {"inc", "1", "1", "10"};
-    char *args2[4] = {"inc", "1", "-1", "10"};
+    char *args1[4] = {"inc", "1", "1", "100"};
+    char *args2[4] = {"inc", "1", "-1", "100"};
 
     printf("CREATING PROCESSES...(WITH SEM)\n");
 

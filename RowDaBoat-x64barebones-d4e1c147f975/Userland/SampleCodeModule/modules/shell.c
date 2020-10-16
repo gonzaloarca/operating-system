@@ -14,6 +14,7 @@ static char *symbol = "$>";
 
 static void parse();
 static void run(char *command, int bgFlag);
+static void startCommand(int (*mainPtr)(int, const char **), char *procName, int bgFlag);
 
 void runShell(){
     printf("\nIngrese help y presione enter para una explicacion del programa\n");
@@ -34,7 +35,7 @@ static void parse(){
         return;
 
     //Veo si me pide correr en background
-    if(inputBuffer[indexBuffer-1] == BG_SYMBOL){
+    if(inputBuffer[indexBuffer-1] == BG_SYMBOL && inputBuffer[indexBuffer-2] == ' '){
         bgFlag = 1;
         //Quito el simbolo del string
         indexBuffer -= 2;
@@ -109,11 +110,7 @@ static void run(char *command, int bgFlag){
         kill(pid, KILLED);
     }
     else if(strcmp( command, "loop") == 0){
-        name = "loop";
-        if(bgFlag)
-            startProcessBg((int (*)(int, const char **))loop, 1, &name);
-        else
-            startProcessFg((int (*)(int, const char **))loop, 1, &name);
+        startCommand((int (*)(int, const char **))loop, "loop", bgFlag);
     }
     else if(strcmp("block ", command) == 0){
         int pid, aux = 0;
@@ -145,34 +142,29 @@ static void run(char *command, int bgFlag){
             printf("Error en argumentos\n"); //puede que no haya encontrado el pid o que la prioridad no sea valida
     }
     else if(strcmp( command, "test_mm") == 0){
-        name = "test_mm";
-        if(bgFlag)
-            startProcessBg((int (*)(int, const char **))test_mm, 1, &name);
-        else
-            startProcessFg((int (*)(int, const char **))test_mm, 1, &name);
+        startCommand((int (*)(int, const char **))test_mm, "test_mm", bgFlag);
     }
     else if(strcmp( command, "test_prio") == 0){
-        name = "test_prio";
-        if(bgFlag)
-            startProcessBg((int (*)(int, const char **))test_prio, 1, &name);
-        else
-            startProcessFg((int (*)(int, const char **))test_prio, 1, &name);
+        startCommand((int (*)(int, const char **))test_prio, "test_prio", bgFlag);
     }
     else if(strcmp( command, "test_proc") == 0){
-        name = "test_processes";
-        if(bgFlag)
-            startProcessBg((int (*)(int, const char **))test_processes, 1, &name);
-        else
-            startProcessFg((int (*)(int, const char **))test_processes, 1, &name);
+        startCommand((int (*)(int, const char **))test_processes, "test_processes", bgFlag);
     }
-    else if(strcmp( inputBuffer, "test_sync\n") == 0){
-        const char * auxname = "test_sync";
-        startProcessBg((int (*)(int, const char **))test_sync, 1, &auxname);
+    else if(strcmp( command, "test_sync") == 0){
+        startCommand((int (*)(int, const char **))test_sync, "test_sync", bgFlag);
     }
-    else if(strcmp( inputBuffer, "test_no_sync\n") == 0){
-        const char * auxname = "test_no_sync";
-        startProcessBg((int (*)(int, const char **))test_no_sync, 1, &auxname);
+    else if(strcmp( command, "test_no_sync") == 0){
+        startCommand((int (*)(int, const char **))test_no_sync, "test_no_sync", bgFlag);
     }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
+}
+
+static void startCommand(int (*mainPtr)(int, const char **), char *procName, int bgFlag){
+    const char *name = procName;
+
+    if(bgFlag)
+        startProcessBg(mainPtr, 1, &name);
+    else
+        startProcessFg(mainPtr, 1, &name);
 }
