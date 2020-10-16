@@ -7,6 +7,7 @@
 static ProcNode *currentProc, *lastProc, nodeAux;
 static unsigned int lastPID = 1;
 static int fgFlag = 0;                              //Flag que indica si debe haber cambio al proceso en foreground
+static int shellFlag = 0;                           //Flag para indicar que quiero poner a la shell como proceso unico en fg
 
 //Funcion para setear los datos en el Stack Frame de un nuevo proceso
 static uint64_t createStackFrame(uint64_t frame, uint64_t mainptr, int argc, uint64_t argv);
@@ -16,6 +17,9 @@ static void freeResources(ProcNode **node);
 
 //Fuerzo el cambio al proceso en foreground (el primero de mi lista)
 static void switchForeground();
+
+//Cierro todos los proc en fg menos la shell
+static void returnToShell();
 
 //Funcion auxiliar para contar caracteres de un string
 static int strlen(const char* str);
@@ -143,6 +147,11 @@ uint64_t getNextRSP(uint64_t rsp){
     //Si el proceso que acabo de correr se murio, tipicamente mediante un exit
     if(currentProc->pcb.state == KILLED){
         freeResources(&currentProc);
+    }
+
+    if(shellFlag){
+        returnToShell();
+        return currentProc->pcb.rsp;
     }
 
     if(fgFlag){                 //  Si tengo que cambiar al proceso en foreground
@@ -316,4 +325,28 @@ static int strlen(const char* str){
     int ans = 0;
     for(; str[ans] != 0 ; ans++);
     return ans;
+}
+
+void triggerShell(){
+    shellFlag = 1;
+    sys_runNext();
+}
+
+static void returnToShell(){
+    ProcNode *aux;
+
+    currentProc->pcb.quantumCounter = currentProc->pcb.priority;
+
+    currentProc = lastProc->next;       //Voy al primer proceso
+    while(currentProc->pcb.pid != 1){
+        aux = currentProc;
+        //Si no es la shell, voy al siguiente
+        currentProc = currentProc->next;
+        //Y borro el anterior (que no era la shell)
+        freeResources(&aux);
+    }
+
+    currentProc->pcb.state = ACTIVE;
+    currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
+    shellFlag = 0;
 }
