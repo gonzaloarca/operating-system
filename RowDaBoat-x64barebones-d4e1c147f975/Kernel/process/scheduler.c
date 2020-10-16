@@ -4,7 +4,7 @@
 #include <time.h>
 #include <interrupts.h>
 
-static ProcNode *currentProc, *lastProc, nodeAux;
+static ProcNode *currentProc, *lastProc, nodeAux, *idleProc;
 static unsigned int lastPID = 1;
 static int fgFlag = 0;                              //Flag que indica si debe haber cambio al proceso en foreground
 
@@ -22,6 +22,9 @@ static int strlen(const char* str);
 
 //Funcion auxiliar para copiar los argumentos que recibe el proceso
 static void copyArgs(int argc, const char ** from, char ***into);
+
+//Proceso idle para esperar si están todos los procesos bloqueados
+void idle();
 
 unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
     if((void *) mainPtr == NULL){
@@ -61,6 +64,17 @@ unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
 
     //  Si la lista está vacía
     if(lastProc == NULL){
+        lastProc = new;
+        new->next = new;
+        new->previous = new;
+
+        //Ahora creo el proceso para idle y lo saco de la lista
+        sys_startProcBg((uint64_t) idle, 0, NULL);
+        idleProc = lastProc;
+        idleProc->next = NULL;
+        idleProc->previous = NULL;
+
+        //Y vuelvo a setar como estaba
         lastProc = new;
         new->next = new;
         new->previous = new;
@@ -154,9 +168,26 @@ uint64_t getNextRSP(uint64_t rsp){
     if(currentProc->pcb.quantumCounter == MAX_QUANTUM || currentProc->pcb.state != ACTIVE ){  
         currentProc->pcb.quantumCounter = currentProc->pcb.priority; //Si llego a su maximo de quantums, lo reseteo
         
-        do{                    //Encuentro algun proceso no bloqueado para correr
-            currentProc = currentProc->next;
-        }while(currentProc->pcb.state != ACTIVE);
+        //Si es el proceso idle el que volvió, vuelvo a buscar desde el principio de la lista
+        if(currentProc == idleProc)
+            currentProc = lastProc;
+
+        ProcNode *search = currentProc->next;
+
+        //Encuentro algun proceso no bloqueado para correr
+        while(search != currentProc){
+            if(search->pcb.state == ACTIVE)
+                break;
+            search = search->next;
+        }
+        
+        //Me fijo si encontré uno activo o están todos bloquedos
+        if(search->pcb.state == ACTIVE){
+            currentProc = search;
+        }else{
+            //vamos al proceso idle
+            currentProc = idleProc;
+        }
     }
 
     currentProc->pcb.quantumCounter++;
@@ -318,4 +349,10 @@ static int strlen(const char* str){
     int ans = 0;
     for(; str[ans] != 0 ; ans++);
     return ans;
+}
+
+void idle(){
+    while(1)
+        _hlt();
+    return;
 }

@@ -116,8 +116,7 @@ uint64_t sys_read(char* out_buffer, unsigned long int count, char delim)
 	char bspace = '\b', space = ' ';
 	while( c != delim && i < count ){
 		while( (c = asciiMap(readBuffer())) == 0 ){
-			_hlt();
-//			sys_runNext();
+			sys_kill(sys_getpid(), BLOCKED);
 		} //levanto una tecla valida del buffer del teclado
 
 		switch( c ){
