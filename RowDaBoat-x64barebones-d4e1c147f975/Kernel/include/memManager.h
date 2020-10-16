@@ -4,8 +4,8 @@
 #include <stddef.h>
 
 #define PWRTWO(x) (1 << (x))
-#define MEM_SIZE_POW 23 // 2^23 B = 8 MB
-#define MEM_BASE ((unsigned char*)0x700000)
+#define MEM_SIZE_POW 25 // 2^28 B = 
+#define MEM_BASE ((unsigned char*)0x1A00000)
 
 #define sizeof(type) ((unsigned char *)(&type+1)-(unsigned char*)(&type))
 

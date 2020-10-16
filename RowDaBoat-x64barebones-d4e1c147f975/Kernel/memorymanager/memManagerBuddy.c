@@ -8,16 +8,41 @@
 #define MIN_SIZE_POW 8  //2^8 = 256 bytes
 #define LIST_SIZE (PWRTWO(MEM_SIZE_POW - MIN_SIZE_POW) / 2)
 #define LIST_QTY (MEM_SIZE_POW - MIN_SIZE_POW + 1)
+#define LIST_BASE 0x700000
 
 static void createHeader(unsigned char *blockBase, unsigned char occupied, unsigned int sizePow);
 static void partitionMem(unsigned char *blockBase);
 static void addFreeList(unsigned char *blockBase);
 static void removeFreeList(unsigned char *blockBase);
 static void mergeBlocks(unsigned char **blockBase);
+static unsigned char *getFreeLists(unsigned int listIndex, unsigned int blockIndex);
+static void setFreeLists(unsigned char *value, unsigned int listIndex, unsigned int blockIndex);
+static void clearListSpace();
 
 unsigned char *mem = MEM_BASE;
-static unsigned char *freeLists[LIST_QTY][LIST_SIZE] = {{0}};
+//Para evitar que la lista se almacene en espacio de Kernel y genere problemas por excederse en tamanio, 
+//la mandamos a una seccion entre Userland y el heap utilizado por malloc
+static unsigned char **freeLists = (unsigned char **)LIST_BASE;
 static int initMem = 0;
+
+//Funciones para acceder a la matriz con las free lists. 
+//getFreeLists(i, j) es equivalente a utilizar freeLists[i][j]
+//setFreeLists(value, i, j) es equivalente a utilizar freeLists[i][j] = value
+static unsigned char *getFreeLists(unsigned int listIndex, unsigned int blockIndex){
+    return freeLists[listIndex * LIST_SIZE + blockIndex];
+}
+
+static void setFreeLists(unsigned char *value, unsigned int listIndex, unsigned int blockIndex){
+    freeLists[listIndex * LIST_SIZE + blockIndex] = value;
+}
+
+static void clearListSpace(){
+    // unsigned char * aux;
+    // int pointerSize = sizeof(aux);
+    // int matrixSize = LIST_QTY * LIST_SIZE;
+    for(int i = 0; i < LIST_QTY * LIST_SIZE; i++)
+        freeLists[i] = 0;
+}
 
 void *sys_malloc(size_t size){
     if(size == 0)
@@ -27,8 +52,9 @@ void *sys_malloc(size_t size){
 
     if(initMem == 0){
         createHeader(mem, FREE, MEM_SIZE_POW);
-        //addFreeList en vez de hacerlo a mano?
-        freeLists[LIST_QTY - 1][0] = mem;
+        //Llenamos todo el espacio disponible para la matriz con 0s
+        clearListSpace();
+        setFreeLists(mem, LIST_QTY - 1, 0);
         initMem = 1;
     }
 
@@ -38,12 +64,12 @@ void *sys_malloc(size_t size){
 
         //hay 8 bytes reservados para el header en cada bloque
         //si la lista esta vacia se garantiza que su primer elemento es NULL
-        if(PWRTWO(sizePow) - 8 >= size && freeLists[i][0] != NULL){ 
+        if(PWRTWO(sizePow) - 8 >= size && getFreeLists(i, 0) != NULL){ 
             //ahora debo encontrar el ultimo bloque libre en la lista
             int j;
-            for(j = 0; j < LIST_SIZE && freeLists[i][j + 1] != NULL; j++);
+            for(j = 0; j < LIST_SIZE && getFreeLists(i, j+1) != NULL; j++);
             
-            ret = freeLists[i][j];
+            ret = getFreeLists(i, j);
             removeFreeList(ret);
 
             //hay que ver si algun bloque con menor tamano podria acomodarlo 
@@ -88,9 +114,9 @@ static void addFreeList(unsigned char *blockBase){
     int i;
 
     //busca la primer posicion vacia en la lista de su tamano y la asigna
-    for(i = 0; freeLists[sizePow - MIN_SIZE_POW][i] != NULL && i < LIST_SIZE; i++);
+    for(i = 0; getFreeLists(sizePow - MIN_SIZE_POW, i) != NULL && i < LIST_SIZE; i++);
     
-    freeLists[sizePow - MIN_SIZE_POW ][i] = blockBase;
+    setFreeLists(blockBase, sizePow - MIN_SIZE_POW, i);
 }
 
 static void removeFreeList(unsigned char *blockBase){
@@ -100,19 +126,19 @@ static void removeFreeList(unsigned char *blockBase){
     //NULLs en el medio de la lista
     int i, j;
     for(i = 0; i < LIST_SIZE - 1; i++){
-        if(freeLists[sizePow - MIN_SIZE_POW][i] == blockBase){
+        if(getFreeLists(sizePow - MIN_SIZE_POW, i) == blockBase){
 
             //encuentra el ultimo elemento en la lista
-            for(j = i; j < LIST_SIZE && freeLists[sizePow - MIN_SIZE_POW][j + 1] != NULL; j++);
+            for(j = i; j < LIST_SIZE && getFreeLists(sizePow - MIN_SIZE_POW, j+1) != NULL; j++);
            
-            freeLists[sizePow - MIN_SIZE_POW][i] = freeLists[sizePow - MIN_SIZE_POW][j];
-            freeLists[sizePow - MIN_SIZE_POW][j] = NULL;
+            setFreeLists(getFreeLists(sizePow - MIN_SIZE_POW, j), sizePow - MIN_SIZE_POW, i);
+            setFreeLists(NULL, sizePow - MIN_SIZE_POW, j);
             break;
         } 
     }
 
     if(i == LIST_SIZE - 1){
-        freeLists[sizePow - MIN_SIZE_POW][i] = NULL;
+        setFreeLists(NULL, sizePow - MIN_SIZE_POW, i);
     }
 }
 
@@ -165,7 +191,7 @@ void sys_getMemStatus(MemStatus *stat){
     }else{
         size_t freeCount = 0;
         for(int i = 0; i < LIST_QTY ; i++){
-            for(int j = 0; j < LIST_SIZE && freeLists[i][j] != NULL; j++){
+            for(int j = 0; j < LIST_SIZE && getFreeLists(i, j) != NULL; j++){
                 freeCount += PWRTWO(i+MIN_SIZE_POW);
             }
         }

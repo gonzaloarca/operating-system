@@ -309,7 +309,7 @@ static void copyArgs(int argc, const char ** from, char ***into){
         for(j = 0; j < length ; j++)
             (*into)[i][j] = from[i][j];
 
-        (*into)[i][j+1] = 0;
+        (*into)[i][j] = 0;
     }
     (*into)[argc] = NULL;
 }

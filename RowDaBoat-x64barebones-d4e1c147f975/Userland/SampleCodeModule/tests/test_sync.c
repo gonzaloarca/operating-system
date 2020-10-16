@@ -38,8 +38,6 @@ void inc(uint64_t sem, int64_t value, uint64_t N)
     {
         if (sem)
             semWait(semaph);
-        
-        printf("pid:%d, i: %d, N: %lu\n",getpid(), i, N);
 
         slowInc(&global, value);
 

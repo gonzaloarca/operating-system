@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define STACK_SIZE 16384
+#define STACK_SIZE 32760 // 32 KB - 8 bytes (sino el buddy system pasa a dar 64 KB). 32 KB = 32768, 16 KB = 16384
 #define MAX_QUANTUM 5
 #define DEFAULT_QUANTUM 4
 
