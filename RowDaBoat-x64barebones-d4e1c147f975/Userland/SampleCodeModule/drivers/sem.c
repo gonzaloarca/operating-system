@@ -41,7 +41,7 @@ Semaphore *semOpen(unsigned int id, unsigned int init){
             semList = NULL;
             return NULL;
         }
-
+    
         createNode(semList, id, init, channelId);
         return &(semList->sem);
     }    
@@ -76,7 +76,7 @@ Semaphore *semOpen(unsigned int id, unsigned int init){
 static void createNode(SemNode *node, unsigned int id, unsigned int init, unsigned int channelId){
     node->sem.semId = id;
     node->sem.value = init;
-    node->sem.count = 0;
+    node->sem.count = 1;
     node->sem.channelId = channelId;
     node->next = NULL;
 }

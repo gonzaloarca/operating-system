@@ -2,6 +2,7 @@
 #include <memManager.h>
 #include <scheduler.h>
 #include <lock.h>
+#include <window_manager.h>
 
 typedef struct ChannelNode{
     unsigned int pid;
@@ -17,7 +18,7 @@ typedef struct ChannelNodeHeader{
 } ChannelNodeHeader;
 
 static ChannelNodeHeader *first = {0};
-static unsigned lastId = 0;
+static unsigned int lastId = 0;
 
 int sys_createChannel(){
     ChannelNodeHeader *aux;
@@ -25,6 +26,7 @@ int sys_createChannel(){
     ChannelNodeHeader auxSizeOf;
 
     if((aux = sys_malloc(sizeof(auxSizeOf))) == NULL){
+        sys_write(2,"NO HAY ESPACIO DISPONIBLE PARA EL CANAL\n", 40);
         return -1;
     }
     
@@ -38,7 +40,7 @@ int sys_createChannel(){
     };
 
     //Si es el primer canal
-    if(aux->channelId == 0){
+    if(first == NULL){
         first = aux;
     } else {
         search = first;
@@ -53,6 +55,7 @@ int sys_createChannel(){
 
 int sys_deleteChannel(unsigned int channelId){
     if(channelId >= lastId){
+        sys_write(2,"NO EXISTE EL CANAL\n", 19);
         return -1;
     }
 
@@ -64,15 +67,16 @@ int sys_deleteChannel(unsigned int channelId){
     }
 
     //Solo borro el canal si no hay nadie durmiendo
-    if(search->channelId == channelId && search->first != NULL){
+    if(search->channelId == channelId && search->first == NULL){
         if(previous == NULL){
             first = search->next;
         } else {
             previous->next = search->next;
         }
-        sys_free(search->lock);
+        deleteLock(search->lock);
         sys_free(search);
     } else {
+        sys_write(2,"HAY PROCESOS BLOQUEADOS POR EL CANAL\n", 37);
         return -1;
     }
 
@@ -81,6 +85,7 @@ int sys_deleteChannel(unsigned int channelId){
 
 static ChannelNodeHeader *findChannel(unsigned int channelId){
     if(channelId >= lastId){
+        sys_write(2,"NO EXISTE EL CANAL\n", 19);
         return NULL;
     }
 
@@ -91,6 +96,7 @@ static ChannelNodeHeader *findChannel(unsigned int channelId){
     }
 
     if(searchHeader->channelId != channelId){
+        sys_write(2,"NO EXISTE EL CANAL\n", 19);
         return NULL;
     }
 
@@ -101,6 +107,7 @@ int sys_sleep(unsigned int channelId){
 
     ChannelNodeHeader *channel;
     if((channel = findChannel(channelId)) == NULL){
+        sys_write(2,"CANAL NO ENCONTRADO\n", 20);
         return -1;
     }
     
@@ -115,6 +122,7 @@ int sys_sleep(unsigned int channelId){
     ChannelNode *new;
     ChannelNode aux;
     if((new = sys_malloc(sizeof(aux))) == NULL){
+        sys_write(2,"NO HAY MEMORIA DISPONIBLE PARA EL NODO\n", 39);
         return -1;
     }
     
@@ -134,7 +142,6 @@ int sys_sleep(unsigned int channelId){
         searchProc->next = new;
     }
     
-    
     sys_kill(new->pid, BLOCKED);
 
     return 0;
@@ -143,6 +150,7 @@ int sys_sleep(unsigned int channelId){
 int sys_wakeup(unsigned int channelId){
     ChannelNodeHeader *channel;
     if((channel = findChannel(channelId)) == NULL){
+        sys_write(2,"NO EXISTE EL CANAL\n", 19);
         return -1;
     }
     
