@@ -30,6 +30,9 @@ static void parse(){
 
     inputBuffer[--indexBuffer] = 0;     //Me saco el \n del comando
 
+    if(indexBuffer == 0)                //Comando vacio
+        return;
+
     //Veo si me pide correr en background
     if(inputBuffer[indexBuffer-1] == BG_SYMBOL){
         bgFlag = 1;
