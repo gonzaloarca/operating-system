@@ -156,6 +156,9 @@ static void run(char *command, int bgFlag){
     else if(strcmp( command, "test_no_sync") == 0){
         startCommand((int (*)(int, const char **))test_no_sync, "test_no_sync", bgFlag);
     }
+    else if(strcmp( command, "calc") == 0){
+        startCommand((int (*)(int, const char **))calculator, "calculator", 0);
+    }
     else
         fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }
