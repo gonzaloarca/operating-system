@@ -110,8 +110,8 @@ unsigned int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]) {
 	lastProc = lastProc->previous;
 
 	//Cambio al nuevo proceso
-	triggerForeground();
-	sys_runNext();
+	if(currentProc != NULL)
+		triggerForeground();
 
 	return pid;
 }
