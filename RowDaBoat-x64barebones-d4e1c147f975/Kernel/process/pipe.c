@@ -9,31 +9,28 @@
 static Pipe *createPipe(unsigned int pipeId);
 
 static Pipe *first;
-static unsigned int lastPipeId = 0;
 
-static int canRead(int nRead, int nWrite) {
-	if( nWrite == nRead )
+static int canRead(Pipe *pipe) {
+	//Este caso indica que el buffer está vacio
+	if( pipe->nWrite == pipe->nRead && pipe->isFull == 0 )
 		return 0;
 
-	else if( nWrite > nRead)
-		return nWrite - nRead -1;
-
+	if( pipe->nRead >= pipe->nWrite)
+		return PIPE_SIZE - (pipe->nRead - pipe->nWrite);
 	else
-		// nWrite < nRead
-		return PIPE_SIZE - (nRead - nWrite);
+		return pipe->nWrite - pipe->nRead;
 }
 
 // Funcion que retorna cuantos caracteres se pueden escribir en el buffer
-static int canWrite(int nRead, int nWrite) {
-	if( nWrite == nRead )
+static int canWrite(Pipe *pipe) {
+	//Veo que no esté lleno el pipe
+	if( pipe->isFull == 1 )
 		return 0;
 
-	else if( nWrite > nRead)
-		return PIPE_SIZE - (nWrite - nRead);
-
+	if( pipe->nWrite >= pipe->nRead )
+		return PIPE_SIZE - (pipe->nWrite - pipe->nRead);
 	else
-		// nWrite < nRead
-		return nRead - nWrite -1;
+		return pipe->nRead - pipe->nWrite;
 }
 
 static Pipe *findPipe(unsigned int pipeId) {
@@ -70,7 +67,7 @@ int sys_read(int fd, char* out_buffer, unsigned long int count){
 
 	acquire(pipe->lock);
 	while( ret < count ){
-		while( (limit = canRead(pipe->nRead, pipe->nWrite)) == 0) {
+		while( (limit = canRead(pipe)) == 0) {
 			release(pipe->lock);
 			sys_sleep(pipe->channelId);
 			acquire(pipe->lock);
@@ -80,6 +77,7 @@ int sys_read(int fd, char* out_buffer, unsigned long int count){
 		}
 		pipe->nRead = (pipe->nRead + limit) % PIPE_SIZE;
 		ret += limit;
+		pipe->isFull = 0;
 	}
 	release(pipe->lock);
 
@@ -104,11 +102,14 @@ int sys_write(int fd, const char *str, unsigned long count) {
 
 	acquire(pipe->lock);
 
-	if((limit = canWrite(pipe->nRead, pipe->nWrite)) >0 ) {
+	if((limit = canWrite(pipe)) > 0 ) {
 		for(; ret < limit  && ret < count; ret++){
-			pipe->buffer[pipe->nWrite] = str[ret];
+			(pipe->buffer)[pipe->nWrite] = str[ret];
 			pipe->nWrite = (pipe->nWrite + 1) % PIPE_SIZE;
 		}
+		//Veo si se lleno el buffer
+		if(pipe->nWrite == pipe->nRead)
+			pipe->isFull = 1;
 		sys_wakeup(pipe->channelId);
 	}
 
@@ -149,7 +150,8 @@ static Pipe *createPipe(unsigned int pipeId) {
 
 	aux->nRead = 0;
 	aux->nWrite = 0;
-	aux->pipeId = lastPipeId++;
+	aux->isFull = 0;
+	aux->pipeId = pipeId;
 	aux->writers = 1;
 	aux->readers = 1;
 	if((aux->channelId = sys_createChannel()) == -1) {

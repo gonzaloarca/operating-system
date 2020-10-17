@@ -14,6 +14,7 @@ typedef struct Pipe {
 	char buffer[PIPE_SIZE];
 	unsigned int nRead;  // Indice en el cual se debe leer
 	unsigned int nWrite; // Indice en el cual se debe escribir
+	int isFull;			//	Flag necesario para saber si nRead-nWrite=0 representa lleno o vacio
 	unsigned int pipeId;
 	unsigned int writers; 	// cantidad de escritores del pipe que se estan usando
 	unsigned int readers;	//cantidad de lectores
