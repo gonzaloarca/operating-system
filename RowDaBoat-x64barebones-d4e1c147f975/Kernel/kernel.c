@@ -30,7 +30,7 @@ void * getStackBase()
 	return (void*)(
 		(uint64_t)&endOfKernel
 		+ PageSize * 8				//The size of the stack itself, 32KiB
-		- sizeof(uint64_t)			//Begin at the top of the stack
+		- sizeof(PageSize)			//Begin at the top of the stack
 	);
 }
 

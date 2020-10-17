@@ -8,6 +8,7 @@
 #include <memManager.h>
 #include <scheduler.h>
 #include <sig.h>
+#include <pipe.h>
 
 typedef struct{
 	uint64_t rbx;
@@ -156,7 +157,18 @@ uint64_t syscall_40(uint64_t rbx){
 	return sys_wakeup((unsigned int) rbx);
 }
 
-// La 
+// La syscall 41 crea un pipe para el proceso que la llama y retorna en un vector de dos posiciones los
+// respectivos indices de lectura y escritura
+uint64_t syscall_41(uint64_t rbx) {
+	return sys_createPipe((int *) rbx);
+}
+
+// La syscall 42 cierra para el proceso actual el pipe que se encuentra en el indice indicado por parametro
+// En caso de ser el ultimo que lo tenia abierto, se borra el pipe completamente
+uint64_t syscall_42(uint64_t rbx) {
+	return sys_closePipe((unsigned int) rbx);
+}
+
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
 //	Cada syscall se encarga de interpretar a la estructura
@@ -210,6 +222,10 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg){
 		case 39: return syscall_39( reg->rbx );
 
 		case 40: return syscall_40( reg->rbx );
+
+		case 41: return syscall_41( reg->rbx );
+
+		case 42: return syscall_42( reg->rbx );
 	}
 
 	return 1;

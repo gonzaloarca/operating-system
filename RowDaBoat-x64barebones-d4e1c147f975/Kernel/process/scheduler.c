@@ -4,7 +4,7 @@
 #include <time.h>
 #include <interrupts.h>
 
-static ProcNode *currentProc, *lastProc, nodeAux, *idleProc;
+static ProcNode *currentProc, *lastProc, nodeAux, *idleProc = NULL;
 static unsigned int lastPID = 1;
 static int fgFlag = 0;                              //Flag que indica si debe haber cambio al proceso en foreground
 
@@ -42,6 +42,7 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
     new->pcb.mem = sys_malloc(STACK_SIZE);
 
     if(new->pcb.mem == NULL){
+        sys_free(new);
         sys_write(2,"Error en malloc de PCB\n", 23);
         return -1;
     }
@@ -68,6 +69,21 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
         new->next = new;
         new->previous = new;
 
+        for(int i = 0; i < MAX_PIPES ; i++)
+            new->pcb.pipeList[i] = -1;
+
+        int auxId[2];
+        if(sys_createPipe(auxId) == -1){
+            writeScreen("NO SE LOGRO ALOCAR STDIN Y STDOUT\n", 34);
+            sys_free(new->pcb.mem);
+            sys_free(new);
+            return -1;
+        }
+
+        new->pcb.pipeList[0] = auxId[0];    // stdin
+        new->pcb.pipeList[1] = auxId[1];    // stdout
+        new->pcb.pipeList[2] = auxId[1];    // stderror
+
         //Ahora creo el proceso para idle y lo saco de la lista
         sys_startProcBg((uint64_t) idle, 0, NULL);
         idleProc = lastProc;
@@ -78,25 +94,26 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
         lastProc = new;
         new->next = new;
         new->previous = new;
-
-        //Solo seteo stdin y stdout
-        int auxId = sys_createPipe();
-        if(auxId == -1)
-            return -1;
-        new->pcb.pipeList[0] = auxId;
-        new->pcb.pipeList[1] = auxId;
-        for(int i = 2; i < MAX_PIPES ; i++)
-            new->pcb.pipeList[i] = -1;
-
     }else {
+        ProcNode* aux;
+
         new->next = lastProc->next;
         new->previous = lastProc;
         lastProc->next = new;
         new->next->previous = new;
         lastProc = new;
 
-        for(int i = 0; i < MAX_PIPES ; i++)
-            new->pcb.pipeList[i] = currentProc->pcb.pipeList[i];
+        //Si todavia no se creo el idle, currentProc esta en NULL
+        if(idleProc == NULL)
+            aux = lastProc;
+        else
+            aux = currentProc;
+
+        //Copia todos los pipes del proceso que lo creo
+        for(int i = 0; i < MAX_PIPES ; i++){
+            new->pcb.pipeList[i] = aux->pcb.pipeList[i];
+            incPipeProcesses(new->pcb.pipeList[i]);
+        }
     }
 
     return new->pcb.pid;
@@ -119,8 +136,8 @@ int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]){
     lastProc = lastProc->previous;
 
     //Cambio al nuevo proceso
-    triggerForeground();
-    sys_runNext();
+    if(currentProc != NULL)
+        triggerForeground();
 
     return pid;
 }
@@ -370,23 +387,48 @@ void idle(){
     return;
 }
 
-// Funcion que utiliza Pipe para agregar al pcb que lo creo el nuevo pipe como file descriptor
-void setPipe(unsigned int newPipeId){
-    int i;
-    for(i = 0; currentProc->pcb.pipeList[i] != -1 ; i++);
+// Funcion que utiliza Pipe para agregar al pcb que lo creo el nuevo pipe como file descriptor, retorna un puntero al vector [WriteIdx, ReadIdx]
+int setPipe(unsigned int newPipeId, int pipefd[2]){
+    ProcNode* proc;
+    if(currentProc == NULL)
+        proc = lastProc;
+    else
+        proc = currentProc;
 
-    currentProc->pcb.pipeList[i] = newPipeId;
+    int i;
+    for(i = 0; proc->pcb.pipeList[i] != -1 && i < MAX_PIPES; i++);
+
+    proc->pcb.pipeList[i] = newPipeId;
+    pipefd[0] = i;
+
+    for(; proc->pcb.pipeList[i] != -1 && i < MAX_PIPES; i++);
+    
+    if( i == MAX_PIPES )
+        return -1;
+
+    proc->pcb.pipeList[i] = newPipeId;
+    pipefd[1] = i;
+
+    return 0;
 }
 
 // Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
 int removePipe(unsigned int index){
     unsigned int aux = currentProc->pcb.pipeList[index];
     if(aux == -1){
-        sys_write(2, "PIPE YA BORRADO", 15);
+        writeScreen("PIPE YA BORRADO", 15);
         return -1;
     }
 
     currentProc->pcb.pipeList[index] = -1;
 
     return aux;
+}
+
+// Funcion que le proporciona a pipe.c el pipe en el indice indicado
+int getPipeId(int fd){
+    if(fd < 0 || fd > MAX_PIPES)
+        return -1;
+
+    return currentProc->pcb.pipeList[fd];
 }

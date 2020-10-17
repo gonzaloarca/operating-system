@@ -67,10 +67,13 @@ void sys_runNext();
 //Syscall para cambiar la prioridad de un proceso
 int sys_nice(unsigned int pid, unsigned int priority);
 
-//Funcion que usa pipe.c para asignarle al proceso actual el nuevo pipe creado
-void setPipe(unsigned int newPipeId);
+//Funcion que usa pipe.c para asignarle al proceso actual el nuevo pipe creado, retorna un puntero al vector [ReadIdx, WriteIdx]
+int setPipe(unsigned int newPipeId, int pipefd[2]);
 
 // Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
 int removePipe(unsigned int index);
+
+// Funcion que le proporciona a pipe.c el pipe en el indice indicado
+int getPipeId(int fd);
 
 #endif

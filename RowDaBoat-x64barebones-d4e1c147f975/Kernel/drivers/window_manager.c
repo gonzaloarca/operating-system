@@ -199,9 +199,6 @@ static int printChar( char c, int rgb ){
 		currentWindow->yStart + currentWindow->lineCount * (LINE_HEIGHT) + LINE_MARGIN, rgb, BACKGROUND_COLOR);
 	
 	// Cambio el caracter en el buffer
-	//*(windows[activeWindow].screenBuffer[ (windows[activeWindow].firstLine + windows[activeWindow].lineCount) % BUFFER_LINES ] +
-	//windows[activeWindow].currentLineSize) = c;
-
 	int currentLine = (currentWindow->firstLine + currentWindow->lineCount) % BUFFER_LINES;
 	int currentChar = currentWindow->currentLineSize;
 
@@ -214,14 +211,9 @@ static int printChar( char c, int rgb ){
 	return 0;
 }
 
-int sys_write(unsigned int fd, const char * str, unsigned long count){
+int writeScreen(const char * str, unsigned long count){
 	
 	int color = windows[activeWindow].charColor;
-
-	if(fd == 2)	//	STDERR
-		color = 0xFF0000;
-	else if(fd != 1)	//	Solo tenemos STDOUT y STDERR
-		return 0;
 
 	for( int i = 0; i < count; i++ ){
 		printChar( str[i], color );
@@ -293,78 +285,78 @@ void printRegisters(RegistersType *reg){
 	int longitud;
 	
 	longitud = uint64_tToString(reg->rax, aux);
-	sys_write(2, "RAX: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen( "RAX: ", 5);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->rbx, aux);
-	sys_write(2, "    RBX: ", 9);
-	sys_write(2, aux, longitud);
+	writeScreen( "    RBX: ", 9);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->rcx, aux);
-	sys_write(2, "    RCX: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen( "    RCX: ", 9);
+	writeScreen( aux, longitud);
+	writeScreen( "\n", 1);
 
 	longitud = uint64_tToString(reg->rdx, aux);
-	sys_write(2, "RDX: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen( "RDX: ", 5);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->rbp, aux);
-	sys_write(2, "    RBP: ", 9);
-	sys_write(2, aux, longitud);
+	writeScreen( "    RBP: ", 9);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->rdi, aux);
-	sys_write(2, "    RDI: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen( "    RDI: ", 9);
+	writeScreen( aux, longitud);
+	writeScreen( "\n", 1);
 
 	longitud = uint64_tToString(reg->rsi, aux);
-	sys_write(2, "RSI: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen( "RSI: ", 5);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->r8, aux);
-	sys_write(2, "    R8: ", 8);
-	sys_write(2, aux, longitud);
+	writeScreen( "    R8: ", 8);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->r9, aux);
-	sys_write(2, "    R9: ", 8);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen( "    R9: ", 8);
+	writeScreen( aux, longitud);
+	writeScreen( "\n", 1);
 
 	longitud = uint64_tToString(reg->r10, aux);
-	sys_write(2, "R10: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen( "R10: ", 5);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->r11, aux);
-	sys_write(2, "    R11: ", 9);
-	sys_write(2, aux, longitud);
+	writeScreen( "    R11: ", 9);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->r12, aux);
-	sys_write(2, "    R12: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen( "    R12: ", 9);
+	writeScreen( aux, longitud);
+	writeScreen( "\n", 1);
 
 	longitud = uint64_tToString(reg->r13, aux);
-	sys_write(2, "R13: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen( "R13: ", 5);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->r14, aux);
-	sys_write(2, "    R14: ", 9);
-	sys_write(2, aux, longitud);
+	writeScreen( "    R14: ", 9);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->r15, aux);
-	sys_write(2, "    R15: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen( "    R15: ", 9);
+	writeScreen( aux, longitud);
+	writeScreen( "\n", 1);
 
 	longitud = uint64_tToString(reg->rsp, aux);
-	sys_write(2, "RSP: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen( "RSP: ", 5);
+	writeScreen( aux, longitud);
 
 	longitud = uint64_tToString(reg->rip, aux);
-	sys_write(2, "    RIP: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen( "    RIP: ", 9);
+	writeScreen( aux, longitud);
+	writeScreen( "\n", 1);
 }
 
 void idleSymbol(){
@@ -393,13 +385,13 @@ static void blockIdleSymbol(){
 }
 
 void printProcessListHeader(){
-	sys_write(1, "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tBase Pointer\tForeground  \tState\n", 66);
+	writeScreen( "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tBase Pointer\tForeground  \tState\n", 66);
 }
 
 // Rellena la columna actual con espacios hasta que ocupe sus SIZECOL_PROCESSLIST caracteres
 static void fillColumn(int longitud){
 	while(longitud < SIZECOL_PROCESSLIST){
-		sys_write(1, " ", 1);
+		writeScreen( " ", 1);
 		longitud++;
 	}
 }
@@ -408,13 +400,13 @@ void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_
 	char aux[10];	// maxima longitud de un longint
 	int longitud = 0;
 	if(argv == NULL){
-		sys_write(1,"null", 4);
+		writeScreen("null", 4);
 		fillColumn(4);
 	}
 	else{							// si tiene nombre, imprime solo los primeros SIZECOL_PROCESSLIST-1 caracteres(es para mantener el formato de tabla)
 		char *aux2 = argv[0];
 		while(*aux2 != 0 && longitud < SIZECOL_PROCESSLIST){
-			sys_write(1, aux2, 1);
+			writeScreen( aux2, 1);
 			aux2++;
 			longitud++;
 		}
@@ -422,42 +414,42 @@ void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_
 	}
 
 	longitud = uint64_tToString((uint64_t) pid, aux);
-	sys_write(1, aux, longitud);
+	writeScreen( aux, longitud);
 	fillColumn(longitud);
 
 	longitud = uint64_tToString((uint64_t) priority, aux);
-	sys_write(1, aux, longitud);
+	writeScreen( aux, longitud);
 	fillColumn(longitud);
 	
 	longitud = uint64_tToString(rsp, aux);
-	sys_write(1, aux, longitud);
+	writeScreen( aux, longitud);
 	fillColumn(longitud);
 
 	longitud = uint64_tToString(rbp, aux);
-	sys_write(1, aux, longitud);
+	writeScreen( aux, longitud);
 	fillColumn(longitud);
 
 	if(foreground)
-		sys_write(1, "yes", 3);
+		writeScreen( "yes", 3);
 	else
-		sys_write(1, "no ", 3);
+		writeScreen( "no ", 3);
 	fillColumn(3);
 
 	switch (status)
 	{
 	case ACTIVE:
-		sys_write(1,"active", 6);
+		writeScreen("active", 6);
 		break;
 	case BLOCKED:
 	case BLOCKED_BY_FG:
-		sys_write(1,"blocked", 7);
+		writeScreen("blocked", 7);
 		break;
 	case KILLED:
-		sys_write(1, "killed", 6);
+		writeScreen( "killed", 6);
 		break;
 	default:
-		sys_write(1,"unknown", 7);
+		writeScreen("unknown", 7);
 		break;
 	}
-	sys_write(1, "\n", 1);
+	writeScreen( "\n", 1);
 }

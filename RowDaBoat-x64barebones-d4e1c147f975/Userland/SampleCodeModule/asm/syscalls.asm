@@ -22,6 +22,8 @@ GLOBAL createChannel
 GLOBAL deleteChannel
 GLOBAL sleep
 GLOBAL wakeup
+GLOBAL createPipe
+GLOBAL closePipe
 
 section .text
 
@@ -549,6 +551,56 @@ wakeup:
 	push rbx
 
 	mov rax, 40
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL createPipe: RAX = 41
+;		La syscall 41 crea un pipe de comunicacion, 
+;		devuelve un puntero a un vector que en la primer posicion contiene el indice del
+;		pipe de lectura y en el segundo el de escritura, y en caso de error devuelve -1
+;		No recibe parametros
+;-------------------------------------------------------
+; Llamada en C:
+;	int createPipe(int pipefd[2]);
+;-------------------------------------------------------
+createPipe:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 41
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL closePipe: RAX = 42
+;		La syscall 42 cierra para el proceso actual el acceso al pipe que se encuentra
+;		en el indice indicado por paramtro dentro de su vector de pipes
+;-------------------------------------------------------
+; Llamada en C:
+;	int closePipe(unsigned int index);
+;-------------------------------------------------------
+closePipe:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 42
 	mov rbx, rdi
 	int 80h
 

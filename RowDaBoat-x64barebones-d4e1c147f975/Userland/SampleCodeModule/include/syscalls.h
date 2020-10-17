@@ -131,4 +131,13 @@ int sleep(unsigned int id);
 // Recibe el id del canal correspondiente
 int wakeup(unsigned int id);
 
+// Syscall crea un pipe de comunicacion, 
+// devuelve un puntero a un vector que en la primer posicion contiene el indice del
+// pipe de lectura y en el segundo el de escritura, y en caso de error devuelve -1
+int createPipe(int pipefd[2]);
+
+// Syscall 42 cierra para el proceso actual el acceso al pipe que se encuentra
+// en el indice indicado por paramtro dentro de su vector de pipes
+int closePipe(unsigned int index);
+
 #endif
