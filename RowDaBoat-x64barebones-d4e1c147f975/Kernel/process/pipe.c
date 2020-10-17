@@ -18,7 +18,7 @@ int canWrite(int nRead, int nWrite) {
 }
 
 static Pipe *findPipe(int pipeId) {
-	if(first == NULL)
+	if(pipeId == -1)
 		return NULL;
 
 	Pipe *search = first;

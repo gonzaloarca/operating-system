@@ -382,18 +382,17 @@ void idle() {
 }
 
 static int createFdTable(ProcNode *proc) {
-	int auxId[2];
-
+	int auxId[2], pipeId;
 	for(int i = 0; i < MAX_PIPES; i++)
 		proc->pcb.pipeList[i] = -1;
 
-	if(sys_createPipe(auxId) == -1) {
+	if((pipeId = sys_createPipe(auxId)) == -1) {
 		return -1;
 	}
 
-	proc->pcb.pipeList[0] = auxId[0]; // stdin
-	proc->pcb.pipeList[1] = auxId[1]; // stdout
-	proc->pcb.pipeList[2] = auxId[1]; // stderror
+	proc->pcb.pipeList[0] = pipeId; // stdin
+	proc->pcb.pipeList[1] = pipeId; // stdout
+	proc->pcb.pipeList[2] = pipeId; // stderror
 
 	return 0;
 }
