@@ -26,6 +26,9 @@ static void copyArgs(int argc, const char **from, char ***into);
 //Proceso idle para esperar si están todos los procesos bloqueados
 void idle();
 
+//Inicializa la tabla de filedescriptors del proceso con stdin, stdout y stderr
+static int createFdTable(ProcNode *proc);
+
 int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]) {
 	if((void *)mainPtr == NULL) {
 		sys_write(2, "Error en funcion a ejecutar\n", 28);
@@ -69,20 +72,14 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]) {
 		new->next = new;
 		new->previous = new;
 
-		for(int i = 0; i < MAX_PIPES; i++)
-			new->pcb.pipeList[i] = -1;
-
-		int auxId[2];
-		if(sys_createPipe(auxId) == -1) {
+		//Al primer proceso hay que crearle su tabla de filedescriptors y pipes a mano, ya que
+		//el resto de los procesos la heredaran
+		if(createFdTable(new) == -1) {
 			writeScreen("NO SE LOGRO ALOCAR STDIN Y STDOUT\n", 34);
 			sys_free(new->pcb.mem);
 			sys_free(new);
 			return -1;
 		}
-
-		new->pcb.pipeList[0] = auxId[0]; // stdin
-		new->pcb.pipeList[1] = auxId[1]; // stdout
-		new->pcb.pipeList[2] = auxId[1]; // stderror
 
 		//Ahora creo el proceso para idle y lo saco de la lista
 		sys_startProcBg((uint64_t)idle, 0, NULL);
@@ -135,7 +132,7 @@ int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]) {
 	//Y mi nuevo proceso reemplaza al primero de la lista (muevo una posicion atras el puntero al ultimo)
 	lastProc = lastProc->previous;
 
-	//Cambio al nuevo proceso
+	//Cambio al nuevo proceso, si es que no es el primero
 	if(currentProc != NULL)
 		triggerForeground();
 
@@ -384,7 +381,24 @@ void idle() {
 	return;
 }
 
-// Funcion que utiliza Pipe para agregar al pcb que lo creo el nuevo pipe como file descriptor, retorna un puntero al vector [WriteIdx, ReadIdx]
+static int createFdTable(ProcNode *proc) {
+	int auxId[2];
+
+	for(int i = 0; i < MAX_PIPES; i++)
+		proc->pcb.pipeList[i] = -1;
+
+	if(sys_createPipe(auxId) == -1) {
+		return -1;
+	}
+
+	proc->pcb.pipeList[0] = auxId[0]; // stdin
+	proc->pcb.pipeList[1] = auxId[1]; // stdout
+	proc->pcb.pipeList[2] = auxId[1]; // stderror
+
+	return 0;
+}
+
+// Funcion que utiliza Pipe para agregar al pcb que lo creo el nuevo pipe como file descriptor, retorna por argumento el vector [ReadFD, WriteFD]
 int setPipe(unsigned int newPipeId, int pipefd[2]) {
 	ProcNode *proc;
 	if(currentProc == NULL)
