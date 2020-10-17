@@ -447,3 +447,12 @@ int getPipeId(int fd) {
 
 	return currentProc->pcb.pipeList[fd];
 }
+
+// Funcion que pisa oldfd con newfd en el proceso actual
+int sys_dup2(int oldfd, int newfd){
+	if(oldfd < 0 || oldfd > MAX_PIPES || newfd < 0 || newfd > MAX_PIPES )
+		return -1;
+
+	currentProc->pcb.pipeList[oldfd] = currentProc->pcb.pipeList[newfd];
+	return 0;
+}

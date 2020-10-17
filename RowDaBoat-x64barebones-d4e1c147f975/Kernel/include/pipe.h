@@ -15,6 +15,9 @@ typedef struct Pipe {
 	struct Pipe *next;
 } Pipe;
 
+
+int sys_read(int fd, char* out_buffer, unsigned long int count);
+
 int sys_write(int fd, const char *str, unsigned long count);
 
 // Syscall de creacion de pipe

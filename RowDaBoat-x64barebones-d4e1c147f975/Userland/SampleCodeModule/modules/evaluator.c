@@ -27,7 +27,7 @@ void calculator()
 
 	while(1){
 		puts(symbol);
-		if ( (length = read(buffer, BUFFER_SIZE+1, '\n')) != 0 )
+		if ( (length = read(0, buffer, BUFFER_SIZE+1)) != 0 )
 		{
 			if (length > 1)
 			{

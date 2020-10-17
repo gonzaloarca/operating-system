@@ -20,7 +20,7 @@ void runShell() {
 	printf("\nIngrese help y presione enter para una explicacion del programa\n");
 	while(1) {
 		puts(symbol);
-		indexBuffer = read(inputBuffer, INPUT_BUFFER_SIZE, '\n');
+		indexBuffer = read(0, inputBuffer, INPUT_BUFFER_SIZE);
 		parse();
 	}
 }

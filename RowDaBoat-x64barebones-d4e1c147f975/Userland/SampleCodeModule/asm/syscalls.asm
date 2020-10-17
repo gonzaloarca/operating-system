@@ -24,6 +24,7 @@ GLOBAL sleep
 GLOBAL wakeup
 GLOBAL createPipe
 GLOBAL closePipe
+GLOBAL dup2
 
 section .text
 
@@ -59,10 +60,10 @@ write:
 
 ;-------------------------------------------------------
 ;	SYSCALL read: RAX = 3
-;			Lee de entrada estandar en un buffer hasta que se llegue a "count" caracteres o se llegue al caracter "delim"
+;			Lee de un fd y escribe en un buffer hasta que se llegue a "count" caracteres
 ;-------------------------------------------------------
 ; Llamada en C:
-;	int read( char *buffer, unsigned long count, char delim )
+;	int read(int fd, char *buffer, unsigned long count)
 ;-------------------------------------------------------
 read:
 	push rbp
@@ -604,6 +605,32 @@ closePipe:
 	mov rbx, rdi
 	int 80h
 
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL dup2: RAX = 43
+;		Syscall que pisa oldfd con newfd en el proceso actual
+;-------------------------------------------------------
+; Llamada en C:
+;	int sys_dup2(int oldfd, int newfd);
+;-------------------------------------------------------
+dup2:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+	push rcx
+
+	mov rax, 43
+	mov rbx, rdi
+	mov rcx, rsi
+	int 80h
+
+	pop rcx
 	pop rbx
 
 	mov rsp, rbp

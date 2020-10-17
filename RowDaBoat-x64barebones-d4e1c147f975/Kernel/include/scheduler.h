@@ -75,4 +75,7 @@ int removePipe(int fd);
 // Funcion que le proporciona a pipe.c el pipe en el indice indicado
 int getPipeId(int fd);
 
+// Funcion que pisa oldfd con newfd en el proceso actual
+int sys_dup2(int oldfd, int newfd);
+
 #endif

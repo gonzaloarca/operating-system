@@ -10,15 +10,32 @@ static Pipe *first;
 static unsigned int lastPipeId = 0;
 
 int canRead(int nRead, int nWrite) {
-	return (nWrite - nRead) != 0;
+	if( nWrite == nRead )
+		return 0;
+
+	else if( nWrite > nRead)
+		return nWrite - nRead -1;
+
+	else
+		// nWrite < nRead
+		return PIPE_SIZE - (nRead - nWrite);
 }
 
-int canWrite(int nRead, int nWrite) {
-	return (nWrite - nRead) != -1 && !(nWrite == PIPE_SIZE - 1 && nRead == 0);
+// Funcion que retorna cuantos caracteres se pueden escribir en el buffer
+static int canWrite(int nRead, int nWrite) {
+	if( nWrite == nRead )
+		return 0;
+
+	else if( nWrite > nRead)
+		return PIPE_SIZE - (nWrite - nRead);
+
+	else
+		// nWrite < nRead
+		return nRead - nWrite -1;
 }
 
 static Pipe *findPipe(int pipeId) {
-	if(pipeId == -1)
+	if(pipeId == -1 || pipeId > lastPipeId)
 		return NULL;
 
 	Pipe *search = first;
@@ -31,28 +48,64 @@ static Pipe *findPipe(int pipeId) {
 		return search;
 }
 
-int sys_write(int fd, const char *str, unsigned long count) {
-	Pipe *search;
-	int written = 0, pipeId = getPipeId(fd);
-	if(pipeId == -1)
+
+int sys_read(int fd, char* out_buffer, unsigned long int count){
+	Pipe *pipe;
+	int pipeId, limit, ret = 0;
+	if((pipeId = getPipeId(fd)) == -1)
 		return -1;
 
-	if(pipeId == 0) {
+	if(pipeId == 0)
+		// siempre puedo leer de keyboard
+		return readKeyboard(out_buffer, count);
+
+	if((pipe = findPipe(pipeId)) == NULL)
+		return -1;
+
+	acquire(pipe->lock);
+	while( ret < count ){
+		while( (limit = canRead(pipe->nRead, pipe->nWrite)) == 0) {
+			release(pipe->lock);
+			sys_sleep(pipe->channelId);
+			acquire(pipe->lock);
+		}
+		for(int i = 0; i < limit ; i++){
+			out_buffer[i+ret] = pipe->buffer[(pipe->nRead + i) % PIPE_SIZE];			
+		}
+		pipe->nRead = (pipe->nRead + limit) % PIPE_SIZE;
+		ret += limit;
+	}
+	release(pipe->lock);
+
+	return ret;
+}
+
+int sys_write(int fd, const char *str, unsigned long count) {
+	Pipe *pipe;
+	int ret = 0, pipeId, limit;
+	if((pipeId = getPipeId(fd)) == -1)
+		return -1;
+
+	if(pipeId == 0) 
 		// siempre puedo escribir a la pantalla
 		return writeScreen(str, count);
+	
+	if((pipe = findPipe(pipeId)) == NULL)
+		return -1;
+
+	acquire(pipe->lock);
+
+	if((limit = canWrite(pipe->nRead, pipe->nWrite)) >0 ) {
+		for(; ret < limit  && ret < count; ret++){
+			pipe->buffer[pipe->nWrite] = str[ret];
+			pipe->nWrite = (pipe->nWrite + 1) % PIPE_SIZE;
+		}
+		sys_wakeup(pipe->channelId);
 	}
 
-	search = findPipe(pipeId);
+	release(pipe->lock);
 
-	acquire(search->lock);
-	while(canWrite(search->nRead, search->nWrite) && written < count) {
-		search->buffer[search->nWrite] = str[written];
-		search->nWrite = (search->nWrite + 1) % PIPE_SIZE;
-		written++;
-	}
-	release(search->lock);
-
-	return written;
+	return ret;
 }
 
 int sys_createPipe(int pipefd[2]) {
