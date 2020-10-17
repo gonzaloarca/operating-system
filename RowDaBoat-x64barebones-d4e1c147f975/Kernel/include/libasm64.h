@@ -10,14 +10,14 @@ unsigned int canReadKey();
 //	Devuelve la lectura del teclado (puerto 60h)
 unsigned int getScanCode();
 
-//	Devuelve la temperatura absoluta en ºC del CPU 
+//	Devuelve la temperatura absoluta en ºC del CPU
 int sys_getCPUTemp();
 
-typedef struct{
-    uint32_t secs;
-    uint32_t mins;
-    uint32_t hours;
-}TimeFormat;
+typedef struct {
+	uint32_t secs;
+	uint32_t mins;
+	uint32_t hours;
+} TimeFormat;
 
 //	Regresa el tiempo actual en un puntero a estructura
 void getTimeRTC(TimeFormat *time);
@@ -30,6 +30,9 @@ typedef struct memType {
 	uint64_t mem4;
 } memType;
 
-void sys_getMemory(memType* answer, char * address);
+void sys_getMemory(memType *answer, char *address);
+
+// Funcion que swapea el valor de un lock con otro valor dado de forma atomica
+int _xchg(int value, int *lock);
 
 #endif

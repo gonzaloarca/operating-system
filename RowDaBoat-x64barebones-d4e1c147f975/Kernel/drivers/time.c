@@ -1,5 +1,5 @@
-#include <time.h>
 #include <screenInfo.h>
+#include <time.h>
 
 static unsigned long ticks = 0;
 

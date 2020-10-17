@@ -7,10 +7,10 @@ static RegistersType reg;
 //	Funcion de ASM
 void saveRegistersASM(RegistersType *reg);
 
-void saveRegisters(){
+void saveRegisters() {
 	saveRegistersASM(&reg);
 }
 
-RegistersType *sys_getRegisters(){
+RegistersType *sys_getRegisters() {
 	return &reg;
 }

@@ -1,88 +1,96 @@
-// #include <stdint.h>
-// #include <std_io.h>
-// #include <syscall.h>
+#include <sem.h>
+#include <std_io.h>
+#include <std_num.h>
+#include <stdint.h>
 
-// // FALTA PROBAR
+// FALTA PROBAR
 
+#define TOTAL_PAIR_PROCESSES 2
+#define SEM_ID 7
 
-// uint64_t my_create_process(char * name){
-//   return 0;
-// }
+int64_t global; //shared memory
 
-// uint64_t my_sem_open(char *sem_id, uint64_t initialValue){
-//   return 0;
-// }
+void slowInc(int64_t *p, int64_t inc) {
+	int64_t aux = *p;
+	aux += inc;
+	runNext();
 
-// uint64_t my_sem_wait(char *sem_id){
-//   return 0;
-// }
+	*p = aux;
+}
 
-// uint64_t my_sem_post(char *sem_id){
-//   return 0;
-// }
+void inc(uint64_t sem, int64_t value, uint64_t N) {
+	uint64_t i;
+	Semaphore *semaph;
+	if(sem) {
+		semaph = semOpen(SEM_ID, 1);
+	}
 
-// uint64_t my_sem_close(char *sem_id){
-//   return 0;
-// }
+	if(sem && semaph == NULL) {
+		printf("ERROR OPENING SEM\n");
+		return;
+	}
 
-// #define TOTAL_PAIR_PROCESSES 2
-// #define SEM_ID "sem"
+	for(i = 0; i < N; i++) {
+		if(sem)
+			semWait(semaph);
 
-// int64_t global;  //shared memory
+		slowInc(&global, value);
 
-// void slowInc(int64_t *p, int64_t inc){
-//   int64_t aux = *p;
-//   aux += inc;
-//   yield();
-//   *p = aux;
-// }
+		if(sem)
+			semPost(semaph);
+	}
 
-// void inc(uint64_t sem, int64_t value, uint64_t N){
-//   uint64_t i;
+	if(sem)
+		semClose(semaph);
 
-//   if (sem && !my_sem_open(SEM_ID, 1)){
-//     printf("ERROR OPENING SEM\n");
-//     return;
-//   }
-  
-//   for (i = 0; i < N; i++){
-//     if (sem) my_sem_wait(SEM_ID);
-//     slowInc(&global, value);
-//     if (sem) my_sem_post(SEM_ID);
-//   }
+	printf("Final value: %d\n", global);
+	exit();
+}
 
-//   if (sem) my_sem_close(SEM_ID);
-  
-//   printf("Final value: %d\n", global);
-// }
+int incMain(int argc, char *argv[]) {
+	uint64_t sem = (uint64_t)strToPositiveInt(argv[1], NULL);
 
-// void test_sync(){
-//   uint64_t i;
+	int64_t value;
+	if(argv[2][0] == '-') {
+		value = (-1) * (int64_t)strToPositiveInt(argv[2] + 1, NULL);
+	} else {
+		value = (int64_t)strToPositiveInt(argv[2], NULL);
+	}
 
-//   global = 0;
+	uint64_t n = (uint64_t)strToPositiveInt(argv[3], NULL);
 
-//   printf("CREATING PROCESSES...(WITH SEM)\n");
+	inc(sem, value, n);
+	return 0;
+}
 
-//   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
-//     my_create_process("inc", 1, 1, 1000000);
-//     my_create_process("inc", 1, -1, 1000000);
-//   }
-// }
+void test_sync() {
+	uint64_t i;
 
-// void test_no_sync(){
-//   uint64_t i;
+	global = 0;
+	char *args1[4] = {"inc", "1", "1", "100000"};
+	char *args2[4] = {"inc", "1", "-1", "100000"};
 
-//   global = 0;
+	printf("CREATING PROCESSES...(WITH SEM)\n");
 
-//   printf("CREATING PROCESSES...(WITHOUT SEM)\n");
+	for(i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
+		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args1);
+		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args2);
+	}
+	exit();
+}
 
-//   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
-//     my_create_process("inc", 0, 1, 1000000);
-//     my_create_process("inc", 0, -1, 1000000);
-//   }
-// }
+void test_no_sync() {
+	uint64_t i;
 
-// int main(){
-//   //test_sync();
-//   return 0;
-// }
+	global = 0;
+	char *args1[4] = {"inc", "0", "1", "100"};
+	char *args2[4] = {"inc", "0", "-1", "100"};
+
+	printf("CREATING PROCESSES...(WITHOUT SEM)\n");
+
+	for(i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
+		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args1);
+		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args2);
+	}
+	exit();
+}
