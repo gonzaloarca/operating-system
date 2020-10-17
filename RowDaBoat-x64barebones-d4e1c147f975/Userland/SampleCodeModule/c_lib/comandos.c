@@ -208,6 +208,7 @@ int block(int PID) {
 #define TEST_MSG "Comandos para ejecutar tests:"
 #define TECLA_F1 "\tEjecuta el guardado de los registros, para que sean impresos con inforeg."
 #define TECLA_F2 "\tEjecuta el borrado total de la linea actual."
+#define TECLA_F3 "\tFrena la ejecucion del proceso actual en Foreground y regresa a la shell"
 #define BACKGROUND "\tAgreguelo al final de un comando para correrlo en background"
 #define CALCULATOR "\tSistema de calculadora simple"
 
@@ -320,9 +321,12 @@ void help() {
 	printf("%s\n", TECLA_F2);
 
 	changeWindowColor(0x4ad5f2);
+	printf("%s", "F3\t");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TECLA_F3);
+
+	changeWindowColor(0x4ad5f2);
 	printf("%s", " &\t");
 	changeWindowColor(0xffffff);
 	printf("%s\n", BACKGROUND);
-
-	putchar('\n');
 }

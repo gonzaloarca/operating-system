@@ -10,7 +10,9 @@
 #define RSHIFT_RELEASED (RIGHT_SHIFT + 0x80)
 #define F1 59
 #define F2 60
+#define F3 61
 #define BUFFER_SIZE 200
+#define C_KEY 46
 
 //	Tengo que guardarme si el shift se encuentra presionado
 static int lshift = 0;
@@ -34,6 +36,8 @@ void keyboard_handler() {
 
 	if(buffer[lastPos] == F1)
 		saveRegisters();
+	if(buffer[lastPos] == F3)
+		triggerShell();
 
 	// Actualizo el indice del buffer circular
 	lastPos = (lastPos + 1) % BUFFER_SIZE;
@@ -43,26 +47,21 @@ void keyboard_handler() {
 
 char asciiMap(int code) {
 	//	Seteo el estado de los shift
-	switch(code) {
-	case LEFT_SHIFT:
-		lshift = 1;
-		return 0;
-	case RIGHT_SHIFT:
-		rshift = 1;
-		return 0;
-	case CAPS_LOCK:
-		caps = !caps;
-		return 0;
-	case F2:
-		return 19;
-	case LSHIFT_RELEASED:
-		lshift = 0;
-		return 0;
-	case RSHIFT_RELEASED:
-		rshift = 0;
-		return 0;
-	case 0:
-		return 0;
+	switch(code){
+		case LEFT_SHIFT: 
+			lshift = 1; return 0;
+		case RIGHT_SHIFT: 
+			rshift = 1; return 0;
+		case CAPS_LOCK:
+			caps = !caps; return 0;
+		case F2:
+			return 19;
+		case LSHIFT_RELEASED:
+			lshift = 0; return 0;
+		case RSHIFT_RELEASED:
+			rshift = 0; return 0;
+		case 0:
+			return 0;
 	}
 
 	if(code >= 0x80)

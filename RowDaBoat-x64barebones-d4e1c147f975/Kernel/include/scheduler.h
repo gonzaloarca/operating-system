@@ -64,4 +64,7 @@ void sys_runNext();
 //Syscall para cambiar la prioridad de un proceso
 int sys_nice(unsigned int pid, unsigned int priority);
 
+//Funcion para terminar todos los procesos en Foreground y volver a la shell
+void triggerShell();
+
 #endif

@@ -17,8 +17,9 @@ static void run(char *command, int bgFlag);
 static void startCommand(int (*mainPtr)(int, const char **), char *procName, int bgFlag);
 
 void runShell() {
-	printf("\nIngrese help y presione enter para una explicacion del programa\n");
+	printf("\nIngrese help y presione enter para una explicacion del programa");
 	while(1) {
+		putchar('\n');
 		puts(symbol);
 		indexBuffer = read(inputBuffer, INPUT_BUFFER_SIZE, '\n');
 		parse();
@@ -66,8 +67,10 @@ static void run(char *command, int bgFlag) {
 		help();
 	else if(strcmp(command, "inforeg") == 0)
 		printInforeg();
-	else if(strcmp(command, "clear") == 0)
+	else if(strcmp(command, "clear") == 0){
 		clrScreen();
+		printf("\nIngrese help y presione enter para una explicacion del programa");
+	}
 	else if(strcmp(command, "printtime") == 0) {
 		printTime();
 		putchar('\n');
@@ -141,6 +144,8 @@ static void run(char *command, int bgFlag) {
 		startCommand((int (*)(int, const char **))test_sync, "test_sync", bgFlag);
 	} else if(strcmp(command, "test_no_sync") == 0) {
 		startCommand((int (*)(int, const char **))test_no_sync, "test_no_sync", bgFlag);
+	} else if(strcmp(command, "calc") == 0) {
+		startCommand((int (*)(int, const char **))calculator, "calc", 0);
 	} else
 		fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }
