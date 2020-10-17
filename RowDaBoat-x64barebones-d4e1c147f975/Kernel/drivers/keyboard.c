@@ -10,16 +10,14 @@
 #define RSHIFT_RELEASED (RIGHT_SHIFT + 0x80)
 #define F1 59
 #define F2 60
+#define F3 61
 #define BUFFER_SIZE 200
-#define LEFT_CTRL 29
-#define LCTRL_RELEASED (LEFT_CTRL+0x80)
 #define C_KEY 46
 
 //	Tengo que guardarme si el shift se encuentra presionado
 static int lshift = 0;
 static int rshift = 0;
 static int caps = 0;
-static int lctrl = 0;
 
 const char asccode[58][2] = {{0, 0}, {0, 0}, {'1', '!'}, {'2', '@'}, {'3', '#'}, {'4', '$'}, {'5', '%'}, {'6', '^'}, {'7', '&'}, {'8', '*'}, {'9', '('}, {'0', ')'}, {'-', '_'}, {'=', '+'}, {'\b', '\b'}, {'\t', '\t'}, {'q', 'Q'}, {'w', 'W'}, {'e', 'E'}, {'r', 'R'}, {'t', 'T'}, {'y', 'Y'}, {'u', 'U'}, {'i', 'I'}, {'o', 'O'}, {'p', 'P'}, {'[', '{'}, {']', '}'}, {'\n', '\n'}, {0, 0}, {'a', 'A'}, {'s', 'S'}, {'d', 'D'}, {'f', 'F'}, {'g', 'G'}, {'h', 'H'}, {'j', 'J'}, {'k', 'K'}, {'l', 'L'}, {';', ':'}, {'\'', '\"'}, {'`', '~'}, {0, 0}, {'\\', '|'}, {'z', 'Z'}, {'x', 'X'}, {'c', 'C'}, {'v', 'V'}, {'b', 'B'}, {'n', 'N'}, {'m', 'M'}, {',', '<'}, {'.', '>'}, {'/', '?'}, {0, 0}, {0, 0}, {0, 0}, {' ', ' '}};
 
@@ -38,6 +36,8 @@ void keyboard_handler() {
 
 	if(buffer[lastPos] == F1)
 		saveRegisters();
+	if(buffer[lastPos] == F3)
+		triggerShell();
 
 	// Actualizo el indice del buffer circular
 	lastPos = (lastPos + 1) % BUFFER_SIZE;
@@ -62,18 +62,10 @@ char asciiMap(int code) {
 			rshift = 0; return 0;
 		case 0:
 			return 0;
-		case LEFT_CTRL:
-			lctrl = 1; return 0;
-		case LCTRL_RELEASED:
-			lctrl = 0; return 0;
 	}
 
 	if(code >= 0x80)
 		return 0; //	No me interesan los exit codes
-
-	if(lctrl && code == C_KEY){
-		triggerShell();
-	}
 
 	//	Convierto el codigo a char fijandome el estado de los shifts y el caps lock
 	if(lshift + rshift >= 1) {
