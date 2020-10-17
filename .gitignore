@@ -17,3 +17,5 @@
 RowDaBoat-x64barebones-d4e1c147f975/run2.sh
 
 .vscode/
+
+.clang-format
