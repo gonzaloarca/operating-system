@@ -2,6 +2,7 @@
 #define SCHEDULER_H_
 
 #include <stdint.h>
+#include <pipe.h>
 
 #define STACK_SIZE 32760 // 32 KB - 8 bytes (sino el buddy system pasa a dar 64 KB). 32 KB = 32768, 16 KB = 16384
 #define MAX_QUANTUM 5
@@ -22,6 +23,7 @@ typedef struct {
     char **argv;
     unsigned int priority;                  //dónde empieza a contar sus quantums
     unsigned int quantumCounter;            //contador para saber si terminó sus quantums
+    int pipeList[MAX_PIPES];                //arreglo donde cada proceso almacenara los pipes correspondientes a cada file descriptor, -1 indica vacio
 } PCB;
 
 //  Nodo para la lista de procesos
@@ -33,10 +35,10 @@ typedef struct ProcNode
 } ProcNode;
 
 //Inicializa un proceso en background, devuelve su pid
-unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]);
+int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]);
 
 //Inicializa un proceso en foreground, devuelve su pid
-unsigned int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]);
+int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]);
 
 //Funcion wrapper de ASM para agarrar el return del main de los programas
 void _start(int *(mainPtr)(int, char const **), int argc, char const *argv[]);
@@ -64,5 +66,11 @@ void sys_runNext();
 
 //Syscall para cambiar la prioridad de un proceso
 int sys_nice(unsigned int pid, unsigned int priority);
+
+//Funcion que usa pipe.c para asignarle al proceso actual el nuevo pipe creado
+void setPipe(unsigned int newPipeId);
+
+// Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
+int removePipe(unsigned int index);
 
 #endif

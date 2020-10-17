@@ -26,7 +26,7 @@ static void copyArgs(int argc, const char ** from, char ***into);
 //Proceso idle para esperar si están todos los procesos bloqueados
 void idle();
 
-unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
+int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
     if((void *) mainPtr == NULL){
         sys_write(2,"Error en funcion a ejecutar\n", 28);
         return -1;
@@ -78,18 +78,31 @@ unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]){
         lastProc = new;
         new->next = new;
         new->previous = new;
+
+        //Solo seteo stdin y stdout
+        int auxId = sys_createPipe();
+        if(auxId == -1)
+            return -1;
+        new->pcb.pipeList[0] = auxId;
+        new->pcb.pipeList[1] = auxId;
+        for(int i = 2; i < MAX_PIPES ; i++)
+            new->pcb.pipeList[i] = -1;
+
     }else {
         new->next = lastProc->next;
         new->previous = lastProc;
         lastProc->next = new;
         new->next->previous = new;
         lastProc = new;
+
+        for(int i = 0; i < MAX_PIPES ; i++)
+            new->pcb.pipeList[i] = currentProc->pcb.pipeList[i];
     }
 
     return new->pcb.pid;
 }
 
-unsigned int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]){
+int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]){
     //Solamente el primer proceso de la lista puede iniciar a otros en foreground
     if(currentProc != NULL && currentProc != lastProc->next)
         return 0;
@@ -355,4 +368,25 @@ void idle(){
     while(1)
         _hlt();
     return;
+}
+
+// Funcion que utiliza Pipe para agregar al pcb que lo creo el nuevo pipe como file descriptor
+void setPipe(unsigned int newPipeId){
+    int i;
+    for(i = 0; currentProc->pcb.pipeList[i] != -1 ; i++);
+
+    currentProc->pcb.pipeList[i] = newPipeId;
+}
+
+// Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
+int removePipe(unsigned int index){
+    unsigned int aux = currentProc->pcb.pipeList[index];
+    if(aux == -1){
+        sys_write(2, "PIPE YA BORRADO", 15);
+        return -1;
+    }
+
+    currentProc->pcb.pipeList[index] = -1;
+
+    return aux;
 }
