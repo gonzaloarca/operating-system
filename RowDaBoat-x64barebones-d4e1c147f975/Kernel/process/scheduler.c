@@ -66,20 +66,19 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]) {
 	//  Armo el stack frame del proceso nuevo
 	new->pcb.rsp = createStackFrame(new->pcb.rsp, mainPtr, argc, (uint64_t)argv);
 
+	//Creo la tabla de file descriptors 
+	if(createFdTable(new) == -1) {
+		writeScreen("NO SE LOGRO ALOCAR STDIN Y STDOUT\n", 34);
+		sys_free(new->pcb.mem);
+		sys_free(new);
+		return -1;
+	}
+
 	//  Si la lista está vacía
 	if(lastProc == NULL) {
 		lastProc = new;
 		new->next = new;
 		new->previous = new;
-
-		//Al primer proceso hay que crearle su tabla de filedescriptors y pipes a mano, ya que
-		//el resto de los procesos la heredaran
-		if(createFdTable(new) == -1) {
-			writeScreen("NO SE LOGRO ALOCAR STDIN Y STDOUT\n", 34);
-			sys_free(new->pcb.mem);
-			sys_free(new);
-			return -1;
-		}
 
 		//Ahora creo el proceso para idle y lo saco de la lista
 		sys_startProcBg((uint64_t)idle, 0, NULL);
@@ -92,25 +91,11 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]) {
 		new->next = new;
 		new->previous = new;
 	} else {
-		ProcNode *aux;
-
 		new->next = lastProc->next;
 		new->previous = lastProc;
 		lastProc->next = new;
 		new->next->previous = new;
 		lastProc = new;
-
-		//Si todavia no se creo el idle, currentProc esta en NULL
-		if(idleProc == NULL)
-			aux = lastProc;
-		else
-			aux = currentProc;
-
-		//Copia todos los pipes del proceso que lo creo
-		for(int i = 0; i < MAX_PIPES; i++) {
-			new->pcb.pipeList[i] = aux->pcb.pipeList[i];
-			incPipeProcesses(new->pcb.pipeList[i]);
-		}
 	}
 
 	return new->pcb.pid;
@@ -232,6 +217,14 @@ static void freeResources(ProcNode **node) {
 			sys_free((*node)->pcb.argv[i]);
 
 		sys_free((*node)->pcb.argv);
+	}
+
+	//Borramos los fds que hayan quedado abiertos
+	for (size_t i = 0; i < MAX_PIPES; i++) {
+		if((*node)->pcb.pipeList[i] != NULL){
+			updatePipeDelete((*node)->pcb.pipeList[i]->pipeId, (*node)->pcb.pipeList[i]->rw);
+			sys_free((*node)->pcb.pipeList[i]);
+		}
 	}
 
 	sys_free((*node)->pcb.mem);
@@ -382,17 +375,36 @@ void idle() {
 }
 
 static int createFdTable(ProcNode *proc) {
-	int auxId[2], pipeId;
-	for(int i = 0; i < MAX_PIPES; i++)
-		proc->pcb.pipeList[i] = -1;
+	PipeEnd aux;
 
-	if((pipeId = sys_createPipe(auxId)) == -1) {
+	for(int i = 0; i < MAX_PIPES; i++)
+		proc->pcb.pipeList[i] = NULL;
+
+	//Se ponen los valores para los "pipes" de teclado y pantalla
+	//En realidad, no son pipes, si no que son hard-codeados para read()/write()
+
+	//STDIN
+	if((proc->pcb.pipeList[0] = sys_malloc(sizeof(aux))) == NULL)
+		return -1;
+	proc->pcb.pipeList[0]->pipeId = STDIN_ID;
+	proc->pcb.pipeList[0]->rw = READ;
+
+	//STDOUT
+	if((proc->pcb.pipeList[1] = sys_malloc(sizeof(aux))) == NULL) {
+		sys_free(proc->pcb.pipeList[0]);
 		return -1;
 	}
+	proc->pcb.pipeList[1]->pipeId = STDOUT_ID;
+	proc->pcb.pipeList[1]->rw = WRITE;
 
-	proc->pcb.pipeList[0] = pipeId; // stdin
-	proc->pcb.pipeList[1] = pipeId; // stdout
-	proc->pcb.pipeList[2] = pipeId; // stderror
+	//STDERR
+	if((proc->pcb.pipeList[2] = sys_malloc(sizeof(aux))) == NULL) {
+		sys_free(proc->pcb.pipeList[0]);
+		sys_free(proc->pcb.pipeList[1]);
+		return -1;
+	}
+	proc->pcb.pipeList[2]->pipeId = STDOUT_ID;
+	proc->pcb.pipeList[2]->rw = WRITE;
 
 	return 0;
 }
@@ -400,59 +412,92 @@ static int createFdTable(ProcNode *proc) {
 // Funcion que utiliza Pipe para agregar al pcb que lo creo el nuevo pipe como file descriptor, retorna por argumento el vector [ReadFD, WriteFD]
 int setPipe(unsigned int newPipeId, int pipefd[2]) {
 	ProcNode *proc;
+	PipeEnd aux;
 	if(currentProc == NULL)
 		proc = lastProc;
 	else
 		proc = currentProc;
 
 	int i;
-	for(i = 0; proc->pcb.pipeList[i] != -1 && i < MAX_PIPES; i++)
-		;
-
-	proc->pcb.pipeList[i] = newPipeId;
-	pipefd[0] = i;
-
-	for(; proc->pcb.pipeList[i] != -1 && i < MAX_PIPES; i++)
+	for(i = 0; proc->pcb.pipeList[i] != NULL && i < MAX_PIPES; i++)
 		;
 
 	if(i == MAX_PIPES)
 		return -1;
 
-	proc->pcb.pipeList[i] = newPipeId;
+	if((proc->pcb.pipeList[i] = sys_malloc(sizeof(aux))) == NULL)
+		return -1;
+
+	proc->pcb.pipeList[i]->pipeId = newPipeId;
+	proc->pcb.pipeList[i]->rw = READ;
+	pipefd[0] = i;
+
+	for(; proc->pcb.pipeList[i] != NULL && i < MAX_PIPES; i++)
+		;
+
+	if(i == MAX_PIPES)
+		return -1;
+
+	if((proc->pcb.pipeList[i] = sys_malloc(sizeof(aux))) == NULL)
+		return -1;
+
+	proc->pcb.pipeList[i]->pipeId = newPipeId;
+	proc->pcb.pipeList[i]->rw = WRITE;
 	pipefd[1] = i;
 
 	return 0;
 }
 
 // Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
-int removePipe(int fd) {
+int removePipe(int fd, char *rw) {
 	if(fd < 0 || fd > MAX_PIPES)
 		return -1;
 
-	unsigned int aux = currentProc->pcb.pipeList[fd];
-	if(aux == -1) {
-		writeScreen("PIPE YA BORRADO", 15);
+	if(currentProc->pcb.pipeList[fd] == NULL) {
 		return -1;
 	}
 
-	currentProc->pcb.pipeList[fd] = -1;
+	int aux = currentProc->pcb.pipeList[fd]->pipeId; 
+	*rw = currentProc->pcb.pipeList[fd]->rw;
+
+	sys_free(currentProc->pcb.pipeList[fd]);
+	currentProc->pcb.pipeList[fd] = NULL;
 
 	return aux;
 }
 
 // Funcion que le proporciona a pipe.c el pipe en el indice indicado
-int getPipeId(int fd) {
+PipeEnd *getPipeEnd(int fd) {
 	if(fd < 0 || fd > MAX_PIPES)
-		return -1;
+		return NULL;
 
 	return currentProc->pcb.pipeList[fd];
 }
 
-// Funcion que pisa oldfd con newfd en el proceso actual
+// Funcion que copia oldfd en newfd
 int sys_dup2(int oldfd, int newfd){
-	if(oldfd < 0 || oldfd > MAX_PIPES || newfd < 0 || newfd > MAX_PIPES )
+	if(oldfd < 0 || newfd < 0 || oldfd >= MAX_PIPES || newfd >= MAX_PIPES
+		|| currentProc->pcb.pipeList[oldfd] == NULL)
 		return -1;
 
-	currentProc->pcb.pipeList[oldfd] = currentProc->pcb.pipeList[newfd];
-	return 0;
+	if(newfd == oldfd)
+		return newfd;
+
+	PipeEnd aux;
+	//Cierro el fd que voy a sobreescribir
+	sys_closePipe(newfd);
+	//Aloco lugar para reubicar el fd
+	if ( (currentProc->pcb.pipeList[newfd] = sys_malloc(sizeof(aux))) == NULL)
+		return -1;
+
+	currentProc->pcb.pipeList[newfd]->pipeId = currentProc->pcb.pipeList[oldfd]->pipeId;
+	currentProc->pcb.pipeList[newfd]->rw = currentProc->pcb.pipeList[oldfd]->rw;
+
+	updatePipeCreate(currentProc->pcb.pipeList[newfd]->pipeId, currentProc->pcb.pipeList[newfd]->rw);
+
+	return newfd;
+}
+
+int isForeground(){
+	return currentProc == lastProc->next;
 }

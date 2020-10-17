@@ -3,42 +3,60 @@
 #include <shell.h>
 #include <evaluator.h>
 
-// int hijoLee(){
-// 	char buf[256];
-// 	read(1, buf, 13);
-// 	printf("%s",buf);
-// 	return 0;
-// }
+#define PIPE_ID 50
 
-// int hijoEscribe(){
-// 	write(0,"JULIANSICARDI", 13);
-// 	return 0;
-// }
+int hijoLee(){
+	char buf[256];
+	read(1, buf, 13);
+	printf("%s",buf);
+	return 0;
+}
 
-// void wrapperhijoLee(char *fd){
-// 	dup2(0,3);
-// 	hijoLee();
-// }
+int hijoEscribe(){
+	write(0,"JULIANSICARDI", 13);
+	return 0;
+}
 
-// void wrapperhijoEscribe(char *fd){
-// 	dup2(1,4);
-// 	hijoEscribe();
-// }
+void wrapperhijoLee(){
 
-// int test(){
-// 	int fd[2];
-// 	if(createPipe(fd) == -1)
-// 		return -1;
+	int fd[2];
+	if(openPipe(PIPE_ID, fd) == -1)
+		return;
+
+//	closePipe(fd[1]);
+	dup2(fd[0], 0);
+	printf("\nlee\n");
+
+	hijoLee();
+}
+
+void wrapperhijoEscribe(){
+
+	int fd[2];
+	if(openPipe(PIPE_ID, fd) == -1)
+		return;
+
+
+//	closePipe(fd[0]);
+	dup2(fd[1], 1);
+
+	printf("\nescribe\n");
+
+	hijoEscribe();
+}
+
+int test(){
+	printf("\ntest\n");
+
+	startProcessBg(wrapperhijoLee, 0, NULL);
+	startProcessBg(wrapperhijoEscribe, 0, NULL);
 	
-// 	startProcessBg(wrapperhijoLee, 0, NULL);
-// 	startProcessBg(wrapperhijoEscribe, 0, NULL);
-	
-// 	return 0;
-// }
+	return 0;
+}
 
 int main()
 {
-	//testPipe();
+//	test();
 	runShell();
 
 	return 0;

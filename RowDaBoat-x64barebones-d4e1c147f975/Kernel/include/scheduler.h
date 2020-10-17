@@ -23,7 +23,7 @@ typedef struct {
 	char **argv;
 	unsigned int priority;	     //dónde empieza a contar sus quantums
 	unsigned int quantumCounter; //contador para saber si terminó sus quantums
-	int pipeList[MAX_PIPES];     //arreglo donde cada proceso almacenara los pipes correspondientes a cada file descriptor, -1 indica vacio
+	PipeEnd *pipeList[MAX_PIPES];     //arreglo donde cada proceso almacenara los pipes correspondientes a cada file descriptor, -1 indica vacio
 } PCB;
 
 //  Nodo para la lista de procesos
@@ -70,12 +70,15 @@ int sys_nice(unsigned int pid, unsigned int priority);
 int setPipe(unsigned int newPipeId, int pipefd[2]);
 
 // Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
-int removePipe(int fd);
+int removePipe(int fd, char *rw);
 
 // Funcion que le proporciona a pipe.c el pipe en el indice indicado
-int getPipeId(int fd);
+PipeEnd *getPipeEnd(int fd);
 
-// Funcion que pisa oldfd con newfd en el proceso actual
+// Funcion que copia oldfd en newfd
 int sys_dup2(int oldfd, int newfd);
+
+//	Devuelve si el proceso actual es el que está en foreground
+int isForeground();
 
 #endif

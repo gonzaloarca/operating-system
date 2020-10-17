@@ -158,8 +158,8 @@ uint64_t syscall_40(uint64_t rbx) {
 
 // La syscall 41 crea un pipe para el proceso que la llama y retorna en un vector de dos posiciones los
 // respectivos indices de lectura y escritura
-uint64_t syscall_41(uint64_t rbx) {
-	return sys_createPipe((int *)rbx);
+uint64_t syscall_41(uint64_t rbx, uint64_t rcx) {
+	return sys_openPipe((unsigned int)rbx, (int *)rcx);
 }
 
 // La syscall 42 cierra para el proceso actual el pipe que se encuentra en el indice indicado por parametro
@@ -226,7 +226,7 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg) {
 
 		case 40: return syscall_40(reg->rbx);
 
-		case 41: return syscall_41(reg->rbx);
+		case 41: return syscall_41(reg->rbx, reg->rcx);
 
 		case 42: return syscall_42(reg->rbx);
 		

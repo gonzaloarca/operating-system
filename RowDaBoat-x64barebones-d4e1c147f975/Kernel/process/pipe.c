@@ -6,10 +6,12 @@
 #include <stdint.h>
 #include <window_manager.h>
 
+static Pipe *createPipe(unsigned int pipeId);
+
 static Pipe *first;
 static unsigned int lastPipeId = 0;
 
-int canRead(int nRead, int nWrite) {
+static int canRead(int nRead, int nWrite) {
 	if( nWrite == nRead )
 		return 0;
 
@@ -34,32 +36,36 @@ static int canWrite(int nRead, int nWrite) {
 		return nRead - nWrite -1;
 }
 
-static Pipe *findPipe(int pipeId) {
-	if(pipeId == -1 || pipeId > lastPipeId)
-		return NULL;
-
+static Pipe *findPipe(unsigned int pipeId) {
 	Pipe *search = first;
-	while(search->pipeId < pipeId)
+
+	while(search != NULL && search->pipeId != pipeId)
 		search = search->next;
 
-	if(search->pipeId != pipeId)
-		return NULL;
-	else
-		return search;
+	return search;
 }
-
 
 int sys_read(int fd, char* out_buffer, unsigned long int count){
 	Pipe *pipe;
-	int pipeId, limit, ret = 0;
-	if((pipeId = getPipeId(fd)) == -1)
+	PipeEnd *end;
+	int limit, ret = 0;
+	if((end = getPipeEnd(fd)) == NULL)
 		return -1;
 
-	if(pipeId == 0)
-		// siempre puedo leer de keyboard
-		return readKeyboard(out_buffer, count);
+	if(end->rw != READ)
+		return -1;
 
-	if((pipe = findPipe(pipeId)) == NULL)
+	if(end->pipeId == STDIN_ID){
+		//Si voy a leer del teclado, tiene que ser por el proceso en foreground
+		if(isForeground())
+			return readKeyboard(out_buffer, count);
+		//Si no está en foreground, lo voy a matar
+		sys_exit();
+	}
+
+	if((pipe = findPipe(end->pipeId)) == NULL)
+		return -1;
+	if(pipe->writers == 0)
 		return -1;
 
 	acquire(pipe->lock);
@@ -82,15 +88,18 @@ int sys_read(int fd, char* out_buffer, unsigned long int count){
 
 int sys_write(int fd, const char *str, unsigned long count) {
 	Pipe *pipe;
-	int ret = 0, pipeId, limit;
-	if((pipeId = getPipeId(fd)) == -1)
+	PipeEnd *end;
+	int ret = 0, limit;
+	if((end = getPipeEnd(fd)) == NULL)
 		return -1;
 
-	if(pipeId == 0) 
-		// siempre puedo escribir a la pantalla
+	if(end->rw != WRITE)
+		return -1;
+
+	if(end->pipeId == STDOUT_ID) 
 		return writeScreen(str, count);
 	
-	if((pipe = findPipe(pipeId)) == NULL)
+	if((pipe = findPipe(end->pipeId)) == NULL)
 		return -1;
 
 	acquire(pipe->lock);
@@ -108,29 +117,52 @@ int sys_write(int fd, const char *str, unsigned long count) {
 	return ret;
 }
 
-int sys_createPipe(int pipefd[2]) {
+int sys_openPipe(unsigned int pipeId, int pipefd[2]) {
+	Pipe *pipe;
+
+	//No se pueden setear STDOUT y STDIN
+	if(pipeId == STDOUT_ID || pipeId == STDIN_ID){
+		return -1;
+	}
+
+	if((pipe = findPipe(pipeId)) == NULL) {
+		if ((pipe = createPipe(pipeId)) == NULL)
+			return -1;
+	} else {
+		(pipe->readers)++;
+		(pipe->writers)++;
+	}
+
+	if(setPipe(pipeId, pipefd) == -1)
+		return -1;
+
+	return 0;
+}
+
+static Pipe *createPipe(unsigned int pipeId) {
 	Pipe *aux, *search, auxSizeOf;
 
 	if((aux = sys_malloc(sizeof(auxSizeOf))) == NULL) {
 		writeScreen("NO HAY ESPACIO DISPONIBLE PARA EL PIPE\n", 40);
-		return -1;
+		return NULL;
 	}
 
 	aux->nRead = 0;
 	aux->nWrite = 0;
 	aux->pipeId = lastPipeId++;
-	aux->processCount = 2; // el proceso que lo crea tiene acceso a escritura y lectura
+	aux->writers = 1;
+	aux->readers = 1;
 	if((aux->channelId = sys_createChannel()) == -1) {
 		writeScreen("NO HAY ESPACIO DISPONIBLE PARA EL CHANNEL DEL PIPE\n", 51);
 		sys_free(aux);
-		return -1;
+		return NULL;
 	}
 
 	if((aux->lock = createLock()) == NULL) {
 		writeScreen("NO HAY ESPACIO DISPONIBLE PARA EL LOCK DEL PIPE\n", 48);
 		sys_deleteChannel(aux->channelId);
 		sys_free(aux);
-		return -1;
+		return NULL;
 	}
 
 	aux->next = NULL;
@@ -146,25 +178,48 @@ int sys_createPipe(int pipefd[2]) {
 		search->next = aux;
 	}
 
-	return setPipe(aux->pipeId, pipefd);
+	return aux;
 }
 
 int sys_closePipe(int fd) {
-	int pipeId = removePipe(fd);
+	char rw;
+	int pipeId = removePipe(fd, &rw);
 	if(pipeId == -1) {
 		return -1;
 	}
 
+	return updatePipeDelete(pipeId, rw);
+}
+
+int updatePipeCreate(int pipeId, char rw) {
+	Pipe *search = findPipe(pipeId);
+	if(search != NULL) {
+		if (rw == READ)
+			(search->readers)++;
+		else
+			(search->writers)++;
+		return 0;
+	}
+	return -1;
+}
+
+int updatePipeDelete(int pipeId, char rw) {
 	Pipe *search = first;
 	Pipe *previous = NULL;
-	while(search->pipeId < pipeId) {
+	while(search != NULL && search->pipeId != pipeId) {
 		previous = search;
 		search = search->next;
 	}
 
 	if(search->pipeId == pipeId) {
+		//Primero modifico el contador indicado
+		if(rw == READ)
+				(search->readers)--;
+			else
+				(search->writers)--;
+
 		//Solo borro el pipe si no hay nadie afectado
-		if(search->processCount == 0) {
+		if(search->writers + search->readers == 0) {
 			if(previous == NULL) {
 				first = search->next;
 			} else {
@@ -174,22 +229,10 @@ int sys_closePipe(int fd) {
 			deleteLock(search->lock);
 			sys_deleteChannel(search->channelId);
 			sys_free(search);
-		} else
-			search->processCount--;
-
+		}
 	} else {
-		sys_write(2, "TODAVIA HAY PROCESOS AFECTADOS POR EL PIPE\n", 37);
 		return -1;
 	}
 
-	return 0;
-}
-
-int incPipeProcesses(int pipeId) {
-	Pipe *search = findPipe(pipeId);
-	if(search == NULL)
-		return -1;
-
-	search->processCount++;
 	return 0;
 }
