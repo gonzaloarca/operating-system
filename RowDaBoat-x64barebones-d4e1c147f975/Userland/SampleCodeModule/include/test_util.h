@@ -9,4 +9,3 @@ void test_prio(void);
 void test_processes(void);
 void test_sync(void);
 void test_no_sync(void);
-

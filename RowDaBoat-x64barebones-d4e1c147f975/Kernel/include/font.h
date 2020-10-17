@@ -2,21 +2,21 @@
 
 // Tamaño de la fuente default
 #define FONT_HEIGHT 14
-#define FONT_WIDTH  8
+#define FONT_WIDTH 8
 
-	/// bitmap font structure
+/// bitmap font structure
 struct bitmap_font {
-	unsigned char Width;		///< max. character width
-	unsigned char Height;		///< character height
-	unsigned short Chars;		///< number of characters in font
-	const unsigned char *Widths;	///< width of each character
-	const unsigned short *Index;	///< encoding to character index
-	const unsigned char *Bitmap;	///< bitmap of all characters
+	unsigned char Width;	     ///< max. character width
+	unsigned char Height;	     ///< character height
+	unsigned short Chars;	     ///< number of characters in font
+	const unsigned char *Widths; ///< width of each character
+	const unsigned short *Index; ///< encoding to character index
+	const unsigned char *Bitmap; ///< bitmap of all characters
 };
 
-const unsigned char * getCharMap( char c );
+const unsigned char *getCharMap(char c);
 
-	/// @{ defines to have human readable font files
+/// @{ defines to have human readable font files
 #define ________ 0x00
 #define _______X 0x01
 #define ______X_ 0x02
@@ -273,4 +273,4 @@ const unsigned char * getCharMap( char c );
 #define XXXXXX_X 0xFD
 #define XXXXXXX_ 0xFE
 #define XXXXXXXX 0xFF
-	/// @}
+/// @}

@@ -7,29 +7,28 @@
 #define MAX_QUANTUM 5
 #define DEFAULT_QUANTUM 4
 
-#define ACTIVE  1
+#define ACTIVE 1
 #define BLOCKED 0
 #define KILLED 2
 #define BLOCKED_BY_FG 3
 
 typedef struct {
-	unsigned int pid;				        //process ID del programa
-    uint64_t *mem;                          //inicio de la memoria para el stack del proceso
-    uint64_t rsp;                           //stack pointer del proceso
-    char state;                             //activo o bloqueado
-	uint64_t mainPtr;               		//puntero al inicio del programa
-    int argc;
-    char **argv;
-    unsigned int priority;                  //dónde empieza a contar sus quantums
-    unsigned int quantumCounter;            //contador para saber si terminó sus quantums
+	unsigned int pid; //process ID del programa
+	uint64_t *mem;	  //inicio de la memoria para el stack del proceso
+	uint64_t rsp;	  //stack pointer del proceso
+	char state;	  //activo o bloqueado
+	uint64_t mainPtr; //puntero al inicio del programa
+	int argc;
+	char **argv;
+	unsigned int priority;	     //dónde empieza a contar sus quantums
+	unsigned int quantumCounter; //contador para saber si terminó sus quantums
 } PCB;
 
 //  Nodo para la lista de procesos
-typedef struct ProcNode
-{
-    struct ProcNode *next;
-    struct ProcNode *previous;
-    PCB pcb;
+typedef struct ProcNode {
+	struct ProcNode *next;
+	struct ProcNode *previous;
+	PCB pcb;
 } ProcNode;
 
 //Inicializa un proceso en background, devuelve su pid

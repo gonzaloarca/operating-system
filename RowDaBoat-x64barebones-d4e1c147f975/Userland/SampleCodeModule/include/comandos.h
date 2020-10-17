@@ -3,8 +3,8 @@
 
 #define LOOP_SLEEP 7000000
 
-#include <stdint.h>
 #include <std_io.h>
+#include <stdint.h>
 #include <syscalls.h>
 
 //	Programa que imprime la hora actual
@@ -17,7 +17,7 @@ void printCPUInfo();
 void printCPUTemp();
 
 // Programa que imprime el valor de 4 direcciones de memoria a partir de la indicada por parametro
-void printmem(char* address);
+void printmem(char *address);
 
 // Programa que muestra informacion sobre los posibles usos de la terminal
 void help();
@@ -35,7 +35,7 @@ char *cpuBrand(char buffer[48]);
 void cpuModel(int buffer[2]);
 
 // Estructura en la que se retorna informacion del cpu
-typedef struct{
+typedef struct {
 	char vendor[13];
 	char brand[48];
 	int family;
@@ -60,7 +60,7 @@ int unblock(int PID);
 // Funcion que permite poner en estado bloqueadlo a un proceso
 int block(int PID);
 
-// Funcion que swapea el valor de un semaforo con otro valor dado de forma atomica 
+// Funcion que swapea el valor de un semaforo con otro valor dado de forma atomica
 unsigned int _xchg(unsigned int value, unsigned int *semValue);
 
 // Funcion que incrementa atomicamente el valor de un semaforo

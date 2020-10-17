@@ -4,8 +4,8 @@ KERNEL=kernel.bin
 
 SOURCES=$(wildcard *.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
-SOURCES_INTERRUPTS=$(wildcard interruptions/*.c)
-SOURCES_INTERRUPTS_ASM=$(wildcard interruptions/*.asm)
+SOURCES_INTERRUPTS=$(wildcard interrupts/*.c)
+SOURCES_INTERRUPTS_ASM=$(wildcard interrupts/*.asm)
 SOURCES_DRIVERS=$(wildcard drivers/*.c)
 SOURCES_DRIVERS_ASM=$(wildcard drivers/*.asm)
 SOURCES_SYSCALLS=$(wildcard syscalls/*.c)
@@ -37,7 +37,7 @@ buddy: $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM) $(OBJECTS_INTERRU
 
 
 %.o: %.c
-	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
+	$(GCC) $(GCCFLAGS) -I./include -I./interrupts -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
 
 %.o : %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
@@ -47,7 +47,7 @@ $(LOADEROBJECT):
 	$(ASM) $(ASMFLAGS) $(LOADERSRC) -o $(LOADEROBJECT)
 
 clean:
-	rm -rf asm/*.o *.o *.bin interruptions/*.o drivers/*.o syscalls/*.o memorymanager/*.o process/*.o
+	rm -rf asm/*.o *.o *.bin interrupts/*.o drivers/*.o syscalls/*.o memorymanager/*.o process/*.o
 
 .PHONY: buddy all clean
 	

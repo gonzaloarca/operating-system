@@ -1,6 +1,6 @@
 #include <registers.h>
-#include <window_manager.h>
 #include <scheduler.h>
+#include <window_manager.h>
 
 #define ZERO_EXCEPTION_ID 0
 #define UNDEFINEDINSTRUCTION_EXCEPTION_ID 6
@@ -10,7 +10,7 @@ void saveRegistersASMexcp(RegistersType *reg);
 
 static RegistersType reg; // Variable auxiliar para imprimir registros una vez lanzada una excepcion
 
-static void divideByZeroException(){
+static void divideByZeroException() {
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "DIVIDE BY ZERO EXCEPTION\n", 25);
 	printRegisters(&reg);
@@ -19,7 +19,7 @@ static void divideByZeroException(){
 	return;
 }
 
-static void undefinedInstructionException(){
+static void undefinedInstructionException() {
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "UNDEFINED INSTRUCTION EXCEPTION\n", 32);
 	printRegisters(&reg);
@@ -28,7 +28,7 @@ static void undefinedInstructionException(){
 	return;
 }
 
-static void defaultException(){
+static void defaultException() {
 	saveRegistersASMexcp(&reg);
 	sys_write(2, "UNKNOWN EXCEPTION\n", 18);
 	printRegisters(&reg);
@@ -40,16 +40,15 @@ static void defaultException(){
 // excpNumber indica la excepcion a la que se llamo
 // Este dispatcher se encargara de ejecutar la rutina de tratamiento correspondiente a la excepcion
 void exceptionDispatcher(int excpNumber) {
-	switch(excpNumber)
-	{
-		case ZERO_EXCEPTION_ID:
-			divideByZeroException();
-			break;
-		case UNDEFINEDINSTRUCTION_EXCEPTION_ID:
-			undefinedInstructionException();
-			break;
+	switch(excpNumber) {
+	case ZERO_EXCEPTION_ID:
+		divideByZeroException();
+		break;
+	case UNDEFINEDINSTRUCTION_EXCEPTION_ID:
+		undefinedInstructionException();
+		break;
 
-		default:
-			defaultException();			// Para que ante una excepcion que no se tiene una rutina especifica no se cuelge el sistema
+	default:
+		defaultException(); // Para que ante una excepcion que no se tiene una rutina especifica no se cuelge el sistema
 	}
 }

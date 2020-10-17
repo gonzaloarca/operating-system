@@ -1,6 +1,6 @@
 /* _loader.c */
-#include <stdint.h>
 #include <std_io.h>
+#include <stdint.h>
 
 extern char bss;
 extern char endOfBinary;

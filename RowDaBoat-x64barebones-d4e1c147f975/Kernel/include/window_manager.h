@@ -3,19 +3,19 @@
 
 #include <registers.h>
 #include <screenInfo.h>
-#include <video_driver.h>
 #include <stdint.h>
+#include <video_driver.h>
 
 // Estructura que utiliza el buffer de la ventana para saber el caracter y color de cierta posicion
-typedef struct{
+typedef struct {
 
 	char character;
 	int color;
 
-}charWithColor;
+} charWithColor;
 
 // Estructura que maneja el comportamiento visual de una ventana en la pantalla
-typedef struct{
+typedef struct {
 
 	// Donde arranca el canvas de la ventana
 	int xStart;
@@ -51,7 +51,7 @@ int sys_changeWindow(unsigned int newIndex);
 int sys_changeWindowColor(int rgb);
 
 // Funcion que permite la impresion de un caracter en la ventana actual
-int sys_write(unsigned int fd, const char * str, unsigned long count);
+int sys_write(unsigned int fd, const char *str, unsigned long count);
 
 //	Syscall que limpia la pantalla activa actualmente
 void sys_clrScreen();
