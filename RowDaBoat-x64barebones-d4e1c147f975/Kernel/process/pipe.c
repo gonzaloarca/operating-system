@@ -129,7 +129,7 @@ int sys_write(int fd, const char *str, unsigned long count) {
 	return ret;
 }
 
-int sys_openPipe(unsigned int pipeId, int pipefd[2]) {
+int sys_pipeOpen(unsigned int pipeId, int pipefd[2]) {
 	Pipe *pipe;
 
 	//No se pueden setear STDOUT y STDIN
@@ -196,7 +196,7 @@ static Pipe *createPipe(unsigned int pipeId) {
 	return aux;
 }
 
-int sys_closePipe(int fd) {
+int sys_pipeClose(int fd) {
 	char rw;
 	//Le quito al proceso de su PCB el pipe
 	int pipeId = removePipe(fd, &rw);
@@ -264,13 +264,13 @@ int updatePipeDelete(int pipeId, char rw) {
 	return 0;
 }
 
-void sys_listPipes(){
+void sys_listPipes() {
 	Pipe *iter = first;
 	printPipesHeader();
 
-	while(iter != NULL){
+	while(iter != NULL) {
 		printPipe(iter->pipeId, iter->isFull, iter->writers, iter->readers, iter->channelId);
-	
+
 		iter = iter->next;
 	}
 }

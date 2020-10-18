@@ -14,12 +14,12 @@ typedef struct Pipe {
 	char buffer[PIPE_SIZE];
 	unsigned int nRead;  // Indice en el cual se debe leer
 	unsigned int nWrite; // Indice en el cual se debe escribir
-	int isFull;			//	Flag necesario para saber si nRead-nWrite=0 representa lleno o vacio
+	int isFull;	     //	Flag necesario para saber si nRead-nWrite=0 representa lleno o vacio
 	unsigned int pipeId;
-	unsigned int writers; 	// cantidad de escritores del pipe que se estan usando
-	unsigned int readers;	//cantidad de lectores
-	int channelId;		   // canal de comunicacion para que los procesos de write esperen cuando el buffer esta lleno y los de read cuando esta vacio
-	int *lock;		   // lock que permite exclusion en escritura y lectura
+	unsigned int writers; // cantidad de escritores del pipe que se estan usando
+	unsigned int readers; //cantidad de lectores
+	int channelId;	      // canal de comunicacion para que los procesos de write esperen cuando el buffer esta lleno y los de read cuando esta vacio
+	int *lock;	      // lock que permite exclusion en escritura y lectura
 	struct Pipe *next;
 } Pipe;
 
@@ -28,15 +28,15 @@ typedef struct PipeEnd {
 	char rw;
 } PipeEnd;
 
-int sys_read(int fd, char* out_buffer, unsigned long int count);
+int sys_read(int fd, char *out_buffer, unsigned long int count);
 
 int sys_write(int fd, const char *str, unsigned long count);
 
 // Syscall para abrir pipes
-int sys_openPipe(unsigned int pipeId, int pipefd[2]);
+int sys_pipeOpen(unsigned int pipeId, int pipefd[2]);
 
 // Syscall de cierre de pipe del proceso actual en el indice indicado (file descriptor)
-int sys_closePipe(int fd);
+int sys_pipeClose(int fd);
 
 //	Actualiza los datos de un pipe luego de abrirlo/crearlo
 int updatePipeCreate(int pipeId, char rw);

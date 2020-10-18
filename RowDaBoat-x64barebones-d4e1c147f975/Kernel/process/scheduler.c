@@ -486,7 +486,7 @@ int sys_dup2(int oldfd, int newfd) {
 
 	PipeEnd aux;
 	//Cierro el fd que voy a sobreescribir
-	sys_closePipe(newfd);
+	sys_pipeClose(newfd);
 	//Aloco lugar para reubicar el fd
 	if((currentProc->pcb.pipeList[newfd] = sys_malloc(sizeof(aux))) == NULL)
 		return -1;

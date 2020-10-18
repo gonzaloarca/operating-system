@@ -23,8 +23,8 @@ GLOBAL deleteChannel
 GLOBAL sleep
 GLOBAL wakeup
 GLOBAL printChannelPIDs
-GLOBAL openPipe
-GLOBAL closePipe
+GLOBAL pipeOpen
+GLOBAL pipeClose
 GLOBAL dup2
 GLOBAL listPipes
 
@@ -587,15 +587,15 @@ printChannelPIDs:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL openPipe: RAX = 42
+;	SYSCALL pipeOpen: RAX = 42
 ;		La syscall 42 abre un pipe de comunicacion, 
 ;		devuelve un puntero a un vector que en la primer posicion contiene el indice del
 ;		pipe de lectura y en el segundo el de escritura, y en caso de error devuelve -1
 ;-------------------------------------------------------
 ; Llamada en C:
-;	int openPipe(unsigned int pipeId, int pipefd[2]);
+;	int pipeOpen(unsigned int pipeId, int pipefd[2]);
 ;-------------------------------------------------------
-openPipe:
+pipeOpen:
 	push rbp
 	mov rbp, rsp
 
@@ -615,14 +615,14 @@ openPipe:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL closePipe: RAX = 43
+;	SYSCALL pipeClose: RAX = 43
 ;		La syscall 43 cierra para el proceso actual el acceso al pipe que se encuentra
 ;		en el indice indicado por paramtro dentro de su vector de pipes
 ;-------------------------------------------------------
 ; Llamada en C:
-;	int closePipe(unsigned int index);
+;	int pipeClose(unsigned int index);
 ;-------------------------------------------------------
-closePipe:
+pipeClose:
 	push rbp
 	mov rbp, rsp
 

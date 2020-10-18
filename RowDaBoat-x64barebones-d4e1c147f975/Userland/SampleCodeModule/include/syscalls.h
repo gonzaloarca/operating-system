@@ -137,11 +137,11 @@ void printChannelPIDs(unsigned int channelId);
 // Syscall que abre un pipe de comunicacion,
 // Devuelve en el vector indicado por parametro los fd correspondientes al nuevo pipe,
 // donde el primero es de lectura y el segundo de escritura
-int openPipe(unsigned int pipeId, int pipefd[2]);
+int pipeOpen(unsigned int pipeId, int pipefd[2]);
 
 // Syscall cierra para el proceso actual el acceso al pipe que se encuentra
 // en el indice indicado por paramtro dentro de su vector de pipes (file descriptor)
-int closePipe(int fd);
+int pipeClose(int fd);
 
 // Syscall que copia oldfd en newfd y devuelve newfd en caso exitoso, si no -1
 int dup2(int oldfd, int newfd);

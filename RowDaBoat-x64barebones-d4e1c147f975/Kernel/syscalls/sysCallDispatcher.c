@@ -165,22 +165,22 @@ uint64_t syscall_41(uint64_t rbx) {
 // La syscall 42 crea un pipe para el proceso que la llama y retorna en un vector de dos posiciones los
 // respectivos indices de lectura y escritura
 uint64_t syscall_42(uint64_t rbx, uint64_t rcx) {
-	return sys_openPipe((unsigned int)rbx, (int *)rcx);
+	return sys_pipeOpen((unsigned int)rbx, (int *)rcx);
 }
 
 // La syscall 43 cierra para el proceso actual el pipe que se encuentra en el indice indicado por parametro
 // En caso de ser el ultimo que lo tenia abierto, se borra el pipe completamente
 uint64_t syscall_43(uint64_t rbx) {
-	return sys_closePipe((int)rbx);
+	return sys_pipeClose((int)rbx);
 }
 
 // La syscall 44 pisa el fd en rbx con el de rcx del proceso actual y actualiza la informacion de los pipes correspondientes
-uint64_t syscall_44(uint64_t rbx, uint64_t rcx){
+uint64_t syscall_44(uint64_t rbx, uint64_t rcx) {
 	return sys_dup2((int)rbx, (int)rcx);
 }
 
 // La syscall 45 imprime informacion sobre los pipes actuales
-uint64_t syscall_45(){
+uint64_t syscall_45() {
 	sys_listPipes();
 	return 0;
 }
@@ -191,63 +191,63 @@ uint64_t syscall_45(){
 uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg) {
 
 	switch(scNumber) {
-		case 3: return syscall_03(reg->rbx, reg->rcx, reg->rdx);
+	case 3: return syscall_03(reg->rbx, reg->rcx, reg->rdx);
 
-		case 4: return syscall_04(reg->rbx, reg->rcx, reg->rdx);
+	case 4: return syscall_04(reg->rbx, reg->rcx, reg->rdx);
 
-		case 7: return syscall_07();
+	case 7: return syscall_07();
 
-		case 9: return syscall_09(reg->rbx);
+	case 9: return syscall_09(reg->rbx);
 
-		case 10: return syscall_10();
+	case 10: return syscall_10();
 
-		case 12: return syscall_12(reg->rbx);
+	case 12: return syscall_12(reg->rbx);
 
-		case 13: return syscall_13();
+	case 13: return syscall_13();
 
-		case 14: return syscall_14();
+	case 14: return syscall_14();
 
-		case 25: return syscall_25(reg->rbx, reg->rcx);
+	case 25: return syscall_25(reg->rbx, reg->rcx);
 
-		case 26: return syscall_26(reg->rbx);
+	case 26: return syscall_26(reg->rbx);
 
-		case 27: return syscall_27(reg->rbx);
+	case 27: return syscall_27(reg->rbx);
 
-		case 28: return syscall_28(reg->rbx);
+	case 28: return syscall_28(reg->rbx);
 
-		case 29: return syscall_29(reg->rbx, reg->rcx, reg->rdx);
+	case 29: return syscall_29(reg->rbx, reg->rcx, reg->rdx);
 
-		case 30: return syscall_30(reg->rbx, reg->rcx, reg->rdx);
+	case 30: return syscall_30(reg->rbx, reg->rcx, reg->rdx);
 
-		case 31: return syscall_31();
+	case 31: return syscall_31();
 
-		case 32: return syscall_32();
+	case 32: return syscall_32();
 
-		case 33: return syscall_33();
+	case 33: return syscall_33();
 
-		case 34: return syscall_34(reg->rbx, reg->rcx);
+	case 34: return syscall_34(reg->rbx, reg->rcx);
 
-		case 35: return syscall_35();
+	case 35: return syscall_35();
 
-		case 36: return syscall_36(reg->rbx, reg->rcx);
+	case 36: return syscall_36(reg->rbx, reg->rcx);
 
-		case 37: return syscall_37();
+	case 37: return syscall_37();
 
-		case 38: return syscall_38(reg->rbx);
+	case 38: return syscall_38(reg->rbx);
 
-		case 39: return syscall_39(reg->rbx);
+	case 39: return syscall_39(reg->rbx);
 
-		case 40: return syscall_40(reg->rbx);
+	case 40: return syscall_40(reg->rbx);
 
-		case 41: return syscall_41(reg->rbx);
+	case 41: return syscall_41(reg->rbx);
 
-		case 42: return syscall_42(reg->rbx, reg->rcx);
+	case 42: return syscall_42(reg->rbx, reg->rcx);
 
-		case 43: return syscall_43(reg->rbx);
-		
-		case 44: return syscall_44(reg->rbx, reg->rcx);
+	case 43: return syscall_43(reg->rbx);
 
-		case 45: return syscall_45();
+	case 44: return syscall_44(reg->rbx, reg->rcx);
+
+	case 45: return syscall_45();
 	}
 
 	return 1;
