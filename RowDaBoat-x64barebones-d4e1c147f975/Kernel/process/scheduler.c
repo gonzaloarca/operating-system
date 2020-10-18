@@ -6,7 +6,7 @@
 
 static ProcNode *currentProc, *lastProc, nodeAux, *idleProc = NULL;
 static unsigned int lastPID = 1;
-static int fgFlag = 0; //Flag que indica si debe haber cambio al proceso en foreground
+static int fgFlag = 0;	  //Flag que indica si debe haber cambio al proceso en foreground
 static int shellFlag = 0; //Flag para indicar que quiero poner a la shell como proceso unico en fg
 
 //Funcion para setear los datos en el Stack Frame de un nuevo proceso
@@ -176,9 +176,9 @@ uint64_t getNextRSP(uint64_t rsp) {
 	}
 
 	if(shellFlag) {
-        returnToShell();
-        return currentProc->pcb.rsp;
-    }
+		returnToShell();
+		return currentProc->pcb.rsp;
+	}
 
 	if(fgFlag) { //  Si tengo que cambiar al proceso en foreground
 		switchForeground();
@@ -388,28 +388,28 @@ void idle() {
 	return;
 }
 
-void triggerShell(){
-    shellFlag = 1;
-    sys_runNext();
+void triggerShell() {
+	shellFlag = 1;
+	sys_runNext();
 }
 
-static void returnToShell(){
-    ProcNode *aux;
+static void returnToShell() {
+	ProcNode *aux;
 
-    currentProc->pcb.quantumCounter = currentProc->pcb.priority;
+	currentProc->pcb.quantumCounter = currentProc->pcb.priority;
 
-    currentProc = lastProc->next;       //Voy al primer proceso
-    while(currentProc->pcb.pid != 1){
-        aux = currentProc;
-        //Si no es la shell, voy al siguiente
-        currentProc = currentProc->next;
-        //Y borro el anterior (que no era la shell)
-        freeResources(&aux);
-    }
+	currentProc = lastProc->next; //Voy al primer proceso
+	while(currentProc->pcb.pid != 1) {
+		aux = currentProc;
+		//Si no es la shell, voy al siguiente
+		currentProc = currentProc->next;
+		//Y borro el anterior (que no era la shell)
+		freeResources(&aux);
+	}
 
-    currentProc->pcb.state = ACTIVE;
-    currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
-    shellFlag = 0;
+	currentProc->pcb.state = ACTIVE;
+	currentProc->pcb.quantumCounter = currentProc->pcb.priority + 1;
+	shellFlag = 0;
 }
 
 static int createFdTable(ProcNode *proc) {

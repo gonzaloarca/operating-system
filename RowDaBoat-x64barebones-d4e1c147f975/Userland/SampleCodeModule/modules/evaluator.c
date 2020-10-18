@@ -26,11 +26,9 @@ void calculator() {
 
 	while(1) {
 		puts(symbol);
-		if ( (length = read(0, buffer, BUFFER_SIZE+1)) != 0 )
-		{
-			if (length > 1)
-			{
-				buffer[--length] = 0;		//	Quito el '\n' del final
+		if((length = read(0, buffer, BUFFER_SIZE + 1)) != 0) {
+			if(length > 1) {
+				buffer[--length] = 0; //	Quito el '\n' del final
 
 				if(strcmp(buffer, "help") == 0)
 					printHelp();

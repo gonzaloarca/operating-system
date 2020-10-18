@@ -24,12 +24,9 @@ void clearBSS(void *bssAddress, uint64_t bssSize) {
 	memset(bssAddress, 0, bssSize);
 }
 
-void * getStackBase()
-{
-	return (void*)(
-		(uint64_t)&endOfKernel
-		+ PageSize * 8				//The size of the stack itself, 32KiB
-		- sizeof(PageSize)			//Begin at the top of the stack
+void *getStackBase() {
+	return (void *)((uint64_t)&endOfKernel + PageSize * 8 //The size of the stack itself, 32KiB
+			- sizeof(PageSize)		      //Begin at the top of the stack
 	);
 }
 

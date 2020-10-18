@@ -39,8 +39,8 @@ buddy: $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM) $(OBJECTS_INTERRU
 
 
 %.o: %.c
-	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
-	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
+	$(GCC) $(GCCFLAGS) -I./include -I./interrupts -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
+	$(GCC) $(GCCFLAGS) -I./include -I./interrupts -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
 
 %.o : %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
