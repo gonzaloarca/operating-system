@@ -13,6 +13,7 @@ all: $(MODULE)
 
 $(MODULE): $(SOURCES) $(OBJECTS_ASM) $(SOURCES_MODULES) $(SOURCES_LIB) $(SOURCES_TESTS)
 	$(GCC) $(GCCFLAGS) -I./include -T sampleCodeModule.ld _loader.c $(SOURCES) $(SOURCES_MODULES) $(SOURCES_LIB) $(SOURCES_TESTS) $(OBJECTS_ASM) -o ../$(MODULE)
+	$(GCC) $(GCCFLAGS) -I./include -T sampleCodeModule.ld -Wl,--oformat=elf64-x86-64 _loader.c $(SOURCES) $(SOURCES_MODULES) $(SOURCES_LIB) $(SOURCES_TESTS) $(OBJECTS_ASM) -o ../0000-sampleCodeModule.elf
 
 %.o : %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@

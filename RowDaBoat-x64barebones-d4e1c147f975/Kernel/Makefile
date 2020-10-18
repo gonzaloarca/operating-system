@@ -31,13 +31,16 @@ STATICLIBS=
 
 all: $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM) $(OBJECTS_INTERRUPTS) $(OBJECTS_INTERRUPTS_ASM) $(OBJECTS_DRIVERS) $(OBJECTS_DRIVERS_ASM) $(OBJECTS_SYSCALLS) $(OBJECTS_MEMMANAGER) $(OBJECTS_PROCESS)
 	$(LD) $(LDFLAGS) -T kernel.ld -o $(KERNEL) $^
+	$(LD) $(LDFLAGS) -T kernel.ld --oformat=elf64-x86-64 -o kernel.elf $^
 
 buddy: $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM) $(OBJECTS_INTERRUPTS) $(OBJECTS_INTERRUPTS_ASM) $(OBJECTS_DRIVERS) $(OBJECTS_DRIVERS_ASM) $(OBJECTS_SYSCALLS) $(OBJECTS_MEMBUDDY) $(OBJECTS_PROCESS)
 	$(LD) $(LDFLAGS) -T kernel.ld -o $(KERNEL) $^
+	$(LD) $(LDFLAGS) -T kernel.ld --oformat=elf64-x86-64 -o kernel.elf $^
 
 
 %.o: %.c
-	$(GCC) $(GCCFLAGS) -I./include -I./interrupts -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
+	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
+	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -I./drivers -I./syscalls -I./memorymanager -I./process -c $< -o $@
 
 %.o : %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
