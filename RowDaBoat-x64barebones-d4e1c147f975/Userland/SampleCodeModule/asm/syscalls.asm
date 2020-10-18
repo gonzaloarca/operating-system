@@ -22,6 +22,11 @@ GLOBAL createChannel
 GLOBAL deleteChannel
 GLOBAL sleep
 GLOBAL wakeup
+GLOBAL printChannelPIDs
+GLOBAL pipeOpen
+GLOBAL pipeClose
+GLOBAL dup2
+GLOBAL listPipes
 
 section .text
 
@@ -57,10 +62,10 @@ write:
 
 ;-------------------------------------------------------
 ;	SYSCALL read: RAX = 3
-;			Lee de entrada estandar en un buffer hasta que se llegue a "count" caracteres o se llegue al caracter "delim"
+;			Lee de un fd y escribe en un buffer hasta que se llegue a "count" caracteres
 ;-------------------------------------------------------
 ; Llamada en C:
-;	int read( char *buffer, unsigned long count, char delim )
+;	int read(int fd, char *buffer, unsigned long count)
 ;-------------------------------------------------------
 read:
 	push rbp
@@ -553,6 +558,126 @@ wakeup:
 	int 80h
 
 	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL printChannelPIDs: RAX = 41
+;			Funcion que se encarga de llamar a la syscall que imprime los pids bloqueados por el canal indicado
+;-------------------------------------------------------
+; Llamada en C:
+;	void printChannelPIDs(unsigned int channelId);
+;-------------------------------------------------------
+printChannelPIDs:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 41
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL pipeOpen: RAX = 42
+;		La syscall 42 abre un pipe de comunicacion, 
+;		devuelve un puntero a un vector que en la primer posicion contiene el indice del
+;		pipe de lectura y en el segundo el de escritura, y en caso de error devuelve -1
+;-------------------------------------------------------
+; Llamada en C:
+;	int pipeOpen(unsigned int pipeId, int pipefd[2]);
+;-------------------------------------------------------
+pipeOpen:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+	push rcx
+
+	mov rax, 42
+	mov rbx, rdi
+	mov rcx, rsi
+	int 80h
+
+	pop rcx
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL pipeClose: RAX = 43
+;		La syscall 43 cierra para el proceso actual el acceso al pipe que se encuentra
+;		en el indice indicado por paramtro dentro de su vector de pipes
+;-------------------------------------------------------
+; Llamada en C:
+;	int pipeClose(unsigned int index);
+;-------------------------------------------------------
+pipeClose:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 43
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL dup2: RAX = 44
+;		Syscall que pisa oldfd con newfd en el proceso actual
+;-------------------------------------------------------
+; Llamada en C:
+;	int sys_dup2(int oldfd, int newfd);
+;-------------------------------------------------------
+dup2:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+	push rcx
+
+	mov rax, 44
+	mov rbx, rdi
+	mov rcx, rsi
+	int 80h
+
+	pop rcx
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+
+;-------------------------------------------------------
+;	SYSCALL listPipes: RAX = 45
+;			Funcion que se encarga de llamar a la syscall que imprime los pipes
+;-------------------------------------------------------
+; Llamada en C:
+;	void listPipes();
+;-------------------------------------------------------
+listPipes:
+	push rbp
+	mov rbp, rsp
+
+	mov rax, 45
+	int 80h
 
 	mov rsp, rbp
 	pop rbp

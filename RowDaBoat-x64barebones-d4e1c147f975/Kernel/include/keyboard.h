@@ -25,6 +25,6 @@ void sys_emptyBuffer();
 
 //	La syscall read() pide entrada del teclado hasta que se llegue "count" caracters o al caracter "delim"
 //  La entrada se almacena en el buffer pasado por parametro
-uint64_t sys_read(char *out_buffer, unsigned long int count, char delim);
+uint64_t readKeyboard(char* out_buffer, unsigned long int count);
 
 #endif

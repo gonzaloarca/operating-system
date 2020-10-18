@@ -1,6 +1,7 @@
 #include <keyboard.h>
 #include <libasm64.h>
 #include <memManager.h>
+#include <pipe.h>
 #include <registers.h>
 #include <rtc_driver.h>
 #include <scheduler.h>
@@ -19,12 +20,12 @@ typedef struct {
 
 // La syscall 3 es read
 uint64_t syscall_03(uint64_t rbx, uint64_t rcx, uint64_t rdx) {
-	return sys_read((char *)rbx, (unsigned long int)rcx, (char)rdx);
+	return sys_read((int)rbx, (char *)rcx, (unsigned long)rdx);
 }
 
 //	La syscall 4 es write
 uint64_t syscall_04(uint64_t rbx, uint64_t rcx, uint64_t rdx) {
-	return sys_write((unsigned int)rbx, (const char *)rcx, (unsigned long)rdx);
+	return sys_write((int)rbx, (const char *)rcx, (unsigned long)rdx);
 }
 
 //	Limpia la ventana actual
@@ -155,7 +156,35 @@ uint64_t syscall_40(uint64_t rbx) {
 	return sys_wakeup((unsigned int)rbx);
 }
 
-// La
+// La syscall 41 imprime en pantalla los pids de los procesos bloqueados por el canal indicado
+uint64_t syscall_41(uint64_t rbx) {
+	sys_printChannelPIDs((unsigned int)rbx);
+	return 0;
+}
+
+// La syscall 42 crea un pipe para el proceso que la llama y retorna en un vector de dos posiciones los
+// respectivos indices de lectura y escritura
+uint64_t syscall_42(uint64_t rbx, uint64_t rcx) {
+	return sys_pipeOpen((unsigned int)rbx, (int *)rcx);
+}
+
+// La syscall 43 cierra para el proceso actual el pipe que se encuentra en el indice indicado por parametro
+// En caso de ser el ultimo que lo tenia abierto, se borra el pipe completamente
+uint64_t syscall_43(uint64_t rbx) {
+	return sys_pipeClose((int)rbx);
+}
+
+// La syscall 44 pisa el fd en rbx con el de rcx del proceso actual y actualiza la informacion de los pipes correspondientes
+uint64_t syscall_44(uint64_t rbx, uint64_t rcx) {
+	return sys_dup2((int)rbx, (int)rcx);
+}
+
+// La syscall 45 imprime informacion sobre los pipes actuales
+uint64_t syscall_45() {
+	sys_listPipes();
+	return 0;
+}
+
 //	scNumber indica a cual syscall se llamo
 //	parameters es una estructura con los parametros para la syscall
 //	Cada syscall se encarga de interpretar a la estructura
@@ -209,6 +238,16 @@ uint64_t sysCallDispatcher(uint64_t scNumber, Registers reg) {
 	case 39: return syscall_39(reg->rbx);
 
 	case 40: return syscall_40(reg->rbx);
+
+	case 41: return syscall_41(reg->rbx);
+
+	case 42: return syscall_42(reg->rbx, reg->rcx);
+
+	case 43: return syscall_43(reg->rbx);
+
+	case 44: return syscall_44(reg->rbx, reg->rcx);
+
+	case 45: return syscall_45();
 	}
 
 	return 1;

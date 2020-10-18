@@ -47,21 +47,26 @@ void keyboard_handler() {
 
 char asciiMap(int code) {
 	//	Seteo el estado de los shift
-	switch(code){
-		case LEFT_SHIFT: 
-			lshift = 1; return 0;
-		case RIGHT_SHIFT: 
-			rshift = 1; return 0;
-		case CAPS_LOCK:
-			caps = !caps; return 0;
-		case F2:
-			return 19;
-		case LSHIFT_RELEASED:
-			lshift = 0; return 0;
-		case RSHIFT_RELEASED:
-			rshift = 0; return 0;
-		case 0:
-			return 0;
+	switch(code) {
+	case LEFT_SHIFT:
+		lshift = 1;
+		return 0;
+	case RIGHT_SHIFT:
+		rshift = 1;
+		return 0;
+	case CAPS_LOCK:
+		caps = !caps;
+		return 0;
+	case F2:
+		return 19;
+	case LSHIFT_RELEASED:
+		lshift = 0;
+		return 0;
+	case RSHIFT_RELEASED:
+		rshift = 0;
+		return 0;
+	case 0:
+		return 0;
 	}
 
 	if(code >= 0x80)
@@ -102,12 +107,12 @@ char scanCodetoChar(unsigned int scan_code, unsigned int shift) {
 	return asccode[scan_code][shift];
 }
 
-uint64_t sys_read(char *out_buffer, unsigned long int count, char delim) {
+uint64_t readKeyboard(char *out_buffer, unsigned long int count) {
 	sys_emptyBuffer();
 	int i = 0;
 	char c = 0;
 	char bspace = '\b', space = ' ';
-	while(c != delim && i < count) {
+	while(c != '\n' && i < count) {
 		while((c = asciiMap(readBuffer())) == 0) {
 			sys_kill(sys_getpid(), BLOCKED);
 		} //levanto una tecla valida del buffer del teclado
@@ -137,16 +142,11 @@ uint64_t sys_read(char *out_buffer, unsigned long int count, char delim) {
 			}
 			break;
 
-		case '\n':
-			if(delim != '\n')
-				break; // para que no haga saltos de linea en un programa donde el delimitador que se usa no es el enter
-				       // si no es entra en el siguiente caso
-
 		default:
-			if(c == delim || i < count - 1) {
+			if(c == '\n' || i < count - 1) {
 				out_buffer[i++] = c;
 				sys_write(1, &c, 1);
-				if(c == delim) {
+				if(c == '\n') {
 					return i;
 				}
 			}

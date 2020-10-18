@@ -2,11 +2,11 @@
 #define SEM_H
 
 // Tipo de dato utilizado para semaforos
-typedef struct Semaphore {
-	unsigned int semId;	// id del semaforo
-	unsigned int value;	// valor del semaforo
-	unsigned int channelId; // id del canal para señales del semaforo
-	unsigned int count;	// ID del respectivo canal de comunicacion utilizado para las señales del semaforo
+typedef struct Semaphore{
+    unsigned int semId; // id del semaforo
+    unsigned int value; // valor del semaforo
+    unsigned int channelId; // id del canal para señales del semaforo
+    unsigned int count; // Procesos que tienen abierto el semaforo
 } Semaphore;
 
 // Funcion que consulta el estado de un semaforo y bloquea si llega a valer 0.
@@ -21,5 +21,8 @@ Semaphore *semOpen(unsigned int id, unsigned int init);
 
 // Funcion que cierra un semaforo y desaloca los recursos utilizados por el mismo
 int semClose(Semaphore *sem);
+
+// Funcion que imprime una lista con informacion sobre los semaforos actuales
+void listSems();
 
 #endif

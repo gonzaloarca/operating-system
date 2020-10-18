@@ -1,8 +1,10 @@
 #include <scheduler.h>
+#include <screenInfo.h>
+#include <sig.h>
 #include <stddef.h>
 #include <window_manager.h>
 
-#define SIZECOL_PROCESSLIST 16
+#define SIZECOL_LIST 16
 
 // Funcion interna que se encarga de escribir un char en pantalla
 static int printChar(char c, int rgb);
@@ -197,9 +199,6 @@ static int printChar(char c, int rgb) {
 		 currentWindow->yStart + currentWindow->lineCount * (LINE_HEIGHT) + LINE_MARGIN, rgb, BACKGROUND_COLOR);
 
 	// Cambio el caracter en el buffer
-	//*(windows[activeWindow].screenBuffer[ (windows[activeWindow].firstLine + windows[activeWindow].lineCount) % BUFFER_LINES ] +
-	//windows[activeWindow].currentLineSize) = c;
-
 	int currentLine = (currentWindow->firstLine + currentWindow->lineCount) % BUFFER_LINES;
 	int currentChar = currentWindow->currentLineSize;
 
@@ -212,14 +211,9 @@ static int printChar(char c, int rgb) {
 	return 0;
 }
 
-int sys_write(unsigned int fd, const char *str, unsigned long count) {
+int writeScreen(const char *str, unsigned long count) {
 
 	int color = windows[activeWindow].charColor;
-
-	if(fd == 2) //	STDERR
-		color = 0xFF0000;
-	else if(fd != 1) //	Solo tenemos STDOUT y STDERR
-		return 0;
 
 	for(int i = 0; i < count; i++) {
 		printChar(str[i], color);
@@ -283,83 +277,73 @@ void sys_clrScreen() {
 	}
 }
 
-void printRegisters(RegistersType *reg) {
-	char aux[10]; // maxima longitud de un longint
+int printuint64_t(uint64_t num) {
+	char aux[21]; // un uint64_t llega a ser de hasta 20 caracteres
 	int longitud;
+	longitud = uint64_tToString((uint64_t)num, aux);
+	writeScreen(aux, longitud);
 
-	longitud = uint64_tToString(reg->rax, aux);
-	sys_write(2, "RAX: ", 5);
-	sys_write(2, aux, longitud);
+	return longitud;
+}
 
-	longitud = uint64_tToString(reg->rbx, aux);
-	sys_write(2, "    RBX: ", 9);
-	sys_write(2, aux, longitud);
+void printRegisters(RegistersType *reg) {
 
-	longitud = uint64_tToString(reg->rcx, aux);
-	sys_write(2, "    RCX: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen("RAX: ", 5);
+	printuint64_t(reg->rax);
 
-	longitud = uint64_tToString(reg->rdx, aux);
-	sys_write(2, "RDX: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen("    RBX: ", 9);
+	printuint64_t(reg->rbx);
 
-	longitud = uint64_tToString(reg->rbp, aux);
-	sys_write(2, "    RBP: ", 9);
-	sys_write(2, aux, longitud);
+	writeScreen("    RCX: ", 9);
+	printuint64_t(reg->rcx);
+	writeScreen("\n", 1);
 
-	longitud = uint64_tToString(reg->rdi, aux);
-	sys_write(2, "    RDI: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen("RDX: ", 5);
+	printuint64_t(reg->rdx);
 
-	longitud = uint64_tToString(reg->rsi, aux);
-	sys_write(2, "RSI: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen("    RBP: ", 9);
+	printuint64_t(reg->rbp);
 
-	longitud = uint64_tToString(reg->r8, aux);
-	sys_write(2, "    R8: ", 8);
-	sys_write(2, aux, longitud);
+	writeScreen("    RDI: ", 9);
+	printuint64_t(reg->rdi);
+	writeScreen("\n", 1);
 
-	longitud = uint64_tToString(reg->r9, aux);
-	sys_write(2, "    R9: ", 8);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen("RSI: ", 5);
+	printuint64_t(reg->rsi);
 
-	longitud = uint64_tToString(reg->r10, aux);
-	sys_write(2, "R10: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen("    R8: ", 8);
+	printuint64_t(reg->r8);
 
-	longitud = uint64_tToString(reg->r11, aux);
-	sys_write(2, "    R11: ", 9);
-	sys_write(2, aux, longitud);
+	writeScreen("    R9: ", 8);
+	printuint64_t(reg->r9);
+	writeScreen("\n", 1);
 
-	longitud = uint64_tToString(reg->r12, aux);
-	sys_write(2, "    R12: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen("R10: ", 5);
+	printuint64_t(reg->r10);
 
-	longitud = uint64_tToString(reg->r13, aux);
-	sys_write(2, "R13: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen("    R11: ", 9);
+	printuint64_t(reg->r11);
 
-	longitud = uint64_tToString(reg->r14, aux);
-	sys_write(2, "    R14: ", 9);
-	sys_write(2, aux, longitud);
+	writeScreen("    R12: ", 9);
+	printuint64_t(reg->r12);
+	writeScreen("\n", 1);
 
-	longitud = uint64_tToString(reg->r15, aux);
-	sys_write(2, "    R15: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen("R13: ", 5);
+	printuint64_t(reg->r13);
 
-	longitud = uint64_tToString(reg->rsp, aux);
-	sys_write(2, "RSP: ", 5);
-	sys_write(2, aux, longitud);
+	writeScreen("    R14: ", 9);
+	printuint64_t(reg->r14);
 
-	longitud = uint64_tToString(reg->rip, aux);
-	sys_write(2, "    RIP: ", 9);
-	sys_write(2, aux, longitud);
-	sys_write(2, "\n", 1);
+	writeScreen("    R15: ", 9);
+	printuint64_t(reg->r15);
+	writeScreen("\n", 1);
+
+	writeScreen("RSP: ", 5);
+	printuint64_t(reg->rsp);
+
+	writeScreen("    RIP: ", 9);
+	printuint64_t(reg->rip);
+	writeScreen("\n", 1);
 }
 
 void idleSymbol() {
@@ -386,69 +370,90 @@ static void blockIdleSymbol() {
 }
 
 void printProcessListHeader() {
-	sys_write(1, "Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tBase Pointer\tForeground  \tState\n", 66);
+	writeScreen("Name\t\t\tPID \t\t\tPriority    \tRSP \t\t\tBase Pointer\tForeground  \tState\n", 66);
 }
 
 // Rellena la columna actual con espacios hasta que ocupe sus SIZECOL_PROCESSLIST caracteres
 static void fillColumn(int longitud) {
-	while(longitud < SIZECOL_PROCESSLIST) {
-		sys_write(1, " ", 1);
+	while(longitud < SIZECOL_LIST) {
+		writeScreen(" ", 1);
 		longitud++;
 	}
 }
 
 void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground, int status) {
-	char aux[10]; // maxima longitud de un longint
-	int longitud = 0;
+	int longitud = 0; // uso que este inicializado en cero para el while del else siguiente
 	if(argv == NULL) {
-		sys_write(1, "null", 4);
+		writeScreen("null", 4);
 		fillColumn(4);
 	} else { // si tiene nombre, imprime solo los primeros SIZECOL_PROCESSLIST-1 caracteres(es para mantener el formato de tabla)
-		char *aux2 = argv[0];
-		while(*aux2 != 0 && longitud < SIZECOL_PROCESSLIST) {
-			sys_write(1, aux2, 1);
-			aux2++;
+		char *aux = argv[0];
+		while(*aux != 0 && longitud < SIZECOL_LIST) {
+			writeScreen(aux, 1);
+			aux++;
 			longitud++;
 		}
 		fillColumn(longitud);
 	}
 
-	longitud = uint64_tToString((uint64_t)pid, aux);
-	sys_write(1, aux, longitud);
+	longitud = printuint64_t((uint64_t)pid);
 	fillColumn(longitud);
 
-	longitud = uint64_tToString((uint64_t)priority, aux);
-	sys_write(1, aux, longitud);
+	longitud = printuint64_t((uint64_t)priority);
 	fillColumn(longitud);
 
-	longitud = uint64_tToString(rsp, aux);
-	sys_write(1, aux, longitud);
+	longitud = printuint64_t(rsp);
 	fillColumn(longitud);
 
-	longitud = uint64_tToString(rbp, aux);
-	sys_write(1, aux, longitud);
+	longitud = printuint64_t(rbp);
 	fillColumn(longitud);
 
 	if(foreground)
-		sys_write(1, "yes", 3);
+		writeScreen("yes", 3);
 	else
-		sys_write(1, "no ", 3);
+		writeScreen("no ", 3);
 	fillColumn(3);
 
 	switch(status) {
 	case ACTIVE:
-		sys_write(1, "active", 6);
+		writeScreen("active", 6);
 		break;
 	case BLOCKED:
 	case BLOCKED_BY_FG:
-		sys_write(1, "blocked", 7);
+		writeScreen("blocked", 7);
 		break;
 	case KILLED:
-		sys_write(1, "killed", 6);
+		writeScreen("killed", 6);
 		break;
 	default:
-		sys_write(1, "unknown", 7);
+		writeScreen("unknown", 7);
 		break;
 	}
-	sys_write(1, "\n", 1);
+	writeScreen("\n", 1);
+}
+
+void printPipesHeader() {
+	writeScreen("Id  \t\t\tEstado  \t\tWriters \t\tReaders \t\tPID de procesos bloqueados\n", 64);
+}
+
+void printPipe(unsigned int pipeId, int isFull, unsigned int writers, unsigned int readers, int channelId) {
+	int longitud;
+	longitud = printuint64_t(pipeId);
+	fillColumn(longitud);
+
+	if(isFull) {
+		writeScreen("Lleno", 5);
+		fillColumn(5);
+	} else {
+		writeScreen("No lleno", 8);
+		fillColumn(8);
+	}
+
+	longitud = printuint64_t(writers);
+	fillColumn(longitud);
+	longitud = printuint64_t(readers);
+	fillColumn(longitud);
+
+	sys_printChannelPIDs(channelId);
+	writeScreen("\n", 1);
 }

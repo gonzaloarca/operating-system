@@ -1,6 +1,7 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
+#include <pipe.h>
 #include <stdint.h>
 
 #define STACK_SIZE 32760 // 32 KB - 8 bytes (sino el buddy system pasa a dar 64 KB). 32 KB = 32768, 16 KB = 16384
@@ -22,6 +23,7 @@ typedef struct {
 	char **argv;
 	unsigned int priority;	     //dónde empieza a contar sus quantums
 	unsigned int quantumCounter; //contador para saber si terminó sus quantums
+	PipeEnd *pipeList[MAX_PIPES];     //arreglo donde cada proceso almacenara los pipes correspondientes a cada file descriptor, -1 indica vacio
 } PCB;
 
 //  Nodo para la lista de procesos
@@ -32,10 +34,10 @@ typedef struct ProcNode {
 } ProcNode;
 
 //Inicializa un proceso en background, devuelve su pid
-unsigned int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]);
+int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]);
 
 //Inicializa un proceso en foreground, devuelve su pid
-unsigned int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]);
+int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]);
 
 //Funcion wrapper de ASM para agarrar el return del main de los programas
 void _start(int *(mainPtr)(int, char const **), int argc, char const *argv[]);
@@ -63,6 +65,21 @@ void sys_runNext();
 
 //Syscall para cambiar la prioridad de un proceso
 int sys_nice(unsigned int pid, unsigned int priority);
+
+//Funcion que usa pipe.c para asignarle al proceso actual el nuevo pipe creado, retorna un puntero al vector [ReadIdx, WriteIdx]
+int setPipe(unsigned int newPipeId, int pipefd[2]);
+
+// Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
+int removePipe(int fd, char *rw);
+
+// Funcion que le proporciona a pipe.c el pipe en el indice indicado
+PipeEnd *getPipeEnd(int fd);
+
+// Funcion que copia oldfd en newfd
+int sys_dup2(int oldfd, int newfd);
+
+//	Devuelve si el proceso actual es el que está en foreground
+int isForeground();
 
 //Funcion para terminar todos los procesos en Foreground y volver a la shell
 void triggerShell();

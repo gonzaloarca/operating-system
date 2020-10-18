@@ -9,4 +9,6 @@ int sys_sleep(unsigned int channelId);
 
 int sys_wakeup(unsigned int channelId);
 
+void sys_printChannelPIDs(unsigned int channelId);
+
 #endif

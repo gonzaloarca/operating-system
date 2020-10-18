@@ -9,11 +9,11 @@ static char stdinBuffer[STDIN_MAXBUFFER];
 static int stdinFirstPos = 0;
 static int stdinLastPos = 0;
 
-int getchar() {
-	if(stdinLastPos == stdinFirstPos) { //hay que ver que pasa si stdinLastPos > STDIN_BUFFERSIZE
-		stdinFirstPos = 0;
-		stdinLastPos = read(stdinBuffer, STDIN_MAXBUFFER, '\n');
-	}
+int getchar(){ 
+    if( stdinLastPos == stdinFirstPos ){ //hay que ver que pasa si stdinLastPos > STDIN_BUFFERSIZE
+        stdinFirstPos = 0;
+        stdinLastPos = read( 0, stdinBuffer, STDIN_MAXBUFFER);
+    }
 
 	return stdinBuffer[stdinFirstPos++];
 }

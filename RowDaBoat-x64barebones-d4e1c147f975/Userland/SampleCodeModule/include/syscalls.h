@@ -33,8 +33,8 @@ typedef struct RegistersType {
 // Funcion que permite escribir count caracteres de un string en el file descriptor fd
 int write(unsigned int fd, char *buffer, unsigned long count);
 
-//	Syscall para leer de entrada estandar en un buffer hasta que se llegue a "count" caracteres o se llegue al caracter "delim"
-int read(char *buffer, unsigned long int count, char delim);
+//	Syscall para leer de un fd y escribir en un buffer hasta que se llegue a "count" caracteres
+int read(int fd, char *buffer, unsigned long int count);
 
 //	Limpia la pantalla actual
 void clrScreen();
@@ -130,5 +130,23 @@ int sleep(unsigned int id);
 // Si habia alguien durmiendo, lo despierta y retorna 0. En caso de error retorna -1.
 // Recibe el id del canal correspondiente
 int wakeup(unsigned int id);
+
+// Syscall que imprime los pids de los procesos bloqueados por el canal indicado
+void printChannelPIDs(unsigned int channelId);
+
+// Syscall que abre un pipe de comunicacion,
+// Devuelve en el vector indicado por parametro los fd correspondientes al nuevo pipe,
+// donde el primero es de lectura y el segundo de escritura
+int pipeOpen(unsigned int pipeId, int pipefd[2]);
+
+// Syscall cierra para el proceso actual el acceso al pipe que se encuentra
+// en el indice indicado por paramtro dentro de su vector de pipes (file descriptor)
+int pipeClose(int fd);
+
+// Syscall que copia oldfd en newfd y devuelve newfd en caso exitoso, si no -1
+int dup2(int oldfd, int newfd);
+
+// Syscall que imprime informacion sobre los pipes actuales
+void listPipes();
 
 #endif
