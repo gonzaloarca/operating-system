@@ -120,23 +120,17 @@ int semClose(Semaphore *sem) {
 			//Si ya lo cerraron todos los procesos, saco el semaforo de la lista y elimino el canal de señales -- OJO CONDICIONES DE CORRERA CON SEMOPEN
 			if(search->sem.count == 0) {
 				deleteChannel(search->sem.channelId);
+
 				if(previous == NULL) {
 					//Este caso es cuando el id es el del primer semaforo de la lista
 					semList = search->next;
-					//Si la lista quedo vacia, libero los recursos del lock
-					if(semList == NULL) {
-						release(lock);
-					} else {
-						release(lock);
-					}
-					free(search);
-					return 0;
-
 				} else {
 					previous->next = search->next;
 				}
+
 				free(search);
 			}
+
 			release(lock);
 			return 0;
 		}
@@ -146,20 +140,20 @@ int semClose(Semaphore *sem) {
 }
 
 // Rellena la columna actual con espacios hasta que ocupe sus SIZECOL_PROCESSLIST caracteres
-static void fillColumn(int longitud){
-	while(longitud < SIZECOL_LIST){
+static void fillColumn(int longitud) {
+	while(longitud < SIZECOL_LIST) {
 		putchar(' ');
 		longitud++;
 	}
 }
 
-void listSems(){
+void listSems() {
 	SemNode *iter = semList;
 	int longitud;
-    char aux[21];
+	char aux[21];
 	printf("Id  \t\t\tValor   \t\tProcesos\t\tPID de procesos bloqueados\n");
 
-	while(iter != NULL){
+	while(iter != NULL) {
 		longitud = intToString(iter->sem.semId, aux);
 		puts(aux);
 		fillColumn(longitud);
@@ -172,7 +166,7 @@ void listSems(){
 
 		printChannelPIDs(iter->sem.channelId);
 		putchar('\n');
-		
+
 		iter = iter->next;
 	}
 }

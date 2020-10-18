@@ -64,7 +64,7 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]) {
 	new->pcb.rsp &= -8;
 
 	//  Armo el stack frame del proceso nuevo
-	new->pcb.rsp = createStackFrame(new->pcb.rsp, mainPtr, argc, (uint64_t)argv);
+	new->pcb.rsp = createStackFrame(new->pcb.rsp, mainPtr, argc, (uint64_t) new->pcb.argv);
 
 	//Creo la tabla de file descriptors
 	if(createFdTable(new) == -1) {

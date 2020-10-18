@@ -252,7 +252,6 @@ int updatePipeDelete(int pipeId, char rw) {
 				previous->next = search->next;
 			}
 			release(search->lock);
-			sys_free(search->buffer);
 			deleteLock(search->lock);
 			sys_deleteChannel(search->channelId);
 			sys_free(search);
