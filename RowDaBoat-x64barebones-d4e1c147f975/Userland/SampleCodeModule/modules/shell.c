@@ -97,6 +97,10 @@ static void run(char *command, int bgFlag) {
 		printMemStatus();
 	else if(strcmp(command, "ps") == 0)
 		listProcess();
+	else if(strcmp(command, "pipe") == 0)
+		listPipes();
+	else if(strcmp(command, "sem") == 0)
+		listSems();
 	else if(strcmp("kill ", command) == 0) {
 		int pid = strToPositiveInt(command + 5, NULL);
 		if(pid == -1)

@@ -230,7 +230,6 @@ int updatePipeCreate(int pipeId, char rw) {
 
 int updatePipeDelete(int pipeId, char rw) {
 	Pipe *search = first;
-	char buff[16];
 	Pipe *previous = NULL;
 	while(search != NULL && search->pipeId != pipeId) {
 		previous = search;
@@ -263,4 +262,15 @@ int updatePipeDelete(int pipeId, char rw) {
 		return -1;
 
 	return 0;
+}
+
+void sys_listPipes(){
+	Pipe *iter = first;
+	printPipesHeader();
+
+	while(iter != NULL){
+		printPipe(iter->pipeId, iter->isFull, iter->writers, iter->readers, iter->channelId);
+	
+		iter = iter->next;
+	}
 }

@@ -149,10 +149,8 @@ int sys_sleep(unsigned int channelId){
 
 int sys_wakeup(unsigned int channelId){
     ChannelNodeHeader *channel;
-    if((channel = findChannel(channelId)) == NULL){
-        sys_write(2,"NO EXISTE EL CANAL\n", 19);
+    if((channel = findChannel(channelId)) == NULL)
         return -1;
-    }
     
     acquire(channel->lock);
     //Si se hace un wakeup y no habia nadie esperando, se incrementa
@@ -177,4 +175,22 @@ int sys_wakeup(unsigned int channelId){
     }
     
     return 0;
+}
+
+void sys_printChannelPIDs(unsigned int channelId) {
+    ChannelNodeHeader *channel;
+    ChannelNode *iter;
+    if((channel = findChannel(channelId)) == NULL){
+        return;
+        }
+
+    iter = channel->first;
+    while( iter != NULL ) {
+    writeScreen("ASD",3);
+        printuint64_t( iter->pid );
+        writeScreen(" ", 1);
+        iter = iter->next;
+    }
+    writeScreen("AS2",3);
+
 }

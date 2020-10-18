@@ -62,10 +62,20 @@ void printRegisters(RegistersType *reg);
 // Funcion que muestra la espera de escritura en pantalla
 void idleSymbol();
 
-// Funcion que imprime en pantalla los encabezados de las columnas donde iran la informacion de los procesos
+// Funcion que imprime en pantalla los encabezados de las columnas donde se motrara la informacion de los procesos
 void printProcessListHeader();
 
 // Funcion que imprime en pantalla informacion de un proceso
 void printProcess(char *argv[], unsigned int pid, unsigned int priority, uint64_t rsp, uint64_t rbp, char foreground, int status);
+
+// Funcion que imprime en pantalla, a partir de la posicion actual, el uint64_t indicado por parametro
+int printuint64_t(uint64_t num);
+
+// Funcion que imprime en pantalla los encabezados de las columnas donde se mostrara la informacion de los pipes
+void printPipesHeader();
+
+// Funcion que imprime en pantalla informacion de un pipe
+void printPipe(unsigned int pipeId, int isFull, unsigned int writers, unsigned int readers, int channelId);
+
 
 #endif

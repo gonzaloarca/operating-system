@@ -44,4 +44,7 @@ int updatePipeCreate(int pipeId, char rw);
 //	Actualiza los datos de un pipe luego de cerrar un fd
 int updatePipeDelete(int pipeId, char rw);
 
+// Syscall que imprime informacion sobre los pipes en el momento
+void sys_listPipes();
+
 #endif

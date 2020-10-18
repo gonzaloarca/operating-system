@@ -182,6 +182,8 @@ int block(int PID){
 #define PRINTTIME_MSG 	"\tMuestra la hora actual del dispositivo."
 #define MEM_MSG			"\tMuestra el estado de la memoria disponible para alocar."
 #define PS_MSG			"\tMuestra una lista de los procesos actuales."
+#define PIPE_MSG		"\tMuestra una lista de los pipes actuales."
+#define SEM_MSG			"\tMuestra una lista de los semaforos actuales."
 #define KILL_MSG		"\tFinaliza el proceso del pid indicado por parametro."
 #define LOOP_MSG		"\tCrea un proceso que imprime su PID cada cierto tiempo mientras se ejecuta."
 #define BLOCK_MSG		"\tBloquea el proceso del PID indicado"
@@ -238,6 +240,16 @@ void help(){
 	printf("%s\n", PS_MSG);
 
 	changeWindowColor(0xffd300);
+	printf("%s\t\t ", "pipe");
+	changeWindowColor(0xffffff);
+	printf("%s\n", PIPE_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s\t\t  ", "sem");
+	changeWindowColor(0xffffff);
+	printf("%s\n", SEM_MSG);
+
+	changeWindowColor(0xffd300);
 	printf("%s PID\t ", "kill");
 	changeWindowColor(0xffffff);
 	printf("%s\n", KILL_MSG);
@@ -292,7 +304,7 @@ void help(){
 
 	putchar('\n');
 
-	printf("---------Informacion sobre teclas especiales disponibles-------\n");
+	printf("\n---------Informacion sobre teclas especiales disponibles-------\n");
 	changeWindowColor(0x4ad5f2);
 	printf("%s", "F1\t");
 	changeWindowColor(0xffffff);

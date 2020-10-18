@@ -131,6 +131,9 @@ int sleep(unsigned int id);
 // Recibe el id del canal correspondiente
 int wakeup(unsigned int id);
 
+// Syscall que imprime los pids de los procesos bloqueados por el canal indicado
+void printChannelPIDs(unsigned int channelId);
+
 // Syscall que abre un pipe de comunicacion,
 // Devuelve en el vector indicado por parametro los fd correspondientes al nuevo pipe,
 // donde el primero es de lectura y el segundo de escritura
@@ -142,5 +145,8 @@ int closePipe(int fd);
 
 // Syscall que copia oldfd en newfd y devuelve newfd en caso exitoso, si no -1
 int dup2(int oldfd, int newfd);
+
+// Syscall que imprime informacion sobre los pipes actuales
+void listPipes();
 
 #endif

@@ -22,9 +22,11 @@ GLOBAL createChannel
 GLOBAL deleteChannel
 GLOBAL sleep
 GLOBAL wakeup
+GLOBAL printChannelPIDs
 GLOBAL openPipe
 GLOBAL closePipe
 GLOBAL dup2
+GLOBAL listPipes
 
 section .text
 
@@ -562,8 +564,31 @@ wakeup:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL openPipe: RAX = 41
-;		La syscall 41 abre un pipe de comunicacion, 
+;	SYSCALL printChannelPIDs: RAX = 41
+;			Funcion que se encarga de llamar a la syscall que imprime los pids bloqueados por el canal indicado
+;-------------------------------------------------------
+; Llamada en C:
+;	void printChannelPIDs(unsigned int channelId);
+;-------------------------------------------------------
+printChannelPIDs:
+	push rbp
+	mov rbp, rsp
+
+	push rbx
+
+	mov rax, 41
+	mov rbx, rdi
+	int 80h
+
+	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+;-------------------------------------------------------
+;	SYSCALL openPipe: RAX = 42
+;		La syscall 42 abre un pipe de comunicacion, 
 ;		devuelve un puntero a un vector que en la primer posicion contiene el indice del
 ;		pipe de lectura y en el segundo el de escritura, y en caso de error devuelve -1
 ;-------------------------------------------------------
@@ -577,7 +602,7 @@ openPipe:
 	push rbx
 	push rcx
 
-	mov rax, 41
+	mov rax, 42
 	mov rbx, rdi
 	mov rcx, rsi
 	int 80h
@@ -590,8 +615,8 @@ openPipe:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL closePipe: RAX = 42
-;		La syscall 42 cierra para el proceso actual el acceso al pipe que se encuentra
+;	SYSCALL closePipe: RAX = 43
+;		La syscall 43 cierra para el proceso actual el acceso al pipe que se encuentra
 ;		en el indice indicado por paramtro dentro de su vector de pipes
 ;-------------------------------------------------------
 ; Llamada en C:
@@ -603,7 +628,7 @@ closePipe:
 
 	push rbx
 
-	mov rax, 42
+	mov rax, 43
 	mov rbx, rdi
 	int 80h
 
@@ -614,7 +639,7 @@ closePipe:
 	ret
 
 ;-------------------------------------------------------
-;	SYSCALL dup2: RAX = 43
+;	SYSCALL dup2: RAX = 44
 ;		Syscall que pisa oldfd con newfd en el proceso actual
 ;-------------------------------------------------------
 ; Llamada en C:
@@ -627,13 +652,32 @@ dup2:
 	push rbx
 	push rcx
 
-	mov rax, 43
+	mov rax, 44
 	mov rbx, rdi
 	mov rcx, rsi
 	int 80h
 
 	pop rcx
 	pop rbx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+
+;-------------------------------------------------------
+;	SYSCALL listPipes: RAX = 45
+;			Funcion que se encarga de llamar a la syscall que imprime los pipes
+;-------------------------------------------------------
+; Llamada en C:
+;	void listPipes();
+;-------------------------------------------------------
+listPipes:
+	push rbp
+	mov rbp, rsp
+
+	mov rax, 45
+	int 80h
 
 	mov rsp, rbp
 	pop rbp

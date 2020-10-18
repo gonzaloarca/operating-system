@@ -4,6 +4,8 @@
 #include <std_io.h>
 #include <syscalls.h> //para usar sleep, wakeup, malloc y free
 
+#define SIZECOL_LIST 16
+
 typedef struct SemNode {
 	Semaphore sem; //valor actual del semaforo
 	struct SemNode *next;
@@ -141,4 +143,36 @@ int semClose(Semaphore *sem) {
 	}
 	release(lock);
 	return -1;
+}
+
+// Rellena la columna actual con espacios hasta que ocupe sus SIZECOL_PROCESSLIST caracteres
+static void fillColumn(int longitud){
+	while(longitud < SIZECOL_LIST){
+		putchar(' ');
+		longitud++;
+	}
+}
+
+void listSems(){
+	SemNode *iter = semList;
+	int longitud;
+    char aux[21];
+	printf("Id  \t\t\tValor   \t\tProcesos\t\tPID de procesos bloqueados\n");
+
+	while(iter != NULL){
+		longitud = intToString(iter->sem.semId, aux);
+		puts(aux);
+		fillColumn(longitud);
+		longitud = intToString(iter->sem.value, aux);
+		puts(aux);
+		fillColumn(longitud);
+		longitud = intToString(iter->sem.count, aux);
+		puts(aux);
+		fillColumn(longitud);
+
+		printChannelPIDs(iter->sem.channelId);
+		putchar('\n');
+		
+		iter = iter->next;
+	}
 }
