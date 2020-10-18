@@ -12,10 +12,10 @@ static Pipe *first;
 
 static int canRead(Pipe *pipe) {
 	//Este caso indica que el buffer está vacio
-	if( pipe->nWrite == pipe->nRead && pipe->isFull == 0 )
+	if(pipe->nWrite == pipe->nRead && pipe->isFull == 0)
 		return 0;
 
-	if( pipe->nRead >= pipe->nWrite)
+	if(pipe->nRead >= pipe->nWrite)
 		return PIPE_SIZE - (pipe->nRead - pipe->nWrite);
 	else
 		return pipe->nWrite - pipe->nRead;
@@ -24,10 +24,10 @@ static int canRead(Pipe *pipe) {
 // Funcion que retorna cuantos caracteres se pueden escribir en el buffer
 static int canWrite(Pipe *pipe) {
 	//Veo que no esté lleno el pipe
-	if( pipe->isFull == 1 )
+	if(pipe->isFull == 1)
 		return 0;
 
-	if( pipe->nWrite >= pipe->nRead )
+	if(pipe->nWrite >= pipe->nRead)
 		return PIPE_SIZE - (pipe->nWrite - pipe->nRead);
 	else
 		return pipe->nRead - pipe->nWrite;
@@ -42,17 +42,18 @@ static Pipe *findPipe(unsigned int pipeId) {
 	return search;
 }
 
-int sys_read(int fd, char* out_buffer, unsigned long int count){
+int sys_read(int fd, char *out_buffer, unsigned long int count) {
 	Pipe *pipe;
 	PipeEnd *end;
 	int limit, ret = 0;
+
 	if((end = getPipeEnd(fd)) == NULL)
 		return -1;
 
 	if(end->rw != READ)
 		return -1;
 
-	if(end->pipeId == STDIN_ID){
+	if(end->pipeId == STDIN_ID) {
 		//Si voy a leer del teclado, tiene que ser por el proceso en foreground
 		if(isForeground())
 			return readKeyboard(out_buffer, count);
@@ -62,18 +63,23 @@ int sys_read(int fd, char* out_buffer, unsigned long int count){
 
 	if((pipe = findPipe(end->pipeId)) == NULL)
 		return -1;
-	if(pipe->writers == 0)
-		return -1;
 
 	acquire(pipe->lock);
-	while( ret < count ){
-		while( (limit = canRead(pipe)) == 0) {
+
+	if(pipe->writers == 0) {
+		release(pipe->lock);
+		return -1;
+	}
+
+	while(ret < count) {
+		while((limit = canRead(pipe)) == 0) {
 			release(pipe->lock);
 			sys_sleep(pipe->channelId);
 			acquire(pipe->lock);
 		}
-		for(int i = 0; i < limit ; i++){
-			out_buffer[i+ret] = pipe->buffer[(pipe->nRead + i) % PIPE_SIZE];			
+
+		for(int i = 0; i < limit; i++) {
+			out_buffer[i + ret] = pipe->buffer[(pipe->nRead + i) % PIPE_SIZE];
 		}
 		pipe->nRead = (pipe->nRead + limit) % PIPE_SIZE;
 		ret += limit;
@@ -94,16 +100,21 @@ int sys_write(int fd, const char *str, unsigned long count) {
 	if(end->rw != WRITE)
 		return -1;
 
-	if(end->pipeId == STDOUT_ID) 
+	if(end->pipeId == STDOUT_ID)
 		return writeScreen(str, count);
-	
+
 	if((pipe = findPipe(end->pipeId)) == NULL)
 		return -1;
 
 	acquire(pipe->lock);
 
-	if((limit = canWrite(pipe)) > 0 ) {
-		for(; ret < limit  && ret < count; ret++){
+	if(pipe->readers == 0) {
+		release(pipe->lock);
+		return -1;
+	}
+
+	if((limit = canWrite(pipe)) > 0) {
+		for(; ret < limit && ret < count; ret++) {
 			(pipe->buffer)[pipe->nWrite] = str[ret];
 			pipe->nWrite = (pipe->nWrite + 1) % PIPE_SIZE;
 		}
@@ -122,16 +133,18 @@ int sys_openPipe(unsigned int pipeId, int pipefd[2]) {
 	Pipe *pipe;
 
 	//No se pueden setear STDOUT y STDIN
-	if(pipeId == STDOUT_ID || pipeId == STDIN_ID){
+	if(pipeId == STDOUT_ID || pipeId == STDIN_ID) {
 		return -1;
 	}
 
 	if((pipe = findPipe(pipeId)) == NULL) {
-		if ((pipe = createPipe(pipeId)) == NULL)
+		if((pipe = createPipe(pipeId)) == NULL)
 			return -1;
 	} else {
+		acquire(pipe->lock);
 		(pipe->readers)++;
 		(pipe->writers)++;
+		release(pipe->lock);
 	}
 
 	if(setPipe(pipeId, pipefd) == -1)
@@ -185,21 +198,31 @@ static Pipe *createPipe(unsigned int pipeId) {
 
 int sys_closePipe(int fd) {
 	char rw;
+	//Le quito al proceso de su PCB el pipe
 	int pipeId = removePipe(fd, &rw);
 	if(pipeId == -1) {
 		return -1;
 	}
 
+	//Por como funciona nuestra logica hardcodeada con STDIN y STDOUT, estos
+	//no deberian cerrarse
+	if(pipeId == STDIN_ID || pipeId == STDOUT_ID) {
+		return 0;
+	}
+	//Se elimina el pipe o decrementa sus escritores/lectores dependiendo del caso
 	return updatePipeDelete(pipeId, rw);
 }
 
 int updatePipeCreate(int pipeId, char rw) {
-	Pipe *search = findPipe(pipeId);
-	if(search != NULL) {
-		if (rw == READ)
-			(search->readers)++;
+	Pipe *pipe = findPipe(pipeId);
+	if(pipe != NULL) {
+		acquire(pipe->lock);
+		if(rw == READ)
+			(pipe->readers)++;
 		else
-			(search->writers)++;
+			(pipe->writers)++;
+
+		release(pipe->lock);
 		return 0;
 	}
 	return -1;
@@ -207,18 +230,20 @@ int updatePipeCreate(int pipeId, char rw) {
 
 int updatePipeDelete(int pipeId, char rw) {
 	Pipe *search = first;
+	char buff[16];
 	Pipe *previous = NULL;
 	while(search != NULL && search->pipeId != pipeId) {
 		previous = search;
 		search = search->next;
 	}
 
-	if(search->pipeId == pipeId) {
+	if(search != NULL) {
 		//Primero modifico el contador indicado
+		acquire(search->lock);
 		if(rw == READ)
-				(search->readers)--;
-			else
-				(search->writers)--;
+			(search->readers)--;
+		else
+			(search->writers)--;
 
 		//Solo borro el pipe si no hay nadie afectado
 		if(search->writers + search->readers == 0) {
@@ -227,14 +252,22 @@ int updatePipeDelete(int pipeId, char rw) {
 			} else {
 				previous->next = search->next;
 			}
+			uint64_tToString((uint64_t)pipeId, buff);
+			writeScreen("mben7 buff = \n", 14);
+			writeScreen(buff, 16);
+			writeScreen(" rw = ", 6);
+			uint64_tToString((uint64_t)rw, buff);
+			writeScreen(buff, 16);
+			writeScreen("\n", 1);
+			release(search->lock);
 			sys_free(search->buffer);
 			deleteLock(search->lock);
 			sys_deleteChannel(search->channelId);
 			sys_free(search);
-		}
-	} else {
+		} else
+			release(search->lock);
+	} else
 		return -1;
-	}
 
 	return 0;
 }

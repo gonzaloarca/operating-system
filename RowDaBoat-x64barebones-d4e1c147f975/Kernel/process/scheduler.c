@@ -66,7 +66,7 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]) {
 	//  Armo el stack frame del proceso nuevo
 	new->pcb.rsp = createStackFrame(new->pcb.rsp, mainPtr, argc, (uint64_t)argv);
 
-	//Creo la tabla de file descriptors 
+	//Creo la tabla de file descriptors
 	if(createFdTable(new) == -1) {
 		writeScreen("NO SE LOGRO ALOCAR STDIN Y STDOUT\n", 34);
 		sys_free(new->pcb.mem);
@@ -220,9 +220,11 @@ static void freeResources(ProcNode **node) {
 	}
 
 	//Borramos los fds que hayan quedado abiertos
-	for (size_t i = 0; i < MAX_PIPES; i++) {
-		if((*node)->pcb.pipeList[i] != NULL){
-			updatePipeDelete((*node)->pcb.pipeList[i]->pipeId, (*node)->pcb.pipeList[i]->rw);
+	for(size_t i = 0; i < MAX_PIPES; i++) {
+		if((*node)->pcb.pipeList[i] != NULL) {
+			if((*node)->pcb.pipeList[i]->pipeId != STDIN_ID && (*node)->pcb.pipeList[i]->pipeId != STDOUT_ID) {
+				updatePipeDelete((*node)->pcb.pipeList[i]->pipeId, (*node)->pcb.pipeList[i]->rw);
+			}
 			sys_free((*node)->pcb.pipeList[i]);
 		}
 	}
@@ -457,7 +459,7 @@ int removePipe(int fd, char *rw) {
 		return -1;
 	}
 
-	int aux = currentProc->pcb.pipeList[fd]->pipeId; 
+	int aux = currentProc->pcb.pipeList[fd]->pipeId;
 	*rw = currentProc->pcb.pipeList[fd]->rw;
 
 	sys_free(currentProc->pcb.pipeList[fd]);
@@ -475,9 +477,8 @@ PipeEnd *getPipeEnd(int fd) {
 }
 
 // Funcion que copia oldfd en newfd
-int sys_dup2(int oldfd, int newfd){
-	if(oldfd < 0 || newfd < 0 || oldfd >= MAX_PIPES || newfd >= MAX_PIPES
-		|| currentProc->pcb.pipeList[oldfd] == NULL)
+int sys_dup2(int oldfd, int newfd) {
+	if(oldfd < 0 || newfd < 0 || oldfd >= MAX_PIPES || newfd >= MAX_PIPES || currentProc->pcb.pipeList[oldfd] == NULL)
 		return -1;
 
 	if(newfd == oldfd)
@@ -487,7 +488,7 @@ int sys_dup2(int oldfd, int newfd){
 	//Cierro el fd que voy a sobreescribir
 	sys_closePipe(newfd);
 	//Aloco lugar para reubicar el fd
-	if ( (currentProc->pcb.pipeList[newfd] = sys_malloc(sizeof(aux))) == NULL)
+	if((currentProc->pcb.pipeList[newfd] = sys_malloc(sizeof(aux))) == NULL)
 		return -1;
 
 	currentProc->pcb.pipeList[newfd]->pipeId = currentProc->pcb.pipeList[oldfd]->pipeId;
@@ -498,6 +499,6 @@ int sys_dup2(int oldfd, int newfd){
 	return newfd;
 }
 
-int isForeground(){
+int isForeground() {
 	return currentProc == lastProc->next;
 }

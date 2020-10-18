@@ -1,60 +1,66 @@
+#include <evaluator.h>
+#include <shell.h>
 #include <std_io.h>
 #include <syscalls.h>
-#include <shell.h>
-#include <evaluator.h>
+
+#define mbeh(type) ((unsigned char *)(&type + 1) - (unsigned char *)(&type))
 
 #define PIPE_ID 50
 
-int hijoLee(){
+int hijoLee() {
 	char buf[256];
-	read(0, buf, 13);
-	write(1, buf, 14);
+	int n = read(0, buf, 47);
+	write(1, buf, 47);
 	return 0;
 }
 
-int hijoEscribe(){
-	write(1,"JULIANSICARDI\n", 14);
+int hijoEscribe() {
+	int n = write(1, "JULIANSICARDIELBETARDITENMBEHXDMBERTELBETOSAPE\n", 47);
+	fprintf(2, "n = %d\n", n);
 	return 0;
 }
 
-void wrapperhijoLee(){
+void wrapperhijoLee() {
 	int fd[2];
-	if(openPipe(PIPE_ID, fd) == -1){
+	if(openPipe(PIPE_ID, fd) == -1) {
 		printf("NO SE PUDO ABRIR EL PIPE\n");
 		return;
 	}
 
-//	closePipe(fd[1]);
+	closePipe(fd[1]);
 	dup2(fd[0], 0);
 	hijoLee();
-	closePipe(fd[0]);
+
+	// closePipe(fd[0]);
+	while(1)
+		;
 }
 
-void wrapperhijoEscribe(){
-
+void wrapperhijoEscribe() {
 	int fd[2];
-	if(openPipe(PIPE_ID, fd) == -1){
+	if(openPipe(PIPE_ID, fd) == -1) {
 		printf("NO SE PUDO ABRIR EL PIPE\n");
 		return;
 	}
 
-//	closePipe(fd[0]);
+	closePipe(fd[0]);
 	dup2(fd[1], 1);
 	hijoEscribe();
-	closePipe(fd[1]);
+	while(1)
+		;
+	// closePipe(fd[1]);
 }
 
-int test(){
-	startProcessBg(wrapperhijoLee, 0, NULL);
+int test() {
 	startProcessBg(wrapperhijoEscribe, 0, NULL);
-	
+	startProcessBg(wrapperhijoLee, 0, NULL);
+
 	return 0;
 }
 
-int main()
-{
+int main() {
 	test();
-/*
+	/*
 	int fd[2];
 	if(openPipe(PIPE_ID, fd) == -1){
 		printf("ERROR AL ABRIR PIPE");
@@ -63,9 +69,10 @@ int main()
 	dup2(1, fd[1]);
 	write(fd[1], "TEST DE PIPE", 12);
 */
-	while(1);
+	while(1)
+		;
 
-//	runShell();
+	//	runShell();
 
 	return 0;
 }
