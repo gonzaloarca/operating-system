@@ -252,13 +252,6 @@ int updatePipeDelete(int pipeId, char rw) {
 			} else {
 				previous->next = search->next;
 			}
-			uint64_tToString((uint64_t)pipeId, buff);
-			writeScreen("mben7 buff = \n", 14);
-			writeScreen(buff, 16);
-			writeScreen(" rw = ", 6);
-			uint64_tToString((uint64_t)rw, buff);
-			writeScreen(buff, 16);
-			writeScreen("\n", 1);
 			release(search->lock);
 			sys_free(search->buffer);
 			deleteLock(search->lock);

@@ -10,18 +10,23 @@
 int hijoLee() {
 	char buf[256];
 	int n = read(0, buf, 47);
-	write(1, buf, 47);
+	write(1, buf, n);
 	return 0;
 }
 
 int hijoEscribe() {
-	int n = write(1, "JULIANSICARDIELBETARDITENMBEHXDMBERTELBETOSAPE\n", 47);
-	fprintf(2, "n = %d\n", n);
+	write(1, "JULIANSICARDIELBETARDITENMBEHXDMBERTELBETOSAPE\n", 47);
 	return 0;
 }
 
 void wrapperhijoLee() {
 	int fd[2];
+	Semaphore *mbeh;
+	if((mbeh = semOpen(PIPE_ID, 0)) == NULL) {
+		printf("NO SE PUDO ABRIR EL SEMAFORO\n");
+		return;
+	}
+
 	if(openPipe(PIPE_ID, fd) == -1) {
 		printf("NO SE PUDO ABRIR EL PIPE\n");
 		return;
@@ -29,15 +34,22 @@ void wrapperhijoLee() {
 
 	closePipe(fd[1]);
 	dup2(fd[0], 0);
+	semPost(mbeh);
+	semClose(mbeh);
 	hijoLee();
 
-	// closePipe(fd[0]);
-	while(1)
-		;
+	closePipe(fd[0]);
 }
 
 void wrapperhijoEscribe() {
 	int fd[2];
+	Semaphore *mbeh;
+
+	if((mbeh = semOpen(PIPE_ID, 0)) == NULL) {
+		printf("NO SE PUDO ABRIR EL SEMAFORO\n");
+		return;
+	}
+
 	if(openPipe(PIPE_ID, fd) == -1) {
 		printf("NO SE PUDO ABRIR EL PIPE\n");
 		return;
@@ -45,16 +57,33 @@ void wrapperhijoEscribe() {
 
 	closePipe(fd[0]);
 	dup2(fd[1], 1);
+	semPost(mbeh);
+	semClose(mbeh);
 	hijoEscribe();
-	while(1)
-		;
-	// closePipe(fd[1]);
+
+	closePipe(fd[1]);
 }
 
 int test() {
+	int aux[2];
+	openPipe(PIPE_ID, aux);
+	Semaphore *mbeh;
+
+	if((mbeh = semOpen(PIPE_ID, 0)) == NULL) {
+		printf("NO SE PUDO ABRIR EL SEMAFORO\n");
+		return;
+	}
+
+	if(openPipe(PIPE_ID, aux) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		return;
+	}
 	startProcessBg(wrapperhijoEscribe, 0, NULL);
 	startProcessBg(wrapperhijoLee, 0, NULL);
-
+	semWait(mbeh);
+	semWait(mbeh);
+	closePipe(aux[0]);
+	closePipe(aux[1]);
 	return 0;
 }
 
