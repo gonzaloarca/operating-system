@@ -88,7 +88,7 @@ int test() {
 }
 
 int main() {
-	test();
+	//test();
 	/*
 	int fd[2];
 	if(openPipe(PIPE_ID, fd) == -1){
@@ -98,10 +98,10 @@ int main() {
 	dup2(1, fd[1]);
 	write(fd[1], "TEST DE PIPE", 12);
 */
-	while(1)
-		;
+	// while(1)
+	// 	;
 
-	//	runShell();
+	runShell();
 
 	return 0;
 }

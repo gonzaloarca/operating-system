@@ -41,23 +41,29 @@ Semaphore *semOpen(unsigned int id, unsigned int init) {
 
 	//Al estar en Userland, nos puede interrumpir mientras corremos semOpen, y semOpen
 	//modifica estructuras globales, por lo tanto es una zona critica
+	printf("acquire\n");
 	acquire(lock);
-
+	printf("acquire2\n");
 	//Inicializo la lista
 	if(semList == NULL) {
 		if((semList = malloc(sizeof(aux))) == NULL) {
+			printf("release1\n");
 			release(lock);
+			deleteLock(lock);
 			return NULL;
 		}
 
 		if((channelId = createChannel()) == -1) {
 			free(semList); //Se pudo alocar la lista pero no se pudo crear el canal, por ende deshago lo creado
 			semList = NULL;
+			printf("release2\n");
 			release(lock);
+			deleteLock(lock);
 			return NULL;
 		}
 
 		createNode(semList, id, init, channelId);
+		printf("release3\n");
 		release(lock);
 		return &(semList->sem);
 	}
@@ -67,6 +73,7 @@ Semaphore *semOpen(unsigned int id, unsigned int init) {
 	for(search = semList;; search = search->next) {
 		if(search->sem.semId == id) {
 			(search->sem.count)++;
+			printf("release4\n");
 			release(lock);
 			return &(search->sem);
 		}
@@ -76,6 +83,7 @@ Semaphore *semOpen(unsigned int id, unsigned int init) {
 
 	//Si no lo encontré, creo un nuevo semaforo y un canal de comunicacion
 	if((search->next = malloc(sizeof(aux))) == NULL) {
+		printf("release5\n");
 		release(lock);
 		return NULL;
 	}
@@ -83,12 +91,14 @@ Semaphore *semOpen(unsigned int id, unsigned int init) {
 	if((channelId = createChannel()) == -1) {
 		free(search->next); //Se pudo alocar espacio para el nodo pero no se pudo crear el canal, por ende deshago lo creado
 		search->next = NULL;
+		printf("release6\n");
 		release(lock);
 		return NULL;
 	}
 
 	search = search->next;
 	createNode(search, id, init, channelId);
+	printf("release7\n");
 	release(lock);
 
 	return &(search->sem);
