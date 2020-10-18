@@ -66,13 +66,13 @@ int sys_read(int fd, char *out_buffer, unsigned long int count) {
 
 	acquire(pipe->lock);
 
-	if(pipe->writers == 0) {
-		release(pipe->lock);
-		return -1;
-	}
-
 	while(ret < count) {
 		while((limit = canRead(pipe)) == 0) {
+			//Si el pipe esta roto, y no hay nada mas para leer llegue a EOF por lo que devuelvo cero
+			if(pipe->writers == 0) {
+				release(pipe->lock);
+				return 0;
+			}
 			release(pipe->lock);
 			sys_sleep(pipe->channelId);
 			acquire(pipe->lock);

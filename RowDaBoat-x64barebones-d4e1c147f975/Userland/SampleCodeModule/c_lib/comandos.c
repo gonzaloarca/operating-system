@@ -189,6 +189,19 @@ int block(int PID) {
 	return kill(PID, BLOCKED);
 }
 
+int wc(char delim){
+	char inputBuffer;
+	int lines = 0;
+
+	while(read(0, &inputBuffer, 1) != delim){
+		if(inputBuffer == '\n')
+			lines++;
+	}
+
+	printf("Cantidad de lineas: %d\n", lines);
+	return lines;
+}
+
 // Constantes utilizadas por el comando help
 #define CLEAR_MSG "\tLimpia la pantalla."
 #define CPUINFO_MSG "\tMuestra informacion de interes sobre el cpu."
