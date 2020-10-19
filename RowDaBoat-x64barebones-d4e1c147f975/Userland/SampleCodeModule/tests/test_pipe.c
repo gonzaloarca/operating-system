@@ -1,12 +1,14 @@
 #include <std_io.h>
 #include <syscalls.h>
+#include <test_util.h>
 
 //Test de conectar tres procesos por pipes:
 // Escribe -> Mensajero -> Lee
 
 #define SEM_ID 15
-#define PIPE1_ID 50 //Este pipe conecta escribe con mensajero
-#define PIPE2_ID 51 //Este pipe conecta mensajero con lee
+#define PIPE1_ID 50	 //Este pipe conecta escribe con mensajero
+#define PIPE2_ID 51	 //Este pipe conecta mensajero con lee
+#define PIPE_FINAL_ID 52 //Pipe para que el padre imprima el mensaje final
 
 #define MENSAJE "Funcionan bien los pipes\n"
 #define LENGTH 25
@@ -26,7 +28,7 @@ int hijoEscribe() {
 }
 
 void wrapperhijoLee() {
-	int p2[2];
+	int p2[2], pf[2];
 	Semaphore *sem;
 	if((sem = semOpen(SEM_ID, 0)) == NULL) {
 		printf("NO SE PUDO ABRIR EL SEMAFORO\n");
@@ -39,9 +41,21 @@ void wrapperhijoLee() {
 		return;
 	}
 
+	if(pipeOpen(PIPE_FINAL_ID, pf) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		pipeClose(p2[0]);
+		pipeClose(p2[1]);
+		semClose(sem);
+		return;
+	}
+
 	pipeClose(p2[1]);
 	dup2(p2[0], 0);
 	pipeClose(p2[0]);
+
+	pipeClose(pf[0]);
+	dup2(pf[1], 1);
+	pipeClose(pf[1]);
 
 	semPost(sem);
 	semClose(sem);
@@ -117,7 +131,8 @@ void wrapperhijoEscribe() {
 }
 
 void test_pipe() {
-	int p1[2], p2[2];
+	int p1[2], p2[2], pf[2], len;
+	char buffer[100];
 	Semaphore *sem;
 
 	if((sem = semOpen(SEM_ID, 0)) == NULL) {
@@ -139,6 +154,16 @@ void test_pipe() {
 		return;
 	}
 
+	if(pipeOpen(PIPE_FINAL_ID, pf) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		pipeClose(p1[0]);
+		pipeClose(p1[1]);
+		pipeClose(p2[0]);
+		pipeClose(p2[1]);
+		semClose(sem);
+		return;
+	}
+
 	const char *name = "escribe";
 	startProcessBg((programStart)wrapperhijoEscribe, 1, &name);
 	name = "mensajero";
@@ -152,10 +177,15 @@ void test_pipe() {
 
 	semClose(sem);
 
+	len = read(pf[0], buffer, 100);
+	write(1, buffer, len);
+
 	pipeClose(p1[0]);
 	pipeClose(p1[1]);
 	pipeClose(p2[0]);
 	pipeClose(p2[1]);
+	pipeClose(pf[0]);
+	pipeClose(pf[1]);
 }
 
 /* Test de solo 2 procesos pipeados

@@ -1,6 +1,6 @@
-#include "test_util.h"
 #include <std_io.h>
-#include <syscall.h>
+#include <syscalls.h>
+#include <test_util.h>
 
 #define MAX_BLOCKS 128
 #define MAX_MEMORY 6710886 //Should be around 80% of memory managed by the MM

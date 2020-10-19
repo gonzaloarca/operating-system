@@ -1,6 +1,7 @@
 #include <std_io.h>
 #include <stdint.h>
-#include <syscall.h>
+#include <syscalls.h>
+#include <test_util.h>
 
 #define MINOR_WAIT 1000000 // TODO: To prevent a process from flooding the screen
 #define WAIT 10000000	   // TODO: Long enough to see theese processes beeing run at least twice
