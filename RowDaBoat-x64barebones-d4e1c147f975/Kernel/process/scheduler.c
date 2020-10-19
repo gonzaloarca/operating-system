@@ -488,7 +488,7 @@ int setPipe(unsigned int newPipeId, int pipefd[2]) {
 
 // Funcion que utiliza Pipe para sacarle al proceso actual el pipe que se encuentra en el indice indicado
 int removePipe(int fd, char *rw) {
-	if(fd < 0 || fd > MAX_PIPES)
+	if(fd < 0 || fd >= MAX_PIPES)
 		return -1;
 
 	if(currentProc->pcb.pipeList[fd] == NULL) {
@@ -506,7 +506,7 @@ int removePipe(int fd, char *rw) {
 
 // Funcion que le proporciona a pipe.c el pipe en el indice indicado
 PipeEnd *getPipeEnd(int fd) {
-	if(fd < 0 || fd > MAX_PIPES)
+	if(fd < 0 || fd >= MAX_PIPES)
 		return NULL;
 
 	return currentProc->pcb.pipeList[fd];

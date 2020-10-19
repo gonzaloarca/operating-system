@@ -47,8 +47,8 @@ void setWindows() {
 }
 
 int sys_changeWindow(unsigned int newIndex) {
-	if(newIndex < 0 || newIndex >= N)
-		return -1; 
+	if(newIndex >= N)
+		return -1;
 	else if(newIndex == activeWindow)
 		return 0; // permanece en la ventana actual
 	else {
@@ -243,12 +243,6 @@ static int uint64_tToString(uint64_t num, char *str) {
 	}
 
 	int dig = intLength(num);
-
-	if(num < 0) {
-		dig++;
-		str[0] = '-';
-		num *= -1; //porque num % n da negativo si num < 0
-	}
 
 	int i = dig;
 	str[i--] = 0;

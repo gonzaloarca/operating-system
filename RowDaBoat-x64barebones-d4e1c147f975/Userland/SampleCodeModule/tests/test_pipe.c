@@ -18,7 +18,8 @@ typedef int (*programStart)(int, const char **);
 int hijoLee() {
 	char buf[256];
 	int n = read(0, buf, LENGTH);
-	write(1, buf, n);
+	if(n > 0)
+		write(1, buf, n);
 	return 0;
 }
 
@@ -178,7 +179,8 @@ void test_pipe() {
 	semClose(sem);
 
 	len = read(pf[0], buffer, 100);
-	write(1, buffer, len);
+	if(len > 0)
+		write(1, buffer, len);
 
 	pipeClose(p1[0]);
 	pipeClose(p1[1]);

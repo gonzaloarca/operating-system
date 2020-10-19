@@ -89,8 +89,8 @@ void test_sync() {
 	}
 
 	global = 0;
-	char *args1[4] = {"inc", "1", "1", "100"};
-	char *args2[4] = {"inc", "1", "-1", "100"};
+	char *args1[4] = {"inc", "1", "1", "100000"};
+	char *args2[4] = {"inc", "1", "-1", "100000"};
 
 	printf("CREATING PROCESSES...(WITH SEM)\n");
 
@@ -100,7 +100,8 @@ void test_sync() {
 	}
 	for(int i = 0; i < TOTAL_PAIR_PROCESSES * 2; i++) {
 		len = read(fd[0], buffer, 100);
-		write(1, buffer, len);
+		if(len > 0)
+			write(1, buffer, len);
 	}
 
 	pipeClose(fd[0]);
@@ -118,8 +119,8 @@ void test_no_sync() {
 	}
 
 	global = 0;
-	char *args1[4] = {"inc", "0", "1", "100"};
-	char *args2[4] = {"inc", "0", "-1", "100"};
+	char *args1[4] = {"inc", "0", "1", "100000"};
+	char *args2[4] = {"inc", "0", "-1", "100000"};
 
 	printf("CREATING PROCESSES...(WITHOUT SEM)\n");
 
@@ -130,7 +131,8 @@ void test_no_sync() {
 
 	for(int i = 0; i < TOTAL_PAIR_PROCESSES * 2; i++) {
 		len = read(fd[0], buffer, 100);
-		write(1, buffer, len);
+		if(len > 0)
+			write(1, buffer, len);
 	}
 
 	pipeClose(fd[0]);

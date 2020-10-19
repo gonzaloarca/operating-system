@@ -3,6 +3,7 @@
 #define ANSWER 'A'
 #define ERROR_MSG "\nExpresion erronea, pruebe de vuelta\n"
 #define BUFFER_SIZE 100
+#define EPSILON 0.0001
 
 //	Funciones internas del programa
 static int main_op(char *expression, int length);
@@ -102,7 +103,7 @@ static double recursive_evaluation(char *expression, int length) {
 	case '*':
 		return izq * der;
 	case '/':
-		if(der == 0) {
+		if(der < EPSILON && der > -EPSILON) {
 			fprintf(2, ERROR_MSG);
 			error = 1;
 			return 0;

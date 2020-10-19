@@ -232,7 +232,7 @@ void filter() {
 				noVowelBuffer[j++] = inputBuffer[i];
 	}
 	noVowelBuffer[j] = 0;
-	printf(noVowelBuffer);
+	printf("%s", noVowelBuffer);
 }
 
 // Constantes utilizadas por el comando help

@@ -10,8 +10,8 @@
 
 #define MIN 2
 #define MAX 20
-#define IZQ (i - 1 + N) % N //Plato de la izquierda
-#define DER (i + 1) % N	    //Plato de la derecha
+#define IZQ (i - 1 + count) % count //Plato de la izquierda
+#define DER (i + 1) % count	    //Plato de la derecha
 
 #define PENSANDO 0
 #define BUSCANDO 1
@@ -27,7 +27,7 @@ static void dejar_cubiertos(int i);
 static void probar(int i);
 static void comer();
 
-static int N = 5;	      //Cantidad de filosofos/cubiertos
+static int count = 5;	      //Cantidad de filosofos/cubiertos
 static Semaphore *mutex;      //Semaforo para variables compartidas
 static Semaphore **cubiertos; //Semaforos para frenar si no tienen cubiertos
 static char *status;	      //Estados de los filosofos
@@ -36,12 +36,16 @@ void phylo() {
 	char c, *arguments[2], buffer[100];
 	int len, flag = 1, fd[2];
 
-	N = 5;
+	count = 5;
 
 	// Inicializo los semaforos
 	mutex = semOpen(PHYLO_MUTEX_ID, 1);
 	cubiertos = malloc(MAX * sizeof(mutex));
 	status = malloc(MAX * sizeof(c));
+
+	if(cubiertos == NULL || status == NULL)
+		return;
+
 	for(int i = 0; i < MAX; i++) {
 		cubiertos[i] = semOpen(PHYLO_SEM_BASE + i, 0);
 		status[i] = PENSANDO;
@@ -62,23 +66,23 @@ void phylo() {
 	while(flag) {
 		putchar('\n');
 		//	Creo a los filosofos
-		for(int i = 0; i < N; i++) {
+		for(int i = 0; i < count; i++) {
 			intToString(i, arguments[1]);
 			startProcessBg((programStart)filosofo, 2, (const char **)arguments);
 		}
 		//	Espero a recibir los resultados
-		for(int i = 0; i < N; i++) {
+		for(int i = 0; i < count; i++) {
 			len = read(fd[0], buffer, 100);
 			write(1, buffer, len);
 		}
 
 		len = read(0, buffer, 100);
-		if(len != 0) {
+		if(len > 0) {
 			for(int i = 0; i < len; i++) {
-				if(buffer[i] == 'a' && N < MAX)
-					N++;
-				else if(buffer[i] == 'r' && N > MIN)
-					N--;
+				if(buffer[i] == 'a' && count < MAX)
+					count++;
+				else if(buffer[i] == 'r' && count > MIN)
+					count--;
 				else if(buffer[i] == 'x') {
 					flag = 0;
 					break;
@@ -157,7 +161,7 @@ static void probar(int i) {
 static void comer() {
 	semWait(mutex);
 
-	for(int i = 0; i < N; i++) {
+	for(int i = 0; i < count; i++) {
 		if(status[i] == COMIENDO)
 			putchar('E');
 		else
