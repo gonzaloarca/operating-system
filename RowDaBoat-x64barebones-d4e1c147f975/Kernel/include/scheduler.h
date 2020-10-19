@@ -21,9 +21,9 @@ typedef struct {
 	uint64_t mainPtr; //puntero al inicio del programa
 	int argc;
 	char **argv;
-	unsigned int priority;	     //dónde empieza a contar sus quantums
-	unsigned int quantumCounter; //contador para saber si terminó sus quantums
-	PipeEnd *pipeList[MAX_PIPES];     //arreglo donde cada proceso almacenara los pipes correspondientes a cada file descriptor, -1 indica vacio
+	unsigned int priority;	      //dónde empieza a contar sus quantums
+	unsigned int quantumCounter;  //contador para saber si terminó sus quantums
+	PipeEnd *pipeList[MAX_PIPES]; //arreglo donde cada proceso almacenara los pipes correspondientes a cada file descriptor, -1 indica vacio
 } PCB;
 
 //  Nodo para la lista de procesos

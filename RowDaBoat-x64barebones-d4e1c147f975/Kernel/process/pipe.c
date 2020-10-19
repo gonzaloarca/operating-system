@@ -72,7 +72,7 @@ int sys_read(int fd, char *out_buffer, unsigned long int count) {
 			//Si el pipe esta roto, y no hay nada mas para leer llegue a EOF por lo que devuelvo cero
 			if(pipe->writers == 0) {
 				release(pipe->lock);
-				return 0;
+				return ret;
 			}
 			release(pipe->lock);
 			sys_sleep(pipe->channelId);
@@ -81,10 +81,19 @@ int sys_read(int fd, char *out_buffer, unsigned long int count) {
 
 		for(i = 0; i < limit && ret + i < count; i++) {
 			out_buffer[i + ret] = pipe->buffer[(pipe->nRead + i) % PIPE_SIZE];
+			//El enter es un delimitador de lectura
+			if(out_buffer[i + ret] == '\n') {
+				i++;
+				break;
+			}
 		}
-		pipe->nRead = (pipe->nRead + limit) % PIPE_SIZE;
+		
+		pipe->nRead = (pipe->nRead + i) % PIPE_SIZE;
 		ret += i;
 		pipe->isFull = 0;
+
+		if(out_buffer[ret - 1] == '\n')
+			break;
 	}
 	release(pipe->lock);
 
