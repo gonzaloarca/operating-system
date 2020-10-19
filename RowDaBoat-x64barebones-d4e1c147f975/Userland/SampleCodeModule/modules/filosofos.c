@@ -73,7 +73,8 @@ void phylo() {
 		//	Espero a recibir los resultados
 		for(int i = 0; i < count; i++) {
 			len = read(fd[0], buffer, 100);
-			write(1, buffer, len);
+			if(len > 0)
+				write(1, buffer, len);
 		}
 
 		len = read(0, buffer, 100);
