@@ -1,3 +1,8 @@
+/*	
+	Programa que presenta una solucion para el problema de los filosofos comensales
+	Crea N filosofos que se turnan para comer mientras que el de su lado no esté comiendo
+*/
+
 #include <sem.h>
 #include <std_io.h>
 #include <std_num.h>
@@ -14,24 +19,30 @@
 
 #define PHYLO_MUTEX_ID 99
 #define PHYLO_SEM_BASE 100
+#define PHYLO_PRINT_ID 578 //Id del semaforo para sincronizar la impresion en pantalla
 
 static int filosofo(int argc, char const *argv[]);
 static void agarrar_cubiertos(int i);
 static void dejar_cubiertos(int i);
 static void probar(int i);
 static void comer();
+static void mostrarEstados();
 
-int N = 5;	       //Cantidad de filosofos/cubiertos
-Semaphore *mutex;      //Semaforo para variables compartidas
-Semaphore **cubiertos; //Semaforos para frenar si no tienen cubiertos
-char *status;	       //Estados de los filosofos
+static int N = 5;	      //Cantidad de filosofos/cubiertos
+static Semaphore *mutex;      //Semaforo para variables compartidas
+static Semaphore **cubiertos; //Semaforos para frenar si no tienen cubiertos
+static char *status;	      //Estados de los filosofos
+static Semaphore *printSem;   //Semaforo para sincronizar la impresion a pantalla
 
 void phylo() {
 	char c, *arguments[2], buffer[100];
 	int len, flag = 1;
 
+	N = 5; //	Siempre empiezo con 5 filosofos
+
 	// Inicializo los semaforos
 	mutex = semOpen(PHYLO_MUTEX_ID, 1);
+	printSem = semOpen(PHYLO_PRINT_ID, 0);
 	cubiertos = malloc(MAX * sizeof(mutex));
 	status = malloc(MAX * sizeof(c));
 	for(int i = 0; i < MAX; i++) {
@@ -47,10 +58,17 @@ void phylo() {
 
 	while(flag) {
 		putchar('\n');
+		//	Creo los procesos filosofos
 		for(int i = 0; i < N; i++) {
 			intToString(i, arguments[1]);
 			startProcessBg((programStart)filosofo, 2, (const char **)arguments);
 		}
+		//	El padre espera a que los hijos le pidan imprimir los estados
+		for(int i = 0; i < N; i++) {
+			semWait(printSem);
+			mostrarEstados();
+		}
+		//	Espero al input del usuario
 		len = read(0, buffer, 100);
 		if(len != 0) {
 			for(int i = 0; i < len; i++) {
@@ -67,6 +85,9 @@ void phylo() {
 	}
 
 	semClose(mutex);
+	mutex = NULL;
+	semClose(printSem);
+	printSem = NULL;
 	for(int i = 0; i < MAX; i++) {
 		semClose(cubiertos[i]);
 	}
@@ -118,8 +139,8 @@ static void probar(int i) {
 	}
 }
 
-//	La funcion comer va a imprimir el estado actual de los filosofos
-static void comer() {
+//	La funcion va a imprimir el estado actual de los filosofos
+static void mostrarEstados() {
 	semWait(mutex);
 
 	for(int i = 0; i < N; i++) {
@@ -133,6 +154,13 @@ static void comer() {
 	putchar('\n');
 
 	semPost(mutex);
+}
+
+//	Cuando un filosofo come se lo indica al padre a traves de un semaforo para que se impriman los estados
+static void comer() {
+	if(printSem != NULL) {
+		semPost(printSem);
+	}
 
 	// Hacemos un runNext para que puedan comer dos filosofos a la vez
 	runNext();

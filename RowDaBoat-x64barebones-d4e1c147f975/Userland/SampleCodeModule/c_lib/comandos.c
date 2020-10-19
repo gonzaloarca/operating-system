@@ -261,6 +261,7 @@ void filter() {
 #define TECLA_F2 "\tEjecuta el borrado total de la linea actual."
 #define BACKGROUND "\tAgreguelo al final de un comando para correrlo en background."
 #define CALCULATOR "\tSistema de calculadora simple."
+#define FILOSOFOS "\tCorre una solucion para el problema de los filosofos."
 #define TECLA_F3 "\tFrena la ejecucion del proceso actual en Foreground y regresa a la shell."
 #define TECLA_F4 "\tManda un EOF por stdin."
 
@@ -360,6 +361,11 @@ void help() {
 	printf("%s\t\t ", "calc");
 	changeWindowColor(0xffffff);
 	printf("%s\n", CALCULATOR);
+
+	changeWindowColor(0xffd300);
+	printf("%s\t\t ", "phylo");
+	changeWindowColor(0xffffff);
+	printf("%s\n", FILOSOFOS);
 
 	changeWindowColor(0xffd300);
 	printf("%s", "executeZeroException");
