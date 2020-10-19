@@ -19,35 +19,38 @@
 
 #define PHYLO_MUTEX_ID 99
 #define PHYLO_SEM_BASE 100
-#define PHYLO_PRINT_ID 578 //Id del semaforo para sincronizar la impresion en pantalla
+#define PHYLO_PIPE_ID 547
 
 static int filosofo(int argc, char const *argv[]);
 static void agarrar_cubiertos(int i);
 static void dejar_cubiertos(int i);
 static void probar(int i);
 static void comer();
-static void mostrarEstados();
 
 static int N = 5;	      //Cantidad de filosofos/cubiertos
 static Semaphore *mutex;      //Semaforo para variables compartidas
 static Semaphore **cubiertos; //Semaforos para frenar si no tienen cubiertos
 static char *status;	      //Estados de los filosofos
-static Semaphore *printSem;   //Semaforo para sincronizar la impresion a pantalla
 
 void phylo() {
 	char c, *arguments[2], buffer[100];
-	int len, flag = 1;
+	int len, flag = 1, fd[2];
 
-	N = 5; //	Siempre empiezo con 5 filosofos
+	N = 5;
 
 	// Inicializo los semaforos
 	mutex = semOpen(PHYLO_MUTEX_ID, 1);
-	printSem = semOpen(PHYLO_PRINT_ID, 0);
 	cubiertos = malloc(MAX * sizeof(mutex));
 	status = malloc(MAX * sizeof(c));
 	for(int i = 0; i < MAX; i++) {
 		cubiertos[i] = semOpen(PHYLO_SEM_BASE + i, 0);
 		status[i] = PENSANDO;
+	}
+
+	//	Abro un pipe para recibir los resultados de los filosofos
+	if(pipeOpen(PHYLO_PIPE_ID, fd) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		return;
 	}
 
 	arguments[0] = "filosofo";
@@ -58,17 +61,17 @@ void phylo() {
 
 	while(flag) {
 		putchar('\n');
-		//	Creo los procesos filosofos
+		//	Creo a los filosofos
 		for(int i = 0; i < N; i++) {
 			intToString(i, arguments[1]);
 			startProcessBg((programStart)filosofo, 2, (const char **)arguments);
 		}
-		//	El padre espera a que los hijos le pidan imprimir los estados
+		//	Espero a recibir los resultados
 		for(int i = 0; i < N; i++) {
-			semWait(printSem);
-			mostrarEstados();
+			len = read(fd[0], buffer, 100);
+			write(1, buffer, len);
 		}
-		//	Espero al input del usuario
+
 		len = read(0, buffer, 100);
 		if(len != 0) {
 			for(int i = 0; i < len; i++) {
@@ -85,15 +88,14 @@ void phylo() {
 	}
 
 	semClose(mutex);
-	mutex = NULL;
-	semClose(printSem);
-	printSem = NULL;
 	for(int i = 0; i < MAX; i++) {
 		semClose(cubiertos[i]);
 	}
 	free(cubiertos);
 	free(status);
 	free(arguments[1]);
+	pipeClose(fd[0]);
+	pipeClose(fd[1]);
 
 	return;
 }
@@ -101,9 +103,23 @@ void phylo() {
 //	Accion de un filosofo
 static int filosofo(int argc, char const *argv[]) {
 	int i = strToPositiveInt((char *)argv[1], NULL);
+	int fd[2];
+
+	if(pipeOpen(PHYLO_PIPE_ID, fd) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		return 1;
+	}
+
+	dup2(fd[1], 1);
+
 	agarrar_cubiertos(i);
 	comer();
 	dejar_cubiertos(i);
+
+	pipeClose(fd[0]);
+	pipeClose(fd[1]);
+	pipeClose(1);
+
 	return 0;
 }
 
@@ -139,8 +155,8 @@ static void probar(int i) {
 	}
 }
 
-//	La funcion va a imprimir el estado actual de los filosofos
-static void mostrarEstados() {
+//	La funcion comer va a imprimir el estado actual de los filosofos
+static void comer() {
 	semWait(mutex);
 
 	for(int i = 0; i < N; i++) {
@@ -154,13 +170,6 @@ static void mostrarEstados() {
 	putchar('\n');
 
 	semPost(mutex);
-}
-
-//	Cuando un filosofo come se lo indica al padre a traves de un semaforo para que se impriman los estados
-static void comer() {
-	if(printSem != NULL) {
-		semPost(printSem);
-	}
 
 	// Hacemos un runNext para que puedan comer dos filosofos a la vez
 	runNext();
