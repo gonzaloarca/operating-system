@@ -78,7 +78,7 @@ void test_sync() {
 		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args1);
 		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args2);
 	}
-	exit();
+	return;
 }
 
 void test_no_sync() {

@@ -59,7 +59,7 @@ int strincl(char *pre, char *str) {
 		return 1;
 }
 
-int strcopy(char *str1, char *str2) {
+int strcopy(const char *str1, char *str2) {
 	if(str1 == NULL || str2 == NULL)
 		return 0;
 

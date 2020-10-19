@@ -1,5 +1,6 @@
 #include <comandos.h>
 #include <evaluator.h>
+#include <sem.h>
 #include <std_io.h>
 #include <syscalls.h>
 #include <test_util.h>
@@ -7,6 +8,7 @@
 #define INPUT_BUFFER_SIZE 100
 #define BG_SYMBOL '&'
 #define PIPE_SYMBOL '|'
+#define SHELL_PIPE_ID 9348
 
 char inputBuffer[INPUT_BUFFER_SIZE + 1];
 int indexBuffer;
@@ -17,6 +19,9 @@ static int builtIn(char *command);
 static programStart getProgram(char *command);
 static void run(programStart mainPtr, const char *procName, int bgFlag);
 static void errorMsg();
+static void startPipe(char *cmd1, char *cmd2, int bgFlag);
+static int wrapperFirstProgram(int argc, const char *argv[]);
+static int wrapperSecondProgram(int argc, const char *argv[]);
 
 void runShell() {
 	printf("\nIngrese help y presione enter para una explicacion del programa\n");
@@ -64,7 +69,12 @@ static void parse() {
 			return;
 		}
 		strcopy(inputBuffer + pipeFlag + 2, cmd2);
-		//	Aca hay que pipear los procesos
+
+		//Solamente hago el piping si ninguno era built-in
+		if(builtIn(cmd1) == 0 && builtIn(cmd2) == 0) {
+			startPipe(cmd1, cmd2, bgFlag);
+		}
+
 	} else {
 		//Primero veo si es una función built-in
 		if(builtIn(inputBuffer) == 0) {
@@ -197,4 +207,109 @@ static void run(programStart mainPtr, const char *procName, int bgFlag) {
 
 static void errorMsg() {
 	fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
+}
+
+// Esta función me inicia el pipeado de los comandos que se les pasa
+static void startPipe(char *cmd1, char *cmd2, int bgFlag) {
+	int aux[2];
+	Semaphore *sem;
+
+	if((sem = semOpen(SHELL_PIPE_ID, 0)) == NULL) {
+		printf("NO SE PUDO ABRIR EL SEMAFORO\n");
+		return;
+	}
+
+	if(pipeOpen(SHELL_PIPE_ID, aux) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		semClose(sem);
+		return;
+	}
+
+	//Corro los programas, teniendo en cuenta que el segundo siempre es en Background
+	//Y el primero depende si se incluyó el & al final del comando
+	run(wrapperFirstProgram, cmd1, bgFlag);
+	run(wrapperSecondProgram, cmd2, 1);
+
+	//Tengo que esperar para cerrar el pipe
+	semWait(sem);
+	semWait(sem);
+	semClose(sem);
+
+	pipeClose(aux[0]);
+	pipeClose(aux[1]);
+}
+
+static int wrapperFirstProgram(int argc, const char *argv[]) {
+	int fd[2];
+	Semaphore *sem;
+	programStart prog;
+	char cmd[INPUT_BUFFER_SIZE];
+
+	strcopy(argv[0], cmd);
+
+	//El nombre del programa me define el comando a correr
+	if((prog = getProgram(cmd)) == NULL) {
+		errorMsg();
+		return 1;
+	}
+
+	if((sem = semOpen(SHELL_PIPE_ID, 0)) == NULL) {
+		printf("NO SE PUDO ABRIR EL SEMAFORO\n");
+		return 1;
+	}
+
+	if(pipeOpen(SHELL_PIPE_ID, fd) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		semClose(sem);
+		return 1;
+	}
+
+	pipeClose(fd[0]);
+	dup2(fd[1], 1);
+	semPost(sem);
+	semClose(sem);
+
+	prog(argc, argv);
+
+	pipeClose(fd[1]);
+	pipeClose(1);
+
+	return 0;
+}
+
+static int wrapperSecondProgram(int argc, const char *argv[]) {
+	int fd[2];
+	Semaphore *sem;
+	programStart prog;
+	char cmd[INPUT_BUFFER_SIZE];
+
+	strcopy(argv[0], cmd);
+
+	//El nombre del programa me define el comando a correr
+	if((prog = getProgram(cmd)) == NULL) {
+		errorMsg();
+		return 1;
+	}
+
+	if((sem = semOpen(SHELL_PIPE_ID, 0)) == NULL) {
+		printf("NO SE PUDO ABRIR EL SEMAFORO\n");
+		return 1;
+	}
+
+	if(pipeOpen(SHELL_PIPE_ID, fd) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		return 1;
+	}
+
+	pipeClose(fd[1]);
+	dup2(fd[0], 0);
+	semPost(sem);
+	semClose(sem);
+
+	prog(argc, argv);
+
+	pipeClose(fd[0]);
+	pipeClose(0);
+
+	return 0;
 }

@@ -190,12 +190,12 @@ int block(int PID) {
 	return kill(PID, BLOCKED);
 }
 
-int wc(){
+int wc() {
 	char inputBuffer[INPUT_BUFFER_SIZE];
 	int length, lines = 0;
 
-	while((length = read(0, inputBuffer, INPUT_BUFFER_SIZE)) != 0){
-		for(int i = 0; i < length ; i++)
+	while((length = read(0, inputBuffer, INPUT_BUFFER_SIZE)) != 0) {
+		for(int i = 0; i < length; i++)
 			if(inputBuffer[i] == '\n')
 				lines++;
 	}
@@ -204,34 +204,30 @@ int wc(){
 	return lines;
 }
 
-static int isVowel(char c){
+static int isVowel(char c) {
 	return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U';
 }
 
-static int min(int num1, int num2){
-	return (num1 > num2)? num2 : num1;
+static int min(int num1, int num2) {
+	return (num1 > num2) ? num2 : num1;
 }
 
-void cat(){
-	char inputBuffer[INPUT_BUFFER_SIZE], output[MAX_OUTPUT_BUFFER];
-	int length, j = 0;
+void cat() {
+	char inputBuffer[INPUT_BUFFER_SIZE];
+	int length;
 
-	// El count de read se define entre el minimo de lo que se considera tamaño de una linea y la capacidad restante dentro del buffer respuesta
-	while((length = read(0, inputBuffer, min(INPUT_BUFFER_SIZE, MAX_OUTPUT_BUFFER - j))) != 0 && j < MAX_OUTPUT_BUFFER){
-		for(int i = 0; i < length ; i++)
-			output[j++] = inputBuffer[i];
+	while((length = read(0, inputBuffer, INPUT_BUFFER_SIZE)) != 0) {
+		write(1, inputBuffer, length);
 	}
-	output[j] = 0;
-	printf(output);
 }
 
-void filter(){
+void filter() {
 	char inputBuffer[INPUT_BUFFER_SIZE], noVowelBuffer[MAX_OUTPUT_BUFFER];
 	int length, j = 0;
 
 	// El count de read se define entre el minimo de lo que se considera tamaño de una linea y la capacidad restante dentro del buffer respuesta
-	while((length = read(0, inputBuffer, min(INPUT_BUFFER_SIZE, MAX_OUTPUT_BUFFER - j))) != 0 && j < MAX_OUTPUT_BUFFER){
-		for(int i = 0; i < length ; i++)
+	while((length = read(0, inputBuffer, min(INPUT_BUFFER_SIZE, MAX_OUTPUT_BUFFER - j))) != 0 && j < MAX_OUTPUT_BUFFER) {
+		for(int i = 0; i < length; i++)
 			if(!isVowel(inputBuffer[i]))
 				noVowelBuffer[j++] = inputBuffer[i];
 	}

@@ -126,14 +126,14 @@ uint64_t readKeyboard(char *out_buffer, unsigned long int count) {
 				break;
 			}
 			i--;
-			sys_write(1, &c, 1);
+			writeScreen(&c, 1);
 			break;
 
 		case 19: //codigo ASCII asginado al make code de la tecla F2
 			// Borro la linea actual
 
 			while(i > 0) {
-				sys_write(1, &bspace, 1);
+				writeScreen(&bspace, 1);
 				i--;
 			}
 			break;
@@ -143,7 +143,7 @@ uint64_t readKeyboard(char *out_buffer, unsigned long int count) {
 
 		case '\t':
 			for(int j = 0; j < 4 && (i + j < count - 1); j++) {
-				sys_write(1, &space, 1); //que tipee 4 espacios al entrar a un tab
+				writeScreen(&space, 1); //que tipee 4 espacios al entrar a un tab
 				out_buffer[i++] = ' ';
 			}
 			break;
@@ -151,7 +151,7 @@ uint64_t readKeyboard(char *out_buffer, unsigned long int count) {
 		default:
 			if(c == '\n' || i < count - 1) {
 				out_buffer[i++] = c;
-				sys_write(1, &c, 1);
+				writeScreen(&c, 1);
 				if(c == '\n') {
 					return i;
 				}

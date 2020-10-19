@@ -45,7 +45,7 @@ static Pipe *findPipe(unsigned int pipeId) {
 int sys_read(int fd, char *out_buffer, unsigned long int count) {
 	Pipe *pipe;
 	PipeEnd *end;
-	int limit, ret = 0;
+	int limit, ret = 0, i;
 
 	if((end = getPipeEnd(fd)) == NULL)
 		return -1;
@@ -57,7 +57,7 @@ int sys_read(int fd, char *out_buffer, unsigned long int count) {
 		//Si voy a leer del teclado, tiene que ser por el proceso en foreground
 		if(isForeground())
 			return readKeyboard(out_buffer, count);
-			
+
 		//Si no está en foreground, lo voy a matar
 		sys_exit();
 	}
@@ -79,11 +79,11 @@ int sys_read(int fd, char *out_buffer, unsigned long int count) {
 			acquire(pipe->lock);
 		}
 
-		for(int i = 0; i < limit; i++) {
+		for(i = 0; i < limit && ret + i < count; i++) {
 			out_buffer[i + ret] = pipe->buffer[(pipe->nRead + i) % PIPE_SIZE];
 		}
 		pipe->nRead = (pipe->nRead + limit) % PIPE_SIZE;
-		ret += limit;
+		ret += i;
 		pipe->isFull = 0;
 	}
 	release(pipe->lock);
@@ -256,8 +256,13 @@ int updatePipeDelete(int pipeId, char rw) {
 			deleteLock(search->lock);
 			sys_deleteChannel(search->channelId);
 			sys_free(search);
-		} else
+		} else {
+			// Si no hay nadie para escribir, despierto a los lectores que estén esperando en este pipe
+			if(search->writers == 0) {
+				sys_wakeup(search->channelId);
+			}
 			release(search->lock);
+		}
 	} else
 		return -1;
 
