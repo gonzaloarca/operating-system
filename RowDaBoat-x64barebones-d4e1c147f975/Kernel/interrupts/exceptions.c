@@ -16,7 +16,6 @@ static void divideByZeroException() {
 	printRegisters(&reg);
 	sys_exit();
 	sys_runNext();
-	return;
 }
 
 static void undefinedInstructionException() {
@@ -25,7 +24,6 @@ static void undefinedInstructionException() {
 	printRegisters(&reg);
 	sys_exit();
 	sys_runNext();
-	return;
 }
 
 static void defaultException() {
@@ -34,7 +32,6 @@ static void defaultException() {
 	printRegisters(&reg);
 	sys_exit();
 	sys_runNext();
-	return;
 }
 
 // excpNumber indica la excepcion a la que se llamo

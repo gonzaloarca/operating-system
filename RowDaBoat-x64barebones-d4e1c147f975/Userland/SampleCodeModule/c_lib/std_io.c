@@ -9,6 +9,9 @@ static char stdinBuffer[STDIN_MAXBUFFER];
 static int stdinFirstPos = 0;
 static int stdinLastPos = 0;
 
+//Funcion necesaria para el funcionamiento de printf
+static int vfprintf(int fd, char *format, va_list arg);
+
 int getchar() {
 	if(stdinLastPos == stdinFirstPos) { //hay que ver que pasa si stdinLastPos > STDIN_BUFFERSIZE
 		stdinFirstPos = 0;
@@ -46,7 +49,7 @@ int strcmp(char *str1, char *str2) {
 
 int strincl(char *pre, char *str) {
 	if(pre == NULL || str == NULL)
-		return 1;
+		return 0;
 
 	while(*pre != 0 && *pre == *str) {
 		pre++;
@@ -54,14 +57,14 @@ int strincl(char *pre, char *str) {
 	}
 
 	if(*pre == 0)
-		return 0;
-	else
 		return 1;
+	else
+		return 0;
 }
 
 int strcopy(const char *str1, char *str2) {
 	if(str1 == NULL || str2 == NULL)
-		return 0;
+		return -1;
 
 	int i = 0;
 	while(str1[i] != 0) {
@@ -74,6 +77,9 @@ int strcopy(const char *str1, char *str2) {
 }
 
 int strlen(char *str) {
+	if(str == NULL)
+		return -1;
+
 	int i = 0;
 	for(; str[i] != '\0'; i++)
 		;
@@ -81,9 +87,9 @@ int strlen(char *str) {
 }
 
 int fputs(char *str, int fd) {
-	if(fd != 1 && fd != 2) { //solo tenemos implementados stdout y stderr
+	if(str == NULL || fd < 0)
 		return -1;
-	}
+
 	return write(fd, str, strlen(str));
 }
 
@@ -101,10 +107,9 @@ void *memset(void *destiation, int32_t c, uint64_t length) {
 	return destiation;
 }
 
-int vfprintf(int fd, char *format, va_list arg) {
-	if(format == 0 || (fd != 1 && fd != 2)) { //solo tenemos implementados stdout y stderr
+static int vfprintf(int fd, char *format, va_list arg) {
+	if(format == NULL || fd < 0)
 		return -1;
-	}
 
 	int i = 0;
 	int count = 0;

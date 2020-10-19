@@ -7,7 +7,7 @@
 #define SIZECOL_LIST 16
 
 // Funcion interna que se encarga de escribir un char en pantalla
-static int printChar(char c, int rgb);
+static void printChar(char c, int rgb);
 
 // Funcion interna que se encarga de borrar el simbolo de espera de escritura en caso de estar presente cuando se cambia de ventana
 static void blockIdleSymbol();
@@ -47,18 +47,20 @@ void setWindows() {
 }
 
 int sys_changeWindow(unsigned int newIndex) {
-	if(newIndex < 0 || newIndex >= N || newIndex == activeWindow)
+	if(newIndex < 0 || newIndex >= N)
+		return -1; 
+	else if(newIndex == activeWindow)
 		return 0; // permanece en la ventana actual
 	else {
 		blockIdleSymbol(); // para asegurarme que no deje basura
 		activeWindow = newIndex;
-		return 1;
+		return 0;
 	}
 }
 
 int sys_changeWindowColor(int rgb) {
 	if(rgb < 0 || rgb > 0xFFFFFF)
-		return 1; // no indica un color
+		return -1; // no indica un color
 	else {
 		windows[activeWindow].charColor = rgb;
 		return 0;
@@ -173,18 +175,18 @@ static void setNewLine() {
 }
 
 // Funcion interna que se encarga de la impresion de un caracter
-static int printChar(char c, int rgb) {
+static void printChar(char c, int rgb) {
 	if(c == '\n') {
 		setNewLine();
-		return 0;
+		return;
 	} else if(c == '\b') {
 		deleteChar();
-		return 0;
+		return;
 	} else if(c == '\t') {
 		for(int i = 0; i < 4; i++) { // tab = 4 espacios
 			printChar(32, rgb);
 		}
-		return 0;
+		return;
 	}
 
 	Window *currentWindow = &(windows[activeWindow]);
@@ -207,8 +209,6 @@ static int printChar(char c, int rgb) {
 
 	// Incremento contador de caracteres en linea
 	currentWindow->currentLineSize++;
-
-	return 0;
 }
 
 int writeScreen(const char *str, unsigned long count) {

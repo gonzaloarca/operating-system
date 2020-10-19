@@ -96,8 +96,6 @@ void phylo() {
 	free(arguments[1]);
 	pipeClose(fd[0]);
 	pipeClose(fd[1]);
-
-	return;
 }
 
 //	Accion de un filosofo

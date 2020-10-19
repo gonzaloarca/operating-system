@@ -99,7 +99,7 @@ static int builtIn(char *command) {
 		clrScreen();
 	else if(strcmp(command, "printtime") == 0)
 		printTime();
-	else if(strincl("printmem ", command) == 0) {		    // solo valido que lo q este al principio del input valide con el comando,
+	else if(strincl("printmem ", command)) {		    // solo valido que lo q este al principio del input valide con el comando,
 								    // el resto va a ser el argumento
 		if(command[9] != 0) {				    // se ingreso un parametro
 			char address[INPUT_BUFFER_SIZE - 10] = {0}; // maximo tamanio posible del argumento("printmem " son 9 caracteres y tampoco cuento el \n)
@@ -123,27 +123,27 @@ static int builtIn(char *command) {
 		listPipes();
 	else if(strcmp(command, "sem") == 0)
 		listSems();
-	else if(strincl("kill ", command) == 0) {
+	else if(strincl("kill ", command)) {
 		int pid = strToPositiveInt(command + 5, NULL);
 		if(pid == -1)
 			printf("Error en argumentos\n");
 
 		kill(pid, KILLED);
-	} else if(strincl("block ", command) == 0) {
+	} else if(strincl("block ", command)) {
 		int pid, aux = 0;
 		pid = strToPositiveInt(command + 6, &aux);
 		if(pid == -1)
 			printf("Error en argumentos\n");
 		if(block(pid) == -1)
 			printf("Error en argumentos\n");
-	} else if(strincl("unblock ", command) == 0) {
+	} else if(strincl("unblock ", command)) {
 		int pid, aux = 0;
 		pid = strToPositiveInt(command + 8, &aux);
 		if(pid == -1)
 			printf("Error en argumentos\n");
 		if(unblock(pid) == -1)
 			printf("Error en argumentos\n");
-	} else if(strincl("nice ", command) == 0) {
+	} else if(strincl("nice ", command)) {
 		int pid, priority, aux = 0;
 		pid = strToPositiveInt(command + 5, &aux);
 		if(pid == -1)

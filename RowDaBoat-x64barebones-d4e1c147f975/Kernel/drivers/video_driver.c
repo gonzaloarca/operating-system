@@ -44,16 +44,15 @@ struct vbe_mode_info_structure *screenInfo = (struct vbe_mode_info_structure *)0
 // Funcion de interrupts.asm
 extern void haltcpu();
 
-int sys_writePixel(int x, int y, int rgb) {
+void sys_writePixel(int x, int y, int rgb) {
 	char(*screen)[screenInfo->width][3] = (char(*)[(screenInfo->width)][3])((uint64_t)screenInfo->framebuffer);
 	screen[y][x][0] = rgb & 0xFF;
 	screen[y][x][1] = (rgb >> 8) & 0xFF;
 	screen[y][x][2] = (rgb >> 16) & 0xFF;
-	return 0;
 }
 
 //  Funcion que se encarga de dibujar un caracter en pantalla(con la font default) dado su esquina izq superior y un color
-int drawChar(char c, int x, int y, int rgb, int backgroundColour) {
+void drawChar(char c, int x, int y, int rgb, int backgroundColour) {
 	const unsigned char *letra = getCharMap(c);
 	if(letra == 0) {
 		letra = getCharMap(32); //debe printear vacio
@@ -70,5 +69,4 @@ int drawChar(char c, int x, int y, int rgb, int backgroundColour) {
 			row = row >> 1;
 		}
 	}
-	return 0;
 }
