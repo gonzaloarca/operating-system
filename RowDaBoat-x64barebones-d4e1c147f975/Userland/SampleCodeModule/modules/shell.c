@@ -1,5 +1,6 @@
 #include <comandos.h>
 #include <evaluator.h>
+#include <filosofos.h>
 #include <sem.h>
 #include <std_io.h>
 #include <syscalls.h>
@@ -191,6 +192,8 @@ static programStart getProgram(char *command) {
 		return (programStart)calculator;
 	} else if(strcmp(command, "test_pipe") == 0) {
 		return (programStart)test_pipe;
+	} else if(strcmp(command, "phylo") == 0) {
+		return (programStart)phylo;
 	}
 
 	errorMsg();
