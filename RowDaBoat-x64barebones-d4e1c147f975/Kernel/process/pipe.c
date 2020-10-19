@@ -57,6 +57,7 @@ int sys_read(int fd, char *out_buffer, unsigned long int count) {
 		//Si voy a leer del teclado, tiene que ser por el proceso en foreground
 		if(isForeground())
 			return readKeyboard(out_buffer, count);
+			
 		//Si no está en foreground, lo voy a matar
 		sys_exit();
 	}

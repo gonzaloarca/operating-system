@@ -190,17 +190,53 @@ int block(int PID) {
 	return kill(PID, BLOCKED);
 }
 
-int wc(char delim){
-	char inputBuffer;
-	int lines = 0;
+int wc(){
+	char inputBuffer[INPUT_BUFFER_SIZE];
+	int length, lines = 0;
 
-	while(read(0, &inputBuffer, 1) != delim){
-		if(inputBuffer == '\n')
-			lines++;
+	while((length = read(0, inputBuffer, INPUT_BUFFER_SIZE)) != 0){
+		for(int i = 0; i < length ; i++)
+			if(inputBuffer[i] == '\n')
+				lines++;
 	}
 
 	printf("Cantidad de lineas: %d\n", lines);
 	return lines;
+}
+
+static int isVowel(char c){
+	return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U';
+}
+
+static int min(int num1, int num2){
+	return (num1 > num2)? num2 : num1;
+}
+
+void cat(){
+	char inputBuffer[INPUT_BUFFER_SIZE], output[MAX_OUTPUT_BUFFER];
+	int length, j = 0;
+
+	// El count de read se define entre el minimo de lo que se considera tamaño de una linea y la capacidad restante dentro del buffer respuesta
+	while((length = read(0, inputBuffer, min(INPUT_BUFFER_SIZE, MAX_OUTPUT_BUFFER - j))) != 0 && j < MAX_OUTPUT_BUFFER){
+		for(int i = 0; i < length ; i++)
+			output[j++] = inputBuffer[i];
+	}
+	output[j] = 0;
+	printf(output);
+}
+
+void filter(){
+	char inputBuffer[INPUT_BUFFER_SIZE], noVowelBuffer[MAX_OUTPUT_BUFFER];
+	int length, j = 0;
+
+	// El count de read se define entre el minimo de lo que se considera tamaño de una linea y la capacidad restante dentro del buffer respuesta
+	while((length = read(0, inputBuffer, min(INPUT_BUFFER_SIZE, MAX_OUTPUT_BUFFER - j))) != 0 && j < MAX_OUTPUT_BUFFER){
+		for(int i = 0; i < length ; i++)
+			if(!isVowel(inputBuffer[i]))
+				noVowelBuffer[j++] = inputBuffer[i];
+	}
+	noVowelBuffer[j] = 0;
+	printf(noVowelBuffer);
 }
 
 // Constantes utilizadas por el comando help
@@ -219,14 +255,18 @@ int wc(char delim){
 #define BLOCK_MSG "\tBloquea el proceso del PID indicado"
 #define UNBLOCK_MSG "\tDesloquea el proceso del PID indicado"
 #define NICE_MSG "\tModifica la prioridad del proceso indicado, la prioridad es entre 0 y 5 siendo 0 la maxima prioridad."
+#define CAT_MSG "\tFuncion que escribe lo que lee."
+#define FILTER_MSG "\tFuncion que escribe lo que lee sin vocales."
+#define WC_MSG "\tProceso que cuenta la cantidad de lineas del input."
 #define EXCP_0_MSG "\tComando para verificar la rutina de excepcion de division por cero."
 #define EXCP_6_MSG "\tComando para verificar la rutina de excepcion de operacion invalida(Undefined Instruction)."
 #define TEST_MSG "Comandos para ejecutar tests:"
 #define TECLA_F1 "\tEjecuta el guardado de los registros, para que sean impresos con inforeg."
 #define TECLA_F2 "\tEjecuta el borrado total de la linea actual."
-#define BACKGROUND "\tAgreguelo al final de un comando para correrlo en background"
-#define CALCULATOR "\tSistema de calculadora simple"
-#define TECLA_F3 "\tFrena la ejecucion del proceso actual en Foreground y regresa a la shell"
+#define BACKGROUND "\tAgreguelo al final de un comando para correrlo en background."
+#define CALCULATOR "\tSistema de calculadora simple."
+#define TECLA_F3 "\tFrena la ejecucion del proceso actual en Foreground y regresa a la shell."
+#define TECLA_F4 "\tManda un EOF por stdin."
 
 void help() {
 	puts("---------Informacion sobre comandos disponibles----------------\n");
@@ -306,6 +346,21 @@ void help() {
 	printf("%s\n", NICE_MSG);
 
 	changeWindowColor(0xffd300);
+	printf("%s\t\t   ", "wc");
+	changeWindowColor(0xffffff);
+	printf("%s\n", WC_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s\t\t  ", "cat");
+	changeWindowColor(0xffffff);
+	printf("%s\n", CAT_MSG);
+
+	changeWindowColor(0xffd300);
+	printf("%s\t   ", "filter");
+	changeWindowColor(0xffffff);
+	printf("%s\n", FILTER_MSG);
+
+	changeWindowColor(0xffd300);
 	printf("%s\t\t ", "calc");
 	changeWindowColor(0xffffff);
 	printf("%s\n", CALCULATOR);
@@ -352,6 +407,11 @@ void help() {
 	printf("%s", "F3\t");
 	changeWindowColor(0xffffff);
 	printf("%s\n", TECLA_F3);
+
+	changeWindowColor(0x4ad5f2);
+	printf("%s", "F4\t");
+	changeWindowColor(0xffffff);
+	printf("%s\n", TECLA_F4);
 
 	changeWindowColor(0x4ad5f2);
 	printf("%s", " &\t");

@@ -11,6 +11,7 @@
 #define F1 59
 #define F2 60
 #define F3 61
+#define F4 62
 #define BUFFER_SIZE 200
 #define C_KEY 46
 
@@ -59,6 +60,8 @@ char asciiMap(int code) {
 		return 0;
 	case F2:
 		return 19;
+	case F4:
+		return 20;
 	case LSHIFT_RELEASED:
 		lshift = 0;
 		return 0;
@@ -134,6 +137,9 @@ uint64_t readKeyboard(char *out_buffer, unsigned long int count) {
 				i--;
 			}
 			break;
+
+		case 20:
+			return i;
 
 		case '\t':
 			for(int j = 0; j < 4 && (i + j < count - 1); j++) {

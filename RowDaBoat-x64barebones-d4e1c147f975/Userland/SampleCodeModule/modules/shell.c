@@ -20,13 +20,13 @@ static void errorMsg();
 
 void runShell() {
 	printf("\nIngrese help y presione enter para una explicacion del programa\n");
+	puts(symbol);
 	while(1) {
-		puts(symbol);
 		indexBuffer = read(0, inputBuffer, INPUT_BUFFER_SIZE);
-		if(indexBuffer != 0 && inputBuffer[indexBuffer - 1] == '\n')
+		if(indexBuffer != 0 && inputBuffer[indexBuffer - 1] == '\n'){
 			parse();
-		else
-			putchar('\n');
+			puts(symbol);
+		}
 	}
 }
 
@@ -161,7 +161,13 @@ static int builtIn(char *command) {
 static programStart getProgram(char *command) {
 	if(strcmp(command, "loop") == 0) {
 		return (programStart)loop;
-	} else if(strcmp(command, "test_mm") == 0) {
+	}else if(strcmp(command, "wc") == 0){
+		return (programStart)wc; 
+	}else if(strcmp(command, "cat") == 0){
+		return (programStart)cat;
+	}else if(strcmp(command, "filter") == 0){
+		return (programStart)filter; 
+	}else if(strcmp(command, "test_mm") == 0) {
 		return (programStart)test_mm;
 	} else if(strcmp(command, "test_prio") == 0) {
 		return (programStart)test_prio;

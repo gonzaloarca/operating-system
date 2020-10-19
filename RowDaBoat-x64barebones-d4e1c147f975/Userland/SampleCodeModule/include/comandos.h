@@ -2,6 +2,8 @@
 #define _COMANDOS_H
 
 #define LOOP_SLEEP 7000000
+#define INPUT_BUFFER_SIZE 100
+#define MAX_OUTPUT_BUFFER (INPUT_BUFFER_SIZE *10)  // el 10 es arbitrario, es simplemente para tener un buffer mas grande
 
 #include <std_io.h>
 #include <stdint.h>
@@ -65,5 +67,14 @@ unsigned int _xchg(unsigned int value, unsigned int *semValue);
 
 // Funcion que incrementa atomicamente el valor de un semaforo
 void _inc(unsigned int *semValue);
+
+// Funcion que cuenta la cantidad de lineas leidas hasta EOF
+int wc();
+
+// Funcion que escribe lo que lee
+void cat();
+
+// Funcion que escribe lo que lee sin vocales
+void filter();
 
 #endif
