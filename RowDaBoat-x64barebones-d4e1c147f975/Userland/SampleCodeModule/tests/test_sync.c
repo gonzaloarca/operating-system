@@ -105,12 +105,17 @@ void test_sync() {
 
 	pipeClose(fd[0]);
 	pipeClose(fd[1]);
-
-	return;
 }
 
 void test_no_sync() {
 	uint64_t i;
+	int fd[2], len;
+	char buffer[100];
+
+	if(pipeOpen(PRINT_ID, fd) == -1) {
+		printf("NO SE PUDO ABRIR EL PIPE\n");
+		return;
+	}
 
 	global = 0;
 	char *args1[4] = {"inc", "0", "1", "100"};
@@ -122,5 +127,12 @@ void test_no_sync() {
 		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args1);
 		startProcessBg((int (*)(int, const char **))incMain, 4, (const char **)args2);
 	}
-	exit();
+
+	for(int i = 0; i < TOTAL_PAIR_PROCESSES * 2; i++) {
+		len = read(fd[0], buffer, 100);
+		write(1, buffer, len);
+	}
+
+	pipeClose(fd[0]);
+	pipeClose(fd[1]);
 }
