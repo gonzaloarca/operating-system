@@ -31,22 +31,32 @@ int putchar(char c) {
 }
 
 int strcmp(char *str1, char *str2) {
-	int i = 0, answer;
-	char flag = 1;
-	while(flag != 0) {
-		if(str1[i] != str2[i]) {
-			answer = (str1[i] < str2[i]) ? -1 : 1;
-			flag = 0;
-		}
+	if(str1 == NULL || str2 == NULL)
+		return -1;
 
-		if(str1[i] == 0) {
-			answer = 0;
-			flag = 0;
-		}
-		i++;
+	while(*str1 == *str2) {
+		if(*str1 == 0)
+			return 0;
+		str1++;
+		str2++;
 	}
 
-	return answer;
+	return (*str1 > *str2) ? 1 : -1;
+}
+
+int strincl(char *pre, char *str) {
+	if(pre == NULL || str == NULL)
+		return 1;
+
+	while(*pre != 0 && *pre == *str) {
+		pre++;
+		str++;
+	}
+
+	if(*pre == 0)
+		return 0;
+	else
+		return 1;
 }
 
 int strlen(char *str) {

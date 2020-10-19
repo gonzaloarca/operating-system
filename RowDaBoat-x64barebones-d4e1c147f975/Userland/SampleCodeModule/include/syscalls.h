@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+typedef int (*programStart)(int, const char **);
+
 // Estructura utilizada para manejar una copia de los registros realizada en algun momento
 typedef struct RegistersType {
 	uint64_t rax;

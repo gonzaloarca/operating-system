@@ -13,8 +13,9 @@ int indexBuffer;
 static char *symbol = "$>";
 
 static void parse();
-static void run(char *command, int bgFlag);
-static void startCommand(int (*mainPtr)(int, const char **), char *procName, int bgFlag);
+static int builtIn(char *command);
+static programStart getProgram(char *command);
+static void run(programStart mainPtr, const char *procName, int bgFlag);
 
 void runShell() {
 	printf("\nIngrese help y presione enter para una explicacion del programa\n");
@@ -26,6 +27,7 @@ void runShell() {
 }
 
 static void parse() {
+	programStart mainPtr;
 	int bgFlag = 0;
 	int pipeFlag = 0;
 
@@ -54,12 +56,18 @@ static void parse() {
 		//Implementar sistema de piping, en i se encuentra la posicion del simbolo
 		fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 	} else {
-		run(inputBuffer, bgFlag);
+		//Primero veo si es una función built-in
+		if(builtIn(inputBuffer) == 0) {
+			mainPtr = getProgram(inputBuffer);
+			if(mainPtr != NULL)
+				run(mainPtr, inputBuffer, bgFlag);
+		}
 	}
 }
 
-//Recibe el nombre del comando como string y un flag indicando si es bg o fg
-static void run(char *command, int bgFlag) {
+//	Ejecuta una funcion built-in de la shell y devuelve 1
+//	Si no existe como built-in, devuelve 0
+static int builtIn(char *command) {
 	const char *name;
 
 	if(strcmp(command, "help") == 0)
@@ -68,12 +76,11 @@ static void run(char *command, int bgFlag) {
 		printInforeg();
 	else if(strcmp(command, "clear") == 0)
 		clrScreen();
-	else if(strcmp(command, "printtime") == 0) {
+	else if(strcmp(command, "printtime") == 0)
 		printTime();
-		putchar('\n');
-	} else if(strcmp("printmem", command) == 0) {		    // solo valido que lo q este al principio del input valide con el comando,
+	else if(strincl("printmem ", command) == 0) {		    // solo valido que lo q este al principio del input valide con el comando,
 								    // el resto va a ser el argumento
-		if(command[8] == ' ' && command[9] != 0) {	    // se ingreso un parametro
+		if(command[9] != 0) {				    // se ingreso un parametro
 			char address[INPUT_BUFFER_SIZE - 10] = {0}; // maximo tamanio posible del argumento("printmem " son 9 caracteres y tampoco cuento el \n)
 			int i = 0;
 			for(; command[9 + i] != 0; i++)
@@ -87,13 +94,7 @@ static void run(char *command, int bgFlag) {
 		printCPUInfo();
 	else if(strcmp(command, "cputemp") == 0)
 		printCPUTemp();
-	else if(strcmp(command, "executeZeroException") == 0) {
-		name = "Zero Exc";
-		startProcessFg((int (*)(int, const char **))executeZeroException, 1, &name);
-	} else if(strcmp(command, "executeUIException") == 0) {
-		name = "UI Exc";
-		startProcessFg((int (*)(int, const char **))executeUIException, 1, &name);
-	} else if(strcmp(command, "mem") == 0)
+	else if(strcmp(command, "mem") == 0)
 		printMemStatus();
 	else if(strcmp(command, "ps") == 0)
 		listProcess();
@@ -101,29 +102,27 @@ static void run(char *command, int bgFlag) {
 		listPipes();
 	else if(strcmp(command, "sem") == 0)
 		listSems();
-	else if(strcmp("kill ", command) == 0) {
+	else if(strincl("kill ", command) == 0) {
 		int pid = strToPositiveInt(command + 5, NULL);
 		if(pid == -1)
 			printf("Error en argumentos\n");
 
 		kill(pid, KILLED);
-	} else if(strcmp(command, "loop") == 0) {
-		startCommand((int (*)(int, const char **))loop, "loop", bgFlag);
-	} else if(strcmp("block ", command) == 0) {
+	} else if(strincl("block ", command) == 0) {
 		int pid, aux = 0;
 		pid = strToPositiveInt(command + 6, &aux);
 		if(pid == -1)
 			printf("Error en argumentos\n");
 		if(block(pid) == -1)
 			printf("Error en argumentos\n");
-	} else if(strcmp("unblock ", command) == 0) {
+	} else if(strincl("unblock ", command) == 0) {
 		int pid, aux = 0;
 		pid = strToPositiveInt(command + 8, &aux);
 		if(pid == -1)
 			printf("Error en argumentos\n");
 		if(unblock(pid) == -1)
 			printf("Error en argumentos\n");
-	} else if(strcmp("nice ", command) == 0) {
+	} else if(strincl("nice ", command) == 0) {
 		int pid, priority, aux = 0;
 		pid = strToPositiveInt(command + 5, &aux);
 		if(pid == -1)
@@ -135,29 +134,47 @@ static void run(char *command, int bgFlag) {
 
 		if(nice(pid, priority) == -1)
 			printf("Error en argumentos\n"); //puede que no haya encontrado el pid o que la prioridad no sea valida
-	} else if(strcmp(command, "test_mm") == 0) {
-		startCommand((int (*)(int, const char **))test_mm, "test_mm", bgFlag);
-	} else if(strcmp(command, "test_prio") == 0) {
-		startCommand((int (*)(int, const char **))test_prio, "test_prio", bgFlag);
-	} else if(strcmp(command, "test_proc") == 0) {
-		startCommand((int (*)(int, const char **))test_processes, "test_processes", bgFlag);
-	} else if(strcmp(command, "test_sync") == 0) {
-		startCommand((int (*)(int, const char **))test_sync, "test_sync", bgFlag);
-	} else if(strcmp(command, "test_no_sync") == 0) {
-		startCommand((int (*)(int, const char **))test_no_sync, "test_no_sync", bgFlag);
-	} else if(strcmp(command, "calc") == 0) {
-		startCommand((int (*)(int, const char **))calculator, "calculator", 0);
-	} else if(strcmp(command, "test_pipe") == 0) {
-		startCommand((int (*)(int, const char **))test_pipe, "test_pipe", 0);
-	} else
-		fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
+	} else if(strcmp(command, "executeZeroException") == 0) {
+		name = "Zero Exc";
+		startProcessFg((int (*)(int, const char **))executeZeroException, 1, &name);
+	} else if(strcmp(command, "executeUIException") == 0) {
+		name = "UI Exc";
+		startProcessFg((int (*)(int, const char **))executeUIException, 1, &name);
+	} else {
+		return 0;
+	}
+
+	return 1;
 }
 
-static void startCommand(int (*mainPtr)(int, const char **), char *procName, int bgFlag) {
-	const char *name = procName;
+//Recibe el nombre del comando como string y devuelve el puntero a su inicio (para funciones no built-in)
+static programStart getProgram(char *command) {
+	if(strcmp(command, "loop") == 0) {
+		return (programStart)loop;
+	} else if(strcmp(command, "test_mm") == 0) {
+		return (programStart)test_mm;
+	} else if(strcmp(command, "test_prio") == 0) {
+		return (programStart)test_prio;
+	} else if(strcmp(command, "test_proc") == 0) {
+		return (programStart)test_processes;
+	} else if(strcmp(command, "test_sync") == 0) {
+		return (programStart)test_sync;
+	} else if(strcmp(command, "test_no_sync") == 0) {
+		return (programStart)test_no_sync;
+	} else if(strcmp(command, "calc") == 0) {
+		return (programStart)calculator;
+	} else if(strcmp(command, "test_pipe") == 0) {
+		return (programStart)test_pipe;
+	}
 
+	fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
+
+	return NULL;
+}
+
+static void run(programStart mainPtr, const char *procName, int bgFlag) {
 	if(bgFlag)
-		startProcessBg(mainPtr, 1, &name);
+		startProcessBg(mainPtr, 1, &procName);
 	else
-		startProcessFg(mainPtr, 1, &name);
+		startProcessFg(mainPtr, 1, &procName);
 }

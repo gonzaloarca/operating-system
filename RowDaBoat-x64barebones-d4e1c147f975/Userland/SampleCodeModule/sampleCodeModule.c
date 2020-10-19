@@ -7,5 +7,8 @@ int main() {
 
 	runShell();
 
+	while(1)
+		;
+
 	return 0;
 }

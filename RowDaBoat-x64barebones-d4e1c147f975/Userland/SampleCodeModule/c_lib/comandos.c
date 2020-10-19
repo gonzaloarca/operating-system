@@ -29,6 +29,7 @@ void printTime() { //se podria modularizar en una funcion para obtener el tiempo
 	}
 
 	puts(timeString);
+	putchar('\n');
 }
 
 void printCPUInfo() {
