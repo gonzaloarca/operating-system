@@ -31,11 +31,37 @@ GLOBAL listPipes
 section .text
 
 ; Estas aclaraciones sobre las funciones tambien se encuentran en "syscalls.h"
+;-------------------------------------------------------
+;	SYSCALL read: RAX = 3
+;			Lee de un fd y escribe en un buffer hasta que se llegue a "count" caracteres o hasta un '\n' o EOF
+;-------------------------------------------------------
+; Llamada en C:
+;	int read(int fd, char *buffer, unsigned long count)
+;-------------------------------------------------------
+read:
+	push rbp
+	mov rbp, rsp
+	push rbx
+	push rcx
+	push rdx
+
+	mov rax, 3			; numero de syscall sys_read
+	mov rbx, rdi		; 1er parametro 
+	mov rcx, rsi		; 2do parametro
+	;en rdx ya esta cargado el 3er parametro
+	int 80h
+
+	pop rdx
+	pop rcx
+	pop rbx
+	mov rsp, rbp
+	pop rbp
+	ret
 
 ;-------------------------------------------------------
 ;	SYSCALL write: RAX = 4
-;			Imprime en la ventana actual los primeros count caracteres de buffer
-;			si fd = 2, sera la salida de error y se imprimira en rojo, si es 1 en el color determinado por la ventana
+;			Imprime en el file descriptor indicado los primeros count caracteres de buffer
+;			Por defecto, fd = 1 es STDOUT y fd = 2 es STDERR
 ;-------------------------------------------------------
 ; Llamada en C:
 ;	int write( unsigned int fd, char *buffer, unsigned long count )
@@ -60,32 +86,6 @@ write:
 	pop rbp
 	ret
 
-;-------------------------------------------------------
-;	SYSCALL read: RAX = 3
-;			Lee de un fd y escribe en un buffer hasta que se llegue a "count" caracteres
-;-------------------------------------------------------
-; Llamada en C:
-;	int read(int fd, char *buffer, unsigned long count)
-;-------------------------------------------------------
-read:
-	push rbp
-	mov rbp, rsp
-	push rbx
-	push rcx
-	push rdx
-
-	mov rax, 3			; numero de syscall sys_read
-	mov rbx, rdi		; 1er parametro 
-	mov rcx, rsi		; 2do parametro
-	;en rdx ya esta cargado el 3er parametro
-	int 80h
-
-	pop rdx
-	pop rcx
-	pop rbx
-	mov rsp, rbp
-	pop rbp
-	ret
 
 ;-------------------------------------------------------
 ;	SYSCALL clrScreen: RAX = 7
