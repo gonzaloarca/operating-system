@@ -457,7 +457,7 @@ int setPipe(unsigned int newPipeId, int pipefd[2]) {
 		proc = currentProc;
 
 	int i;
-	for(i = 0; proc->pcb.pipeList[i] != NULL && i < MAX_PIPES; i++)
+	for(i = 0; i < MAX_PIPES && proc->pcb.pipeList[i] != NULL; i++)
 		;
 
 	if(i == MAX_PIPES)
@@ -470,7 +470,7 @@ int setPipe(unsigned int newPipeId, int pipefd[2]) {
 	proc->pcb.pipeList[i]->rw = READ;
 	pipefd[0] = i;
 
-	for(; proc->pcb.pipeList[i] != NULL && i < MAX_PIPES; i++)
+	for(; i < MAX_PIPES && proc->pcb.pipeList[i] != NULL; i++)
 		;
 
 	if(i == MAX_PIPES)
