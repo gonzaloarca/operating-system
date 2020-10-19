@@ -1,7 +1,7 @@
 
 #include <memManager.h>
 
-#define GET_BUDDY(base, size, offset) ((unsigned char *)(((long)(base - offset) ^ (1 << size)) + (long)offset))
+#define GET_BUDDY(base, size, offset) ((unsigned char *)(((long)((base) - (offset)) ^ (1 << (size))) + (long)(offset)))
 
 #define FREE 0
 #define OCCUPIED 1
