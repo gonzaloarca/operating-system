@@ -16,20 +16,24 @@ static void parse();
 static int builtIn(char *command);
 static programStart getProgram(char *command);
 static void run(programStart mainPtr, const char *procName, int bgFlag);
+static void errorMsg();
 
 void runShell() {
 	printf("\nIngrese help y presione enter para una explicacion del programa\n");
 	while(1) {
 		puts(symbol);
 		indexBuffer = read(0, inputBuffer, INPUT_BUFFER_SIZE);
-		parse();
+		if(indexBuffer != 0 && inputBuffer[indexBuffer - 1] == '\n')
+			parse();
+		else
+			putchar('\n');
 	}
 }
 
 static void parse() {
 	programStart mainPtr;
-	int bgFlag = 0;
-	int pipeFlag = 0;
+	int bgFlag = 0, pipeFlag = 0;
+	char cmd1[INPUT_BUFFER_SIZE], cmd2[INPUT_BUFFER_SIZE];
 
 	inputBuffer[--indexBuffer] = 0; //Me saco el \n del comando
 
@@ -44,17 +48,23 @@ static void parse() {
 		inputBuffer[indexBuffer] = 0;
 	}
 
-	int i;
-	for(i = 0; i < indexBuffer; i++) {
+	for(int i = 0; i < indexBuffer; i++) {
 		if(inputBuffer[i] == PIPE_SYMBOL) {
-			pipeFlag = 1;
+			pipeFlag = i;
 			break;
 		}
+		//Voy copiando el primer (o unico) comando
+		cmd1[i] = inputBuffer[i];
 	}
 
 	if(pipeFlag) {
-		//Implementar sistema de piping, en i se encuentra la posicion del simbolo
-		fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
+		cmd1[pipeFlag - 1] = 0;		       //Hago que el comando sea null-terminated antes del simbolo pipe
+		if(inputBuffer[pipeFlag + 1] != ' ') { //Tiene que haber un espacio antes del comando
+			errorMsg();
+			return;
+		}
+		strcopy(inputBuffer + pipeFlag + 2, cmd2);
+		//	Aca hay que pipear los procesos
 	} else {
 		//Primero veo si es una función built-in
 		if(builtIn(inputBuffer) == 0) {
@@ -167,7 +177,7 @@ static programStart getProgram(char *command) {
 		return (programStart)test_pipe;
 	}
 
-	fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
+	errorMsg();
 
 	return NULL;
 }
@@ -177,4 +187,8 @@ static void run(programStart mainPtr, const char *procName, int bgFlag) {
 		startProcessBg(mainPtr, 1, &procName);
 	else
 		startProcessFg(mainPtr, 1, &procName);
+}
+
+static void errorMsg() {
+	fprintf(2, "Comando no reconocido, ejecuta help para recibir informacion.\n");
 }

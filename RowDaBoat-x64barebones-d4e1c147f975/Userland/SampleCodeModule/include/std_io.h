@@ -42,6 +42,10 @@ int strcmp(char *str1, char *str2);
 //  Si no, retorna -1
 int strincl(char *pre, char *str);
 
+//  Copia str1 en str2, ambos null-terminated
+//  Devuelve la cantidad de chars copiados
+int strcopy(char *str1, char *str2);
+
 // Funcion que retorna la longitud de str
 int strlen(char *str);
 
