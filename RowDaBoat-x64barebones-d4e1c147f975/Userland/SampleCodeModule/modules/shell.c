@@ -28,7 +28,7 @@ void runShell() {
 	puts(symbol);
 	while(1) {
 		indexBuffer = read(0, inputBuffer, INPUT_BUFFER_SIZE);
-		if(indexBuffer != 0 && inputBuffer[indexBuffer - 1] == '\n'){
+		if(indexBuffer != 0 && inputBuffer[indexBuffer - 1] == '\n') {
 			parse();
 			puts(symbol);
 		}
@@ -171,13 +171,13 @@ static int builtIn(char *command) {
 static programStart getProgram(char *command) {
 	if(strcmp(command, "loop") == 0) {
 		return (programStart)loop;
-	}else if(strcmp(command, "wc") == 0){
-		return (programStart)wc; 
-	}else if(strcmp(command, "cat") == 0){
+	} else if(strcmp(command, "wc") == 0) {
+		return (programStart)wc;
+	} else if(strcmp(command, "cat") == 0) {
 		return (programStart)cat;
-	}else if(strcmp(command, "filter") == 0){
-		return (programStart)filter; 
-	}else if(strcmp(command, "test_mm") == 0) {
+	} else if(strcmp(command, "filter") == 0) {
+		return (programStart)filter;
+	} else if(strcmp(command, "test_mm") == 0) {
 		return (programStart)test_mm;
 	} else if(strcmp(command, "test_prio") == 0) {
 		return (programStart)test_prio;
@@ -227,8 +227,8 @@ static void startPipe(char *cmd1, char *cmd2, int bgFlag) {
 
 	//Corro los programas, teniendo en cuenta que el segundo siempre es en Background
 	//Y el primero depende si se incluyó el & al final del comando
-	run(wrapperFirstProgram, cmd1, bgFlag);
 	run(wrapperSecondProgram, cmd2, 1);
+	run(wrapperFirstProgram, cmd1, bgFlag);
 
 	//Tengo que esperar para cerrar el pipe
 	semWait(sem);
