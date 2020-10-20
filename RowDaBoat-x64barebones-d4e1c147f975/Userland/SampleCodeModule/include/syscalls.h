@@ -4,6 +4,7 @@
 #define ACTIVE 1
 #define BLOCKED 0
 #define KILLED 2
+#define MAX_QUANTUM 5
 
 #include <sem.h>
 #include <stddef.h>
@@ -96,8 +97,8 @@ unsigned int startProcessFg(int (*mainptr)(int, char const **), int argc, char c
 // Devuelve su pid
 unsigned int startProcessBg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 
-// Syscall que finaliza la ejecucion de un proceso, marcando su estado como "KILLED" y luego
-// llamando a que se ejecute el siguiente proceso en la cola de listos.
+// Syscall que finaliza la ejecucion de un proceso, marcando su estado como "KILLED", liberando
+// sus recursos, y luego llamando a que se ejecute el siguiente proceso en la cola de listos.
 void exit();
 
 // Syscall que retorna el pid del proceso que la llama
@@ -112,7 +113,7 @@ int kill(unsigned int pid, char state);
 // Syscall para que el proceso corriendo en el momento renuncie al CPU y se corra el siguiente proceso
 void runNext();
 
-// Syscall para cambiar la prioridad de un proceso según su pid, retorna 0 en caso de error
+// Syscall para cambiar la prioridad de un proceso según su pid, retorna -1 en caso de error
 int nice(unsigned int pid, unsigned int priority);
 
 // Syscall para crear un canal de comunicacion para señales de sleep y wakeup,
