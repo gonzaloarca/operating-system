@@ -260,6 +260,7 @@ int scanf(char *format, ...) {
 		}
 
 		if(format[i] != '%' && format[i] != c) {
+			va_end(args);
 			return argsRead; //a la primera que no coincide el formato con la entrada, salgo de la funcion.
 		}
 		if(format[i] == '%') {
@@ -271,16 +272,19 @@ int scanf(char *format, ...) {
 				case 'u':
 				case 'l':
 					if(format[i] == 'l' && format[i + 1] != 'd' && format[i + 1] != 'u') {
+						va_end(args);
 						return argsRead; //no hay especificadores de formato distintos de lu y ld que empiecen con l
 					}
 
 					if(!isdigit(c) && c != '-' && c != '+') {
+						va_end(args);
 						return argsRead;
 					}
 
 					if(c == '-') {
 						c = getchar(); //para que pase al siguiente digito
 						if(!isdigit(c)) {
+							va_end(args);
 							return argsRead; //me pasaron "-"; no era un numero, debo salir
 						}
 					}
@@ -288,6 +292,7 @@ int scanf(char *format, ...) {
 					if(c == '+') {
 						c = getchar();
 						if(!isdigit(c)) {
+							va_end(args);
 							return argsRead; //me pasaron "+" sin estar seguido de ningun digito, debo salir.
 						}
 					}
@@ -307,6 +312,7 @@ int scanf(char *format, ...) {
 				case 'f':
 				case 'g':
 					if(!isdigit(c) && c != '.' && c != '-' && c != '+') {
+						va_end(args);
 						return argsRead;
 					}
 					comma = 0;
@@ -314,6 +320,7 @@ int scanf(char *format, ...) {
 					if(c == '-') {
 						c = getchar();
 						if(!isdigit(c) && c != '.') {
+							va_end(args);
 							return argsRead; //caso en que me pasen "." como argumento
 						}
 					}
@@ -321,6 +328,7 @@ int scanf(char *format, ...) {
 					if(c == '+') {
 						c = getchar();
 						if(!isdigit(c) && c != '.') {
+							va_end(args);
 							return argsRead; //caso en que me pasen "+" como argumento
 						}
 					}
@@ -328,6 +336,7 @@ int scanf(char *format, ...) {
 					if(c == '.') {
 						c = getchar();
 						if(!isdigit(c)) {
+							va_end(args);
 							return argsRead; //caso en que me pasen "." como argumento
 						}
 						comma = 1;
@@ -355,12 +364,14 @@ int scanf(char *format, ...) {
 				case 'd':
 				case 'u':
 					if(!isdigit(c) && c != '-' && c != '+') {
+						va_end(args);
 						return argsRead;
 					}
 					neg = 0;
 					if(c == '-') {
 						c = getchar(); //para que pase al siguiente digito
 						if(!isdigit(c)) {
+							va_end(args);
 							return argsRead; //me pasaron "-"; no era un numero, debo salir
 						}
 						neg = 1;
@@ -369,6 +380,7 @@ int scanf(char *format, ...) {
 					if(c == '+') {
 						c = getchar();
 						if(!isdigit(c)) {
+							va_end(args);
 							return argsRead; //me pasaron "+" sin estar seguido de ningun digito, debo salir.
 						}
 					}
@@ -420,6 +432,7 @@ int scanf(char *format, ...) {
 				case 'f':
 				case 'g':
 					if(!isdigit(c) && c != '.' && c != '-' && c != '+') {
+						va_end(args);
 						return argsRead;
 					}
 					comma = 0;
@@ -428,6 +441,7 @@ int scanf(char *format, ...) {
 					if(c == '-') {
 						c = getchar();
 						if(!isdigit(c) && c != '.') {
+							va_end(args);
 							return argsRead; //caso en que me pasen "." como argumento
 						}
 						neg = 1;
@@ -436,6 +450,7 @@ int scanf(char *format, ...) {
 					if(c == '+') {
 						c = getchar();
 						if(!isdigit(c) && c != '.') {
+							va_end(args);
 							return argsRead; //caso en que me pasen "+" como argumento
 						}
 					}
@@ -443,6 +458,7 @@ int scanf(char *format, ...) {
 					if(c == '.') {
 						c = getchar();
 						if(!isdigit(c)) {
+							va_end(args);
 							return argsRead; //caso en que me pasen "." como argumento
 						}
 						comma = 1;
@@ -503,6 +519,7 @@ int scanf(char *format, ...) {
 					i++;
 					if(format[i] == 'd' || format[i] == 'u') {
 						if(!isdigit(c) && c != '-' && c != '+') {
+							va_end(args);
 							return argsRead;
 						}
 
@@ -510,6 +527,7 @@ int scanf(char *format, ...) {
 						if(c == '-') {
 							c = getchar(); //para que pase al siguiente digito
 							if(!isdigit(c)) {
+								va_end(args);
 								return argsRead; //me pasaron "-"; no era un numero, debo salir
 							}
 							neg = 1;
@@ -518,6 +536,7 @@ int scanf(char *format, ...) {
 						if(c == '+') {
 							c = getchar();
 							if(!isdigit(c)) {
+								va_end(args);
 								return argsRead; //me pasaron "+" sin estar seguido de ningun digito, debo salir.
 							}
 						}
@@ -546,6 +565,7 @@ int scanf(char *format, ...) {
 						argsRead++;
 						break;
 					} else {
+						va_end(args);
 						return argsRead; //si no era un especificador de formato valido, corto el scanf.
 					}
 
@@ -555,6 +575,7 @@ int scanf(char *format, ...) {
 						break;
 					}
 
+					va_end(args);
 					return argsRead;
 				}
 			}
@@ -564,5 +585,6 @@ int scanf(char *format, ...) {
 		}
 	}
 
+	va_end(args);
 	return argsRead;
 }
