@@ -91,11 +91,11 @@ void getMemStatus(MemStatus *stat);
 
 //  Syscall para correr un proceso en foreground (bloquea al proceso en foreground actual)
 //  Devuelve el pid del proceso nuevo
-unsigned int startProcessFg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
+int startProcessFg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 
 // Syscall que permite iniciar un proceso en background que corre la funcion mainptr con argc argumentos que recibe en argv
 // Devuelve su pid
-unsigned int startProcessBg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
+int startProcessBg(int (*mainptr)(int, char const **), int argc, char const *argv[]);
 
 // Syscall que finaliza la ejecucion de un proceso, marcando su estado como "KILLED", liberando
 // sus recursos, y luego llamando a que se ejecute el siguiente proceso en la cola de listos.

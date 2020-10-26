@@ -108,7 +108,7 @@ int sys_startProcBg(uint64_t mainPtr, int argc, char const *argv[]) {
 int sys_startProcFg(uint64_t mainPtr, int argc, char const *argv[]) {
 	//Solamente el primer proceso de la lista puede iniciar a otros en foreground
 	if(currentProc != NULL && currentProc != lastProc->next)
-		return 0;
+		return -1;
 
 	//Primero inicio el proceso como si fuera en Background
 	unsigned pid = sys_startProcBg(mainPtr, argc, argv);
