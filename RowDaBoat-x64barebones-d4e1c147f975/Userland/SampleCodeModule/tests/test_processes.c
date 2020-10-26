@@ -31,9 +31,9 @@ void test_processes() {
 	while(1) {
 		// Create MAX_PROCESSES processes
 		for(rq = 0; rq < MAX_PROCESSES; rq++) {
-
-			if(p_rqs[rq].pid == -1) {		    // TODO: Port this as required
-				printf("Error creating process\n"); // TODO: Port this as required
+			p_rqs[rq].pid = startProcessBg((int (*)(int, const char **))endless_loop, 0, NULL);
+			if(p_rqs[rq].pid == -1) {
+				printf("Error creating process\n");
 				return;
 			} else {
 				p_rqs[rq].state = RUNNING;
@@ -49,9 +49,9 @@ void test_processes() {
 				switch(action) {
 				case 0:
 					if(p_rqs[rq].state == RUNNING || p_rqs[rq].state == AUX_BLOCKED) {
-						if(kill(p_rqs[rq].pid, KILLED) == -1) { // TODO: Port this as required
+						if(kill(p_rqs[rq].pid, KILLED) == -1) {
 							listProcess();
-							printf("Error killing process %u\n", (unsigned int)p_rqs[rq].pid); // TODO: Port this as required
+							printf("Error killing process %u\n", (unsigned int)p_rqs[rq].pid);
 							return;
 						}
 						p_rqs[rq].state = AUX_KILLED;
@@ -61,8 +61,8 @@ void test_processes() {
 
 				case 1:
 					if(p_rqs[rq].state == RUNNING) {
-						if(block(p_rqs[rq].pid) == -1) {					    // TODO: Port this as required
-							printf("Error blocking process %u\n", (unsigned int)p_rqs[rq].pid); // TODO: Port this as required
+						if(block(p_rqs[rq].pid) == -1) {
+							printf("Error blocking process %u\n", (unsigned int)p_rqs[rq].pid);
 							return;
 						}
 						p_rqs[rq].state = AUX_BLOCKED;
@@ -74,8 +74,8 @@ void test_processes() {
 			// Randomly unblocks processes
 			for(rq = 0; rq < MAX_PROCESSES; rq++)
 				if(p_rqs[rq].state == AUX_BLOCKED && GetUniform(2) % 2) {
-					if(unblock(p_rqs[rq].pid) == -1) {					      // TODO: Port this as required
-						printf("Error unblocking process %u\n", (unsigned int)p_rqs[rq].pid); // TODO: Port this as required
+					if(unblock(p_rqs[rq].pid) == -1) {
+						printf("Error unblocking process %u\n", (unsigned int)p_rqs[rq].pid);
 						return;
 					}
 					p_rqs[rq].state = RUNNING;
