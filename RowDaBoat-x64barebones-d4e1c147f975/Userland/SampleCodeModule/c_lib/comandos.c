@@ -110,7 +110,7 @@ void printmem(char *address) {
 		getMemory(&memory, (char *)decimalAddress);
 
 		changeWindowColor(0xa4de02);
-		printf("%p", decimalAddress);
+		printf("%p", (char *)decimalAddress);
 		changeWindowColor(0xffffff);
 		printf(": ");
 		for(int i = 0; i < 8; i++) {
@@ -119,7 +119,7 @@ void printmem(char *address) {
 		}
 		putchar('\n');
 		changeWindowColor(0xa4de02);
-		printf("%p", decimalAddress + 8);
+		printf("%p", (char *)decimalAddress + 8);
 		changeWindowColor(0xffffff);
 		printf(": ");
 		for(int i = 0; i < 8; i++) {
@@ -128,7 +128,7 @@ void printmem(char *address) {
 		}
 		putchar('\n');
 		changeWindowColor(0xa4de02);
-		printf("%p", decimalAddress + 16);
+		printf("%p", (char *)decimalAddress + 16);
 		changeWindowColor(0xffffff);
 		printf(": ");
 		for(int i = 0; i < 8; i++) {
@@ -137,7 +137,7 @@ void printmem(char *address) {
 		}
 		putchar('\n');
 		changeWindowColor(0xa4de02);
-		printf("%p", decimalAddress + 24);
+		printf("%p", (char *)decimalAddress + 24);
 		changeWindowColor(0xffffff);
 		printf(": ");
 		for(int i = 0; i < 8; i++) {
@@ -151,12 +151,12 @@ void printmem(char *address) {
 
 void printInforeg() {
 	RegistersType *reg = getRegisters();
-	printf("RAX: %ld\tRBX: %ld\tRCX: %ld\nRDX: %ld\tRBP: %ld\tRDI: %ld\nRSI: %ld\tRSP: %ld\tR8:  %ld\nR9:  %ld\tR10: %ld\tR11: %ld\nR12: %ld\tR13: %ld\tR14: %ld\nR15: %ld\tRIP: %ld\n",
-	       reg->rax, reg->rbx, reg->rcx,
-	       reg->rdx, reg->rbp, reg->rdi,
-	       reg->rsi, reg->rsp, reg->r8,
-	       reg->r9, reg->r10, reg->r11,
-	       reg->r12, reg->r13, reg->r14, reg->r15, reg->rip);
+	printf("RAX: %lx\tRBX: %lx\tRCX: %lx\nRDX: %lx\tRBP: %lx\tRDI: %lx\nRSI: %lx\tRSP: %lx\tR8:  %lx\nR9:  %lx\tR10: %lx\tR11: %lx\nR12: %lx\tR13: %lx\tR14: %lx\nR15: %lx\tRIP: %lx\n",
+	       (unsigned long)reg->rax, (unsigned long)reg->rbx, (unsigned long)reg->rcx,
+	       (unsigned long)reg->rdx, (unsigned long)reg->rbp, (unsigned long)reg->rdi,
+	       (unsigned long)reg->rsi, (unsigned long)reg->rsp, (unsigned long)reg->r8,
+	       (unsigned long)reg->r9, (unsigned long)reg->r10, (unsigned long)reg->r11,
+	       (unsigned long)reg->r12, (unsigned long)reg->r13, (unsigned long)reg->r14, (unsigned long)reg->r15, (unsigned long)reg->rip);
 }
 
 void printCPUTemp() {
@@ -170,7 +170,7 @@ void printCPUTemp() {
 void printMemStatus() {
 	MemStatus stat;
 	getMemStatus(&stat);
-	printf("Total = %lu B\tOcupada = %lu B\tLibre = %lu B\tPorcentaje libre: %f\%\n", stat.totalMem, stat.occMem, stat.freeMem, (double)(stat.freeMem * 100) / stat.totalMem);
+	printf("Total = %lu B\tOcupada = %lu B\tLibre = %lu B\tPorcentaje libre: %f%%\n", stat.totalMem, stat.occMem, stat.freeMem, (double)(stat.freeMem * 100) / stat.totalMem);
 }
 
 void loop() {

@@ -198,6 +198,7 @@ static int vfprintf(int fd, char *format, va_list arg) {
 					i += 2;
 					break;
 				}
+				break;
 				//si despues de la l no habia nada de interes, debo printear el % y lo que siga, lo cual cae en el caso default
 			default:
 				fputc('%', fd);
