@@ -16,7 +16,7 @@ static void endless_loop() {
 	uint64_t pid = getpid();
 
 	while(1) {
-		printf("%d ", pid);
+		printf("%lu ", pid);
 		bussy_wait(MINOR_WAIT);
 	}
 }

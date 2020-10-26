@@ -31,7 +31,6 @@ void test_processes() {
 	while(1) {
 		// Create MAX_PROCESSES processes
 		for(rq = 0; rq < MAX_PROCESSES; rq++) {
-			p_rqs[rq].pid = startProcessBg((int (*)(int, const char **))endless_loop, 0, NULL); // TODO: Port this call as required
 
 			if(p_rqs[rq].pid == -1) {		    // TODO: Port this as required
 				printf("Error creating process\n"); // TODO: Port this as required
@@ -46,13 +45,13 @@ void test_processes() {
 
 			for(rq = 0; rq < MAX_PROCESSES; rq++) {
 				action = GetUniform(2) % 2;
-
+				printf("%u\n", (unsigned int)p_rqs[rq].pid);
 				switch(action) {
 				case 0:
 					if(p_rqs[rq].state == RUNNING || p_rqs[rq].state == AUX_BLOCKED) {
 						if(kill(p_rqs[rq].pid, KILLED) == -1) { // TODO: Port this as required
 							listProcess();
-							printf("Error killing process %d\n", p_rqs[rq].pid); // TODO: Port this as required
+							printf("Error killing process %u\n", (unsigned int)p_rqs[rq].pid); // TODO: Port this as required
 							return;
 						}
 						p_rqs[rq].state = AUX_KILLED;
@@ -62,8 +61,8 @@ void test_processes() {
 
 				case 1:
 					if(p_rqs[rq].state == RUNNING) {
-						if(block(p_rqs[rq].pid) == -1) {			      // TODO: Port this as required
-							printf("Error blocking process %d\n", p_rqs[rq].pid); // TODO: Port this as required
+						if(block(p_rqs[rq].pid) == -1) {					    // TODO: Port this as required
+							printf("Error blocking process %u\n", (unsigned int)p_rqs[rq].pid); // TODO: Port this as required
 							return;
 						}
 						p_rqs[rq].state = AUX_BLOCKED;
@@ -75,8 +74,8 @@ void test_processes() {
 			// Randomly unblocks processes
 			for(rq = 0; rq < MAX_PROCESSES; rq++)
 				if(p_rqs[rq].state == AUX_BLOCKED && GetUniform(2) % 2) {
-					if(unblock(p_rqs[rq].pid) == -1) {				// TODO: Port this as required
-						printf("Error unblocking process %d\n", p_rqs[rq].pid); // TODO: Port this as required
+					if(unblock(p_rqs[rq].pid) == -1) {					      // TODO: Port this as required
+						printf("Error unblocking process %u\n", (unsigned int)p_rqs[rq].pid); // TODO: Port this as required
 						return;
 					}
 					p_rqs[rq].state = RUNNING;

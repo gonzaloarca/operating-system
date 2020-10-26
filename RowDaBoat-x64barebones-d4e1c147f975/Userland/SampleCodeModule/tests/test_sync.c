@@ -45,7 +45,7 @@ void inc(uint64_t sem, int64_t value, uint64_t N) {
 	if(sem)
 		semClose(semaph);
 
-	printf("Final value: %d\n", global);
+	printf("Final value: %lu\n", (unsigned long)global);
 }
 
 int incMain(int argc, char *argv[]) {
